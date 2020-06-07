@@ -97,10 +97,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # }
 
 DATABASES = {}
-if (os.getenv('PROD')):
-    DATABASES['default'] = dj_database_url.config(default='postgres://django:somepassword@127.0.0.1:5432/django')
-else:
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+# if (os.getenv('PROD')):
+#     DATABASES['default'] = dj_database_url.config(default='postgres://django:somepassword@127.0.0.1:5432/django')
+# else:
+
+DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
