@@ -65,6 +65,7 @@ class App extends React.Component {
   render() {
     return (
       <Container>
+          Hello
       <List>
       {this.state.ticker_list.map((value) => {
         return (
