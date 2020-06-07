@@ -20,11 +20,11 @@ from api import views
 from .views import index
 
 router = routers.DefaultRouter()
-router.register(r'stocks', views.StockViewSet, basename='stock')
+router.register(r'stocks', views.StockViewSet, basename='stock',)
 router.register(r'pricehistorys', views.PriceHistoryViewSet, basename='pricehistory')
 
 urlpatterns = [
     path('', index, name='index'),
-    path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
+    path('admin/', admin.site.urls, name='admin'),
+    path('api/', include(router.urls), name='api'),
 ]

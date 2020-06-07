@@ -9,22 +9,21 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-import django_heroku
+
+import dj_database_url
+from dotenv import load_dotenv
 import os
 from celery.schedules import crontab
-
+load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Configure app for Heroku deployment
-# django_heroku.settings(locals())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30g0x'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 #CELERY
 CELERY_BROKER_URL = 'amqp://localhost'
@@ -32,7 +31,7 @@ CELERY_BROKER_URL = 'amqp://localhost'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'https://localhost:3000']
+CORS_ORIGIN_WHITELIST = ['http://localhost:3000', 'https://localhost:3000', 'http://localhost:8000', 'http://127.0.0.1:8000']
 
 ALLOWED_HOSTS = []
 
@@ -52,9 +51,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,7 +63,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
-
 
 TEMPLATES = [
     {
@@ -84,21 +82,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'django',
-        'USER': 'django',
-        'PASSWORD': 'somepassword',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'django',
+#         'USER': 'django',
+#         'PASSWORD': 'somepassword',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
 
+DATABASES = {}
+if (os.getenv('PROD')):
+    DATABASES['default'] = dj_database_url.config(default='postgres://django:somepassword@127.0.0.1:5432/django')
+else:
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -149,3 +151,7 @@ STATICFILES_DIRS = []
 # print(MEDIA_ROOT)
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+import django_heroku
+# Configure app for Heroku deployment
+django_heroku.settings(locals())
