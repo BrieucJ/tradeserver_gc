@@ -32,7 +32,7 @@ def clear_data():
 
 def create_stocks():
     print('Creating stocks...')
-    SP500_df = pd.read_csv('../SP500_index.csv')
+    SP500_df = pd.read_csv('./SP500_index.csv')
     for index, row in SP500_df.iterrows():
         symbol = row['Symbol']
         if '.' in symbol: #replace wikipedia . to yahoo -
