@@ -16,15 +16,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
+from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from api import views
 from .views import index
 
 router = routers.DefaultRouter()
-router.register(r'stocks', views.StockViewSet, basename='stock',)
-router.register(r'pricehistorys', views.PriceHistoryViewSet, basename='pricehistory')
+router.register(r'stock', views.StockViewSet, basename='stock',)
+router.register(r'pricehistory', views.PriceHistoryViewSet, basename='pricehistory')
+router.register(r'tradingmodel', views.TradingModelViewSet, basename='tradingmodel')
 
 urlpatterns = [
     path('', index, name='index'),
+    path('api/users/<int:pk>/', views.UserDetail.as_view()),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('admin/', admin.site.urls, name='admin'),
     path('api/', include(router.urls), name='api'),
+    path('api/current_user/', views.current_user),
+    path('api/backtest/', views.backtest),
 ]

@@ -1,7 +1,7 @@
 from celery.task.schedules import crontab
 from django.core.exceptions import ValidationError
 from celery.decorators import periodic_task
-from celery import task
+from celery import task, shared_task
 import pandas as pd
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
@@ -36,4 +36,9 @@ def update_price_history():
                     except ValidationError as err:
                         print(f'#### {s.symbol} - {err} ####')
                         continue
+
+@shared_task
+def backtest_task():
+    print('backtest_task')
+    return 10
 
