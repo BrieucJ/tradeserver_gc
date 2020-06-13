@@ -212,7 +212,7 @@ class Model extends React.Component {
 
   render() {
     return (
-        <Grid container style={{backgroundColor: 'red', minHeight:'calc(100vh - 84px)'}}>
+        <Grid container style={{minHeight:'calc(100vh - 84px)'}}>
             <Grid item xs={4} alignItems="center" style={{maxHeight: 'calc(100vh - 84px)', overflow:'auto'}}>
                 <List>
                     {this.props.user.models.map((model) => (
@@ -222,7 +222,7 @@ class Model extends React.Component {
                     ))}
                 </List>
             </Grid>
-            <Grid container item xs={4} style={{backgroundColor:'blue', justifyContent:'center'}}>
+            <Grid container item xs={4} style={{justifyContent:'center'}}>
                 <List>
                     <ListItem >
                         <Typography variant='h4'>

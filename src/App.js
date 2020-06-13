@@ -71,7 +71,7 @@ class App extends React.Component {
                 {this.state.logged_in &&
                 <div style={{backgroundColor: '#CFD8DC', minHeight: '100vh'}}>
                   <Menu logout={() => {this.logout()}}/>
-                  <Container style={{minHeight: 'calc(100vh - 84px)', backgroundColor: 'purple'}}>
+                  <Container style={{minHeight: 'calc(100vh - 84px)', backgroundColor:'#CFD8DC'}}>
                     <Route exact path="/" render={(props) => <Home {...props} user={this.state.user}/>}/>
                     <Route exact path="/portfolio" render={(props) => <Portfolio {...props}/>} />
                     <Route exact path="/model" render={(props) => <Model {...props} user={this.state.user}/> } />
