@@ -59,10 +59,12 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
         print('Create user')
         serializer = UserSerializer(data=request.data)
         print('serializer')
+        print(serializer.data)
         if serializer.is_valid():
             print('serializer valid')
             serializer.save()
             print('serializer saved')
+            print(serializer.data['username'])
             user = User.objects.get(username=serializer.data['username'])
             print(f'user {user}')
             token, created = Token.objects.get_or_create(user=user)
