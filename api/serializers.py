@@ -27,7 +27,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
-    broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True)
+    broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True, allow_null=True)
     broker_password = serializers.CharField(source='profile.broker_password', default=None, allow_blank=True, allow_null=True, write_only=True)
     email = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all())], label="email", required=True, allow_blank=False, allow_null=False)
 
