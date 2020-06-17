@@ -58,10 +58,16 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
     def post(self, request, format=None):
         print('Create user')
         serializer = UserSerializer(data=request.data)
+        print('serializer')
         if serializer.is_valid():
+            print('serializer valid')
             serializer.save()
+            print('serializer saved')
             user = User.objects.get(username=serializer.data['username'])
+            print(f'user {user}')
             token, created = Token.objects.get_or_create(user=user)
+            print(token.key)
+            print(serializer.data)
             return Response({'user': serializer.data, 'token': token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
