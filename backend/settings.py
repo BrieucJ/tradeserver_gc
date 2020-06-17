@@ -27,11 +27,7 @@ AUTH_PROFILE_MODULE = 'api.AppUser'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 
-#SELENIUM
-CHROME_DRIVER_PATH
-
 #CELERY
-
 if os.environ['ENV'] != 'dev': 
     CELERY_BROKER_URL =  'amqp://localhost' 
     CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
@@ -41,7 +37,10 @@ else:
 BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ['ENV'] != 'dev': 
+    DEBUG = True
+else:
+    DEBUG = False
 
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://localhost:3000']
 
