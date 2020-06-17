@@ -39,7 +39,7 @@ BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ['ENV'] != 'dev': 
-    DEBUG = False
+    DEBUG = True
 else:
     DEBUG = True
 
