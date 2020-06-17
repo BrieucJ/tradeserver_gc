@@ -60,9 +60,9 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
         print(request.data)
         serializer = UserSerializer(data=request.data)
         print('serializer')
-        print(serializer.data)
         if serializer.is_valid():
             print('serializer valid')
+            print(serializer.data)
             serializer.save()
             print('serializer saved')
             print(serializer.data['username'])
