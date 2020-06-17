@@ -1,8 +1,18 @@
 import React from 'react';
-import { TextField, Grid, Button } from '@material-ui/core';
+import { TextField, Grid, Button, Typography } from '@material-ui/core';
 
 
 class Auth extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { 
+            sign_up: false,
+        };
+      }
+
+    handleChange = (e) => {
+        this.setState({ [e.target.name]: e.target.value });
+    }
 
   render() {
     return (
@@ -15,14 +25,14 @@ class Auth extends React.Component {
             style={{ minHeight: '100vh' }}
         >   
             <Grid item xs={12}>
-                <div style={{'color':'red'}}>
-                    {this.props.errors.detail}
-                </div>
+                <Typography style={{'color':'red'}}>
+                    {this.props.errors.non_field_errors}
+                </Typography>
             </Grid>
             
             <Grid item xs={12}>
                 <TextField
-                    onChange={e => {this.props.handleChange(e);}}
+                    onChange={e => {this.handleChange(e);}}
                     name="username"
                     variant="outlined"
                     fullWidth
@@ -34,9 +44,24 @@ class Auth extends React.Component {
                     helperText={this.props.errors.username}
                 />
             </Grid>
+            {this.state.sign_up && 
+                <Grid item xs={12}>
+                    <TextField
+                        onChange={e => {this.handleChange(e);}}
+                        name="email"
+                        variant="outlined"
+                        fullWidth
+                        required
+                        id="email"
+                        label="Email"
+                        error={this.props.errors.email !== undefined}
+                        helperText={this.props.errors.email}
+                    />
+                </Grid>
+            }
             <Grid item xs={12}>
                 <TextField
-                    onChange={e => {this.props.handleChange(e);}}
+                    onChange={e => {this.handleChange(e);}}
                     variant="outlined"
                     required
                     fullWidth
@@ -49,15 +74,34 @@ class Auth extends React.Component {
                 />
             </Grid> 
             <Grid item xs={12}>
+                {this.state.sign_up &&
                 <Button
                     type="submit"
                     fullWidth
                     variant="contained"
                     color="primary"
-                    onClick={() => {this.props.login()}}
+                    onClick={() => {this.props.sign_up(this.state)}}
                 >
-                LOGIN
-            </Button>
+                    Sign up
+                </Button>
+                }
+                {!this.state.sign_up &&
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {this.props.log_in(this.state)}}
+                >
+                    Log in
+                </Button>
+                }
+            </Grid>
+            <Grid item xs={12}>
+                <Typography color='inherit' style={{cursor: 'pointer'}} onClick={()=>{this.setState({sign_up: !this.state.sign_up})}}>
+                    {!this.state.sign_up && 'Sign up'}
+                    {this.state.sign_up && 'Log in'}
+                </Typography>
             </Grid>
         </Grid>
     ); 

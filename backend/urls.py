@@ -14,27 +14,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls import url
 from django.urls import include, path, re_path
 from rest_framework import routers
-from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
 from api import views
 from .views import index
 
-router = routers.DefaultRouter()
-router.register(r'stock', views.StockViewSet, basename='stock',)
-router.register(r'pricehistory', views.PriceHistoryViewSet, basename='pricehistory')
-router.register(r'tradingmodel', views.TradingModelViewSet, basename='tradingmodel')
+# router = routers.DefaultRouter()
+# router.register(r'user', views.UserViewSet, basename='user',)
+# router.register(r'stock', views.StockViewSet, basename='stock',)
+# router.register(r'pricehistory', views.PriceHistoryViewSet, basename='pricehistory')
+# router.register(r'tradingmodel', views.TradingModelViewSet, basename='tradingmodel')
+
 
 urlpatterns = [
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('admin/', admin.site.urls, name='admin'),
-    path('api/', include(router.urls), name='api'),
-    path('api/users/<int:pk>/', views.UserDetail.as_view()),
-    path('api/current_user/', views.current_user),
-    path('api/backtest/', views.backtest),
+    path('api/token-auth/', views.CustomAuthToken.as_view()),
+    path('api/user/', views.UserView.as_view(), name='user'),
+    path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
     re_path(r'^(?P<path>.*)/$', index),
     path('', index),
 ]
-

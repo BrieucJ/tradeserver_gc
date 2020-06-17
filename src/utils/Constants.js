@@ -1,2 +1,2 @@
-export const API_URL =  "https://traderserver.herokuapp.com/" // "http://localhost:8000/" // 
+export const API_URL =  'http://localhost:8000/'  // "http://traderserver.herokuapp.com/"
 export const APP_NAME = 'TraderServer'

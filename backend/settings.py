@@ -14,11 +14,12 @@ import dj_database_url
 from dotenv import load_dotenv
 import datetime
 import os
-from celery.schedules import crontab
 load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+AUTH_PROFILE_MODULE = 'api.AppUser'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -26,14 +27,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 
+#SELENIUM
+CHROME_DRIVER_PATH
+
 #CELERY
-CELERY_BROKER_URL = 'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp' #'amqp://localhost'
+
+if os.environ['ENV'] != 'dev': 
+    CELERY_BROKER_URL =  'amqp://localhost' 
+    CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
+else: 
+    CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
+
 BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000']
+CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://localhost:3000']
 
 ALLOWED_HOSTS = []
 
@@ -42,7 +52,9 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
     'api',
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -67,21 +79,11 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ),
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=10),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'ALGORITHM': 'HS256',
+        'rest_framework.authentication.TokenAuthentication',
+    )
 }
 
 ROOT_URLCONF = 'backend.urls'

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Container } from '@material-ui/core';
+import { Container, Button } from '@material-ui/core';
+import {get} from '../utils/Api'
 
 
 class Portfolio extends React.Component {
@@ -10,10 +11,25 @@ class Portfolio extends React.Component {
     };
   }
 
+  get_portfolio = async () => {
+    get('api/update_portfolio/').then((resp) => {
+        console.log(resp)
+    })
+  }
+
   render() {
     return (
       <Container>
           Portfolio
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={() => {this.get_portfolio()}}
+          >
+            Get portfolio
+          </Button>
       </Container>
     ); 
   }

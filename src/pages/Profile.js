@@ -2,13 +2,17 @@ import React from 'react';
 import { TextField, Grid, Button } from '@material-ui/core';
 
 class Profile extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+        };
+      }
 
-  componentDidMount(){
-      console.log(this.props)
-      console.log(this.props.user)
-  }
+    handleChange = (e) => {
+        this.setState({ [e.target.name]: e.target.value});
+    }
 
-  render() {
+    render() {
     return (
         <Grid
             container
@@ -19,7 +23,7 @@ class Profile extends React.Component {
         >   
             <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
                 <TextField
-                    // onChange={e => {this.props.handleChange(e);}}
+                    onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.username}
                     name="username"
                     variant="outlined"
@@ -27,11 +31,13 @@ class Profile extends React.Component {
                     required
                     id="Name"
                     label="Name"
+                    error={this.props.errors.username !== undefined}
+                    helperText={this.props.errors.username}
                 />
             </Grid>
             <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
                 <TextField
-                    // onChange={e => {this.props.handleChange(e);}}
+                    onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.email}
                     name="email"
                     variant="outlined"
@@ -39,12 +45,14 @@ class Profile extends React.Component {
                     required
                     id="Email"
                     label="Email"
+                    error={this.props.errors.email !== undefined}
+                    helperText={this.props.errors.email}
                 />
             </Grid>
             <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
                 <TextField
-                    // onChange={e => {this.props.handleChange(e);}}
-                    defaultValue={this.props.user.password}
+                    onChange={e => {this.handleChange(e);}}
+                    defaultValue=''
                     variant="outlined"
                     required
                     fullWidth
@@ -52,8 +60,51 @@ class Profile extends React.Component {
                     label="Password"
                     type="password"
                     id="password"
+                    error={this.props.errors.password !== undefined}
+                    helperText={this.props.errors.password}
                 />
-            </Grid> 
+            </Grid>
+            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+                <TextField
+                    onChange={e => {this.handleChange(e);}}
+                    defaultValue={this.props.user.broker_username}
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="broker_username"
+                    label="Broker username"
+                    type="broker_username"
+                    id="broker_username"
+                    error={this.props.errors.broker_username !== undefined}
+                    helperText={this.props.errors.broker_username}
+                />
+            </Grid>
+            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+                <TextField
+                    onChange={e => {this.handleChange(e);}}
+                    defaultValue={this.props.user.broker_password}
+                    variant="outlined"
+                    required
+                    fullWidth
+                    name="broker_password"
+                    label="Broker password"
+                    type="password"
+                    id="broker_password"
+                    error={this.props.errors.broker_password !== undefined}
+                    helperText={this.props.errors.broker_password}
+                />
+            </Grid>
+            <Grid item xs={12}>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {this.props.update_user(this.state)}}
+                >
+                Update account
+            </Button>
+            </Grid>
         </Grid>
     ); 
   }

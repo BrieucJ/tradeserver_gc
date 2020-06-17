@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, TextField, Grid, Button, Paper, Typography, List, ListItem, ListItemText, ListSubheader } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
-import {post, verify_token, refresh_token} from '../utils/Api'
+import {get, post} from '../utils/Api'
 
 function ListItemLink(props) {
     return <ListItem button component="a" {...props} />;
@@ -34,11 +34,10 @@ class Model extends React.Component {
 
   submit = async () => {
       post('api/tradingmodel/', this.state).then((resp) => {
-        console.log(resp)
+        this.props.getCurrentUser()
       })
   }
   
-
   model_form = () =>{
       return(
         <Grid
@@ -204,16 +203,24 @@ class Model extends React.Component {
       }
   }
 
-  backtest = async () => {
-    post('api/backtest/', this.state.selected_model).then((resp) => {
+  backtest_state = async (url) => {
+    console.log('check backtest_state')
+    let endpoint = url.split('api/')[1]
+    get(endpoint).then((resp) => {
         console.log(resp)
+    })
+  }
+
+  backtest = async () => {
+    post('api/backtest/', this.state.selected_model_pk).then((resp) => {
+        this.backtest_state(resp.responseURL)
     })
   }
 
   render() {
     return (
         <Grid container style={{minHeight:'calc(100vh - 84px)'}}>
-            <Grid item xs={4} alignItems="center" style={{maxHeight: 'calc(100vh - 84px)', overflow:'auto'}}>
+            <Grid item xs={4} style={{maxHeight: 'calc(100vh - 84px)', overflow:'auto'}}>
                 <List>
                     {this.props.user.models.map((model) => (
                         <ListItem button key={model.pk} selected={this.state.selected_model_pk === model.pk} onClick={() => {this.handleSelect(model.pk)}} >
