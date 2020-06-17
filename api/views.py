@@ -57,6 +57,7 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
     serializer_class = UserSerializer
     def post(self, request, format=None):
         print('Create user')
+        print(request.data)
         serializer = UserSerializer(data=request.data)
         print('serializer')
         print(serializer.data)

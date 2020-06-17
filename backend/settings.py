@@ -43,7 +43,7 @@ if os.environ['ENV'] != 'dev':
 else:
     DEBUG = True
 
-CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http://localhost:3000']
+CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000', 'http://localhost:3000']
 
 ALLOWED_HOSTS = []
 
