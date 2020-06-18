@@ -33,6 +33,7 @@ class API():
         #self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 20)
         self.browser.implicitly_wait(20)
+        self.login()
     
     def login(self):
         print('login')
@@ -41,6 +42,7 @@ class API():
         print(self.browser)
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
+        print(self.browser)
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
         print(self.browser.current_url)
         email_field = self.browser.find_element_by_id("username")

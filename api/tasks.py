@@ -45,10 +45,5 @@ from .trade.etoro import API
 
 @shared_task
 def update_portfolio_task(broker_username, broker_password):
-    api = API(broker_username, broker_password)
-    api.login()
-    if api.logged_in:
-        api.update_portfolio()
-    else:
-        print('ERROR LOGGING IN')
+    API(broker_username, broker_password).update_portfolio()
 
