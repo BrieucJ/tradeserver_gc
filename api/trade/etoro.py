@@ -30,7 +30,7 @@ class API():
         print(self.browser)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 20)
-        self.browser.implicitly_wait(3)
+        self.browser.implicitly_wait(20)
     
     def login(self):
         print('login')
