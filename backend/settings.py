@@ -34,7 +34,6 @@ else:
     CELERY_BROKER_URL =  'amqp://localhost' 
     CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
 
-
 BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!

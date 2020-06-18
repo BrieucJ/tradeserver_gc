@@ -33,6 +33,9 @@ class API():
     
     def login(self):
         print('login')
+        print(self.user_name)
+        print(self.password)
+        print(self.browser)
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
