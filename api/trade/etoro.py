@@ -21,14 +21,15 @@ class API():
         self.options = webdriver.ChromeOptions()
         self.options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
         self.options.add_argument('headless')
-        self.options.add_argument('--disable-gpu')
-        self.options.add_argument('--no-sandbox')
+        # self.options.add_argument('--disable-gpu')
+        # self.options.add_argument('--no-sandbox')
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument("--incognito")
         self.browser = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), options=self.options)
+        print(self.browser)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
-        self.wait =  WebDriverWait(self.browser, 10)
+        self.wait = WebDriverWait(self.browser, 20)
         self.browser.implicitly_wait(3)
     
     def login(self):
