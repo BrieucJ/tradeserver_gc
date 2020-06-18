@@ -13,6 +13,8 @@ import os
 class API():
     def __init__(self, username, password, mode='demo'):
         print('Api init')
+        print(os.environ.get('GOOGLE_CHROME_BIN'))
+        print(os.environ.get('CHROMEDRIVER_PATH'))
         self.mode = mode
         self.logged_in = False
         self.user_name = username
@@ -26,9 +28,9 @@ class API():
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument("--incognito")
-        self.browser = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), options=self.options)
+        self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), options=self.options)
         print(self.browser)
-        self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
+        #self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 20)
         self.browser.implicitly_wait(20)
     
