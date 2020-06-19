@@ -1,4 +1,4 @@
-#!/Users/brieucjamain/Desktop/TradeServer/env/bin/python3
+#!/Users/brieucjamain/Desktop/TradeServer/env/bin/python
 from django.core import management
 
 if __name__ == "__main__":

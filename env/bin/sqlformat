@@ -1,4 +1,4 @@
-#!/Users/brieucjamain/Desktop/TradeServer/env/bin/python3
+#!/Users/brieucjamain/Desktop/TradeServer/env/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
