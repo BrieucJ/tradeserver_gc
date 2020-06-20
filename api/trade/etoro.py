@@ -29,7 +29,6 @@ class API():
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 200)
         self.browser.implicitly_wait(200)
-        self.login()
     
     def login(self):
         print('login')
@@ -42,6 +41,7 @@ class API():
         email_field.send_keys(self.user_name)
         password_field.send_keys(self.password)
         submit_btn.click()
+        print('Submited')
         try:
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             print('LOGGED IN')
