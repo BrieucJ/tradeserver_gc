@@ -27,8 +27,8 @@ class API():
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
-        self.wait = WebDriverWait(self.browser, 200)
-        self.browser.implicitly_wait(200)
+        self.wait = WebDriverWait(self.browser, 20)
+        self.browser.implicitly_wait(20)
     
     def login(self):
         print('login')
@@ -59,6 +59,7 @@ class API():
             print('Current mode == selected mode')
             pass
         else:
+            print('switching')
             switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
             switch_mode_btn.click()
             switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
@@ -66,12 +67,14 @@ class API():
             if self.mode == 'real':
                 print('Switching from demo to real')
                 switch_real_btn.click()
+                time.sleep(2)
                 #self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             else:
                 print('Switching from real to demo')
                 switch_demo_btn.click()
+                time.sleep(2)
                 #self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
