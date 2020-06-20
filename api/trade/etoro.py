@@ -49,7 +49,7 @@ class API():
             print('LOGGED IN')
             self.logged_in = True
             self.switch_mode()
-        except TimeoutException:
+        except:
             pass
 
     def switch_mode(self):
@@ -60,6 +60,7 @@ class API():
             pass
         else:
             print('switching')
+            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "et-select")))
             switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
             switch_mode_btn.click()
             switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
@@ -68,7 +69,7 @@ class API():
                 print('Switching from demo to real')
                 switch_real_btn.click()
                 time.sleep(2)
-                #self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             else:
