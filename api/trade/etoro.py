@@ -60,7 +60,7 @@ class API():
             pass
         else:
             print('switching')
-            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "et-select")))
+            self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
             switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
             switch_mode_btn.click()
             switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
