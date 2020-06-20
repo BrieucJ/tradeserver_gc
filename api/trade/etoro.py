@@ -22,28 +22,20 @@ class API():
         self.options = webdriver.ChromeOptions()
         self.options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
         self.options.add_argument('--headless')
-        # self.options.add_argument('--disable-gpu')
         self.options.add_argument('--disable-dev-shm-usage')
         self.options.add_argument('--no-sandbox')
-        # self.options.add_argument(f'user-agent={self.user_agent}')
-        # self.options.add_argument("--window-size=1920,1080")
-        # self.options.add_argument("--incognito")
+        self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
-        #self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
+        self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 200)
         self.browser.implicitly_wait(200)
         self.login()
     
     def login(self):
         print('login')
-        print(self.user_name)
-        print(self.password)
-        print(self.browser)
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
-        print(self.browser.page_source)
-        #self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
-        print(self.browser.current_url)
+        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
         email_field = self.browser.find_element_by_id("username")
         password_field = self.browser.find_element_by_id("password")
         submit_btn = self.browser.find_element_by_xpath('/html/body/ui-layout/div/div/div[1]/login/login-sts/div/div/div/form/div/div[5]/button')
