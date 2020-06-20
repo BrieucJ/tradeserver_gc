@@ -38,15 +38,10 @@ class API():
         #self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
         # print('waiting')
         email_field = self.browser.find_element_by_id("username")
-        print('email')
         password_field = self.browser.find_element_by_id("password")
-        print('password')
         submit_btn = self.browser.find_element_by_xpath('/html/body/ui-layout/div/div/div[1]/login/login-sts/div/div/div/form/div/div[5]/button')
-        print('submit_btn')
         email_field.send_keys(self.user_name)
-        print('email')
         password_field.send_keys(self.password)
-        print('password')
         submit_btn.click()
         print('Submited')
         try:
@@ -54,7 +49,7 @@ class API():
             print('LOGGED IN')
             self.logged_in = True
             self.switch_mode()
-        except:
+        except TimeoutException:
             pass
 
     def switch_mode(self):
@@ -71,13 +66,13 @@ class API():
             if self.mode == 'real':
                 print('Switching from demo to real')
                 switch_real_btn.click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                #self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             else:
                 print('Switching from real to demo')
                 switch_demo_btn.click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                #self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
         
@@ -91,7 +86,7 @@ class API():
     def update_portfolio(self):
         print('Updating portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
-        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
+        #self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
         if len(empty_portfolio) != 0:
             print('Portfolio is empty')
