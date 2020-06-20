@@ -41,7 +41,7 @@ class API():
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         print(self.browser)
-        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
+        #self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
         print(self.browser.current_url)
         email_field = self.browser.find_element_by_id("username")
         password_field = self.browser.find_element_by_id("password")
