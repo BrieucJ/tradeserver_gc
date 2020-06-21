@@ -50,6 +50,7 @@ class API():
             pass
 
     def switch_mode(self):
+        print('LAST VERSION')
         print('switch_mode')
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(element.get_attribute('class').split())
