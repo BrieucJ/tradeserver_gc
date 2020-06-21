@@ -38,7 +38,7 @@ class API():
         password_field.send_keys(self.password)
         submit_btn.click()
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
-        if self.browser.current_url == '':
+        if self.browser.current_url == 'https://www.etoro.com/watchlists':
             self.logged_in = True
             self.switch_mode()
         assert(self.logged_in)
