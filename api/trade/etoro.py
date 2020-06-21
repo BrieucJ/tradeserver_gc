@@ -65,18 +65,22 @@ class API():
             switch_mode_btn.click()
             switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
             switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
+            print(switch_real_btn)
+            print(switch_demo_btn)
             if self.mode == 'real':
                 print('Switching from demo to real')
                 switch_real_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
-            else:
+            elif self.mode == 'demo':
                 print('Switching from real to demo')
                 switch_demo_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
+            else:
+                print('ERROR: unknown mode')
         
         time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
@@ -91,7 +95,7 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         time.sleep(2)
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        if len(empty_portfolio) != 0:
+         if len(empty_portfolio) != 0:
             print('Portfolio is empty')
         else:
             print('Portfolio is not empty')
