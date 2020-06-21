@@ -47,22 +47,13 @@ class API():
             pass
 
     def switch_mode(self):
-        print('LAST')
-        print('switch_mode')
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
-        print(element.get_attribute('class').split())
-        print(self.mode)
-        print('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real')
-        print('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo')
         if ('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
             print('Current mode == selected mode')
             pass
         else:
             print('switching')
-            print(self.mode)
-            print(self.mode == 'real')
-            print(self.mode == 'demo')
-            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "et-select[automation-id='menu-layout-link-mode']")))
+            self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "et-select[automation-id='menu-layout-link-mode']")))
             switch_mode_btn = self.browser.find_element_by_css_selector("et-select[automation-id='menu-layout-link-mode']")
             switch_mode_btn.click()
             print('click')
