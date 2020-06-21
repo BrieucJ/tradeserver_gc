@@ -52,6 +52,8 @@ class API():
     def switch_mode(self):
         print('switch_mode')
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
+        print(element.get_attribute('class').split())
+        print(self.mode)
         if (not 'demo-mode' in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
             print('Current mode == selected mode')
             pass
@@ -89,7 +91,6 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         time.sleep(2)
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        print(self.browser.page_source)
         if len(empty_portfolio) != 0:
             print('Portfolio is empty')
         else:
