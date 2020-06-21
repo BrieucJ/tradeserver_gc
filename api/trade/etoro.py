@@ -62,10 +62,10 @@ class API():
             print(self.mode)
             print(self.mode == 'real')
             print(self.mode == 'demo')
-            self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
-            switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
-            switch_mode_btn.click()
-
+            # self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
+            # switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
+            # switch_mode_btn.click()
+            print('click')
             if self.mode == 'real':
                 print('Switching from demo to real')
                 switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
@@ -82,7 +82,7 @@ class API():
                 toggle_btn.click()
             else:
                 print('ERROR: unknown mode')
-        
+        print('after if else')
         time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(new_element.get_attribute('class'))
