@@ -54,7 +54,8 @@ class API():
             print('Switching')
             # self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "et-select[automation-id='menu-layout-link-mode']")))
             switch_btn = self.browser.find_element_by_css_selector("et-select[automation-id='menu-layout-link-mode']")
-            print(switch_btn)
+            time.sleep(5)
+            print(switch_btn.text)
             switch_btn.click()
             print('click')
             if self.mode == 'real':
