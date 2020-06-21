@@ -55,7 +55,7 @@ class API():
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(element.get_attribute('class').split())
         print(self.mode)
-        if (not 'demo-mode' in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
+        if ('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
             print('Current mode == selected mode')
             pass
         else:
@@ -64,6 +64,7 @@ class API():
             self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
             switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
             switch_mode_btn.click()
+            time.sleep(5)
             switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
             switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
             print(switch_real_btn)
@@ -85,8 +86,9 @@ class API():
         
         time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
-        if self.mode:
-            assert(not 'demo-mode' in new_element.get_attribute('class').split())
+        print(new_element.get_attribute('class'))
+        if self.mode == 'real':
+            assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
             assert('demo-mode' in new_element.get_attribute('class').split())
     
