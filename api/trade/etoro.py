@@ -90,7 +90,7 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        if len(empty_portfolio) != 0:
+        if len(empty_portfolio) == 0:
             print('Portfolio is empty')
         else:
             print('Portfolio is not empty')
