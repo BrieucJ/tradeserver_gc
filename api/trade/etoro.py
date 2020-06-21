@@ -11,9 +11,6 @@ import os
 
 class API():
     def __init__(self, username, password, mode='demo'):
-        print('Api init')
-        print(os.environ.get('GOOGLE_CHROME_BIN', 'chromedriver'))
-        print(os.environ.get('CHROMEDRIVER_PATH'))
         self.mode = mode
         self.logged_in = False
         self.user_name = username
@@ -50,33 +47,35 @@ class API():
             pass
 
     def switch_mode(self):
-        print('LAST VERSION')
+        print('LAST')
         print('switch_mode')
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(element.get_attribute('class').split())
         print(self.mode)
+        print('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real')
+        print('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo')
         if ('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
             print('Current mode == selected mode')
             pass
         else:
             print('switching')
             print(self.mode)
+            print(self.mode == 'real')
+            print(self.mode == 'demo')
             self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
             switch_mode_btn = self.browser.find_element_by_tag_name('et-select')
             switch_mode_btn.click()
-            time.sleep(5)
-            switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
-            switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
-            print(switch_real_btn)
-            print(switch_demo_btn)
+
             if self.mode == 'real':
                 print('Switching from demo to real')
+                switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
                 switch_real_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             elif self.mode == 'demo':
                 print('Switching from real to demo')
+                switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
                 switch_demo_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
@@ -87,6 +86,7 @@ class API():
         time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(new_element.get_attribute('class'))
+        print('END LOGGING')
         if self.mode == 'real':
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
