@@ -34,9 +34,6 @@ class API():
         print('login')
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
-        print('get done')
-        #self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/fr/login')
-        # print('waiting')
         email_field = self.browser.find_element_by_id("username")
         password_field = self.browser.find_element_by_id("password")
         submit_btn = self.browser.find_element_by_xpath('/html/body/ui-layout/div/div/div[1]/login/login-sts/div/div/div/form/div/div[5]/button')
@@ -89,8 +86,10 @@ class API():
         print('Updating portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
+        time.sleep(2)
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        if len(empty_portfolio) == 0:
+        print(self.browser.page_source)
+        if len(empty_portfolio) != 0:
             print('Portfolio is empty')
         else:
             print('Portfolio is not empty')
