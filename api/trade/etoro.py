@@ -42,10 +42,11 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
         if self.browser.current_url == 'https://www.etoro.com/watchlists':
             print('LOGGED IN')
+            time.sleep(10)
             self.logged_in = True
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']")
             print(user_name)
-            test = user_name.get_attribute['href']
+            test = user_name.get_attribute('innerHTML')
             print(test)
         else:
             print('NOT LOGGED IN')
