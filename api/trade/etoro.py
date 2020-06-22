@@ -51,28 +51,30 @@ class API():
         else:
             print('Switching')
             switch_btn = self.browser.find_element_by_tag_name('et-select')
-            self.browser.execute_script("arguments[0].click();", switch_btn)
-            
-            self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select-body')))
-            menu = self.browser.find_element_by_tag_name('et-select-body')
+            menu = switch_btn.find_elements_by_tag_name('et-select-body')
+            print(switch_btn.text)
             print(menu.text)
-            switch_real_btn = menu.find_elements_by_tag_name('et-select-body-option')[0]
-            switch_demo_btn = menu.find_elements_by_tag_name('et-select-body-option')[1]
-            if self.mode == 'real':
-                print('Switching from demo to real')
-                switch_real_btn.click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-                toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
-                toggle_btn.click()
-            elif self.mode == 'demo':
-                print('Switching from real to demo')
+            # self.browser.execute_script("arguments[0].click();", switch_btn)
+            # self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select-body')))
+            print()
+            print(self.browser.page_source)
+            # switch_real_btn = menu.find_elements_by_tag_name('et-select-body-option')[0]
+            # switch_demo_btn = menu.find_elements_by_tag_name('et-select-body-option')[1]
+            # if self.mode == 'real':
+            #     print('Switching from demo to real')
+            #     switch_real_btn.click()
+            #     self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+            #     toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
+            #     toggle_btn.click()
+            # elif self.mode == 'demo':
+            #     print('Switching from real to demo')
                 
-                switch_demo_btn.click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-                toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
-                toggle_btn.click()
-            else:
-                print('ERROR: unknown mode')
+            #     switch_demo_btn.click()
+            #     self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+            #     toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
+            #     toggle_btn.click()
+            # else:
+            #     print('ERROR: unknown mode')
         print('after if else')
         time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
