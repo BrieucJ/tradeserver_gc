@@ -21,7 +21,7 @@ class API():
         self.options.add_argument('--headless')
         self.options.add_argument('--disable-dev-shm-usage')
         self.options.add_argument('--no-sandbox')
-        self.options.add_argument("--window-size=1920,1080")
+        # self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
