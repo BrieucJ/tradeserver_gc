@@ -51,14 +51,16 @@ class API():
             print('Current mode == selected mode')
         else:
             print('Switching')
-            switch_btn = self.browser.find_element_by_tag_name('et-select')
-            self.browser.execute_script("arguments[0].click();", switch_btn)
+            self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'et-select-header')))
+            switch_btn = self.browser.find_element_by_tag_name('et-select-header')
+            switch_btn.click()
+            # self.browser.execute_script("arguments[0].click();", )
             print('click')
             print(self.browser.page_source)
-            self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
+            self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'et-select-body')))
             switch_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             print(switch_btns)
-            # self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select-body')))
+            # 
             # [0]
             # switch_demo_btn = menu.find_elements_by_tag_name('et-select-body-option')[1]
             # if self.mode == 'real':
