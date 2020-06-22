@@ -51,7 +51,7 @@ class API():
             print('Current mode == selected mode')
         else:
             print('Switching')
-            switch_btn = self.browser.find_element_by_tag_name('et-select-header')
+            switch_btn = self.browser.find_element_by_tag_name('et-select')
             switch_btn.click()
             # self.browser.execute_script("arguments[0].click();", )
             print('click')
