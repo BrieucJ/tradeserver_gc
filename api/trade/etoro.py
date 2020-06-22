@@ -51,14 +51,13 @@ class API():
         else:
             print('Switching')
             switch_btn = self.browser.find_element_by_tag_name('et-select')
-            print(switch_btn.text)
             self.browser.execute_script("arguments[0].click();", switch_btn)
-            print('click')
+            
+            self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select-body')))
             menu = self.browser.find_element_by_tag_name('et-select-body')
-            self.wait.until(EC.visibility_of(menu))
             print(menu.text)
-            switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
-            switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
+            switch_real_btn = menu.find_elements_by_tag_name('et-select-body-option')[0]
+            switch_demo_btn = menu.find_elements_by_tag_name('et-select-body-option')[1]
             if self.mode == 'real':
                 print('Switching from demo to real')
                 switch_real_btn.click()
