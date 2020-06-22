@@ -42,10 +42,13 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
         if self.browser.current_url == 'https://www.etoro.com/watchlists':
             self.logged_in = True
+            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").text
+            print(user_name)
             self.switch_mode()
         assert(self.logged_in)
 
     def switch_mode(self):
+        time.sleep(10)
         element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         if ('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
             print('Current mode == selected mode')
