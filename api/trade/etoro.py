@@ -54,18 +54,20 @@ class API():
             print(switch_btn.text)
             self.browser.execute_script("arguments[0].click();", switch_btn)
             print('click')
+            menu = self.browser.find_element_by_tag_name('et-select-body')
+            self.wait.until(EC.visibility_of(menu))
+            print(menu.text)
+            switch_real_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[0]
+            switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body').find_elements_by_tag_name('et-select-body-option')[1]
             if self.mode == 'real':
                 print('Switching from demo to real')
-                switch_real_btn = self.browser.find_elements_by_tag_name('et-select-body-option')[0]
-                print(self.browser.find_elements_by_tag_name('et-select-body-option'))
                 switch_real_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             elif self.mode == 'demo':
                 print('Switching from real to demo')
-                print(self.browser.find_elements_by_tag_name('et-select-body-option'))
-                switch_demo_btn = self.browser.find_elements_by_tag_name('et-select-body-option')[1]
+                
                 switch_demo_btn.click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
