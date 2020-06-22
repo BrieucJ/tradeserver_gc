@@ -52,7 +52,7 @@ class API():
             print('Switching')
             switch_btn = self.browser.find_element_by_tag_name('et-select')
             print(switch_btn.text)
-            switch_btn.click()
+            self.browser.execute_script("arguments[0].click();", switch_btn)
             print('click')
             if self.mode == 'real':
                 print('Switching from demo to real')
