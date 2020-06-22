@@ -45,7 +45,6 @@ class API():
             time.sleep(10)
             self.logged_in = True
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']")
-            print(user_name)
             test = user_name.get_attribute('innerHTML')
             print(test)
         else:
