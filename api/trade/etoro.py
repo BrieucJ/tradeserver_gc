@@ -41,11 +41,14 @@ class API():
         submit_btn.click()
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
         if self.browser.current_url == 'https://www.etoro.com/watchlists':
+            print('LOGGED IN')
             self.logged_in = True
-            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").text
+            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']")
             print(user_name)
-            self.switch_mode()
-        assert(self.logged_in)
+            print(user_name.text)
+        else:
+            print('NOT LOGGED IN')
+        assert(self.logged_in == True)
 
     def switch_mode(self):
         time.sleep(10)
