@@ -52,10 +52,11 @@ class API():
         else:
             print('Switching')
             switch_btn = self.browser.find_element_by_tag_name('et-select')
-            menu = switch_btn.find_element_by_tag_name('et-select-body')
+            self.browser.execute_script("arguments[0].click();", switch_btn)
+            menu = self.browser.find_element_by_tag_name('et-select-body')
             print(switch_btn)
             print(menu)
-            # self.browser.execute_script("arguments[0].click();", switch_btn)
+            # 
             # self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select-body')))
             print()
             print(self.browser.page_source)
