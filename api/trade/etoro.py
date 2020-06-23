@@ -63,7 +63,7 @@ class API():
                 switch_btn.click()
                 self.browser.execute_script("arguments[0].click();", switch_btn)
                 print('Mode btns')
-                self.wait.until(EC.visibility_of_all_elements_located((By.TAG_NAME, "et-select-body-option")))
+                #self.wait.until(EC.visibility_of_all_elements_located((By.TAG_NAME, "et-select-body-option")))
                 mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
                 print(mode_btns)
                 print(len(mode_btns))
