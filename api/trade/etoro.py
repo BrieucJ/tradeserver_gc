@@ -64,8 +64,7 @@ class API():
                 self.browser.execute_script("arguments[0].click();", switch_btn)
                 self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select-body-option")))
                 switch_demo_btn = self.browser.find_element_by_tag_name('et-select-body-option')
-                # self.browser.execute_script("arguments[0].click();", switch_demo_btn)
-                # switch_btn.click()
+                self.browser.execute_script("arguments[0].click();", switch_demo_btn)
                 print('CLICK')
                 print(switch_btn.get_attribute('innerHTML'))
                 # # 
