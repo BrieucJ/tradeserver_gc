@@ -30,6 +30,7 @@ class API():
         self.login()
     
     def login(self):
+        print('login')
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
@@ -41,8 +42,10 @@ class API():
         try:
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             self.logged_in = True
+            print('logged in')
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
             self.switch_mode()
+            print('launch switch')
         except:
             self.logged_in = False
 
