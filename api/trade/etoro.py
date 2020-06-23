@@ -51,7 +51,9 @@ class API():
     def switch_mode(self):
         print('switch_mode')
         if self.logged_in:
+            print('logged in')
             current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
+            print(current_mode)
             if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
                 print(current_mode)
                 print(self.mode)
