@@ -61,7 +61,7 @@ class API():
                 switch_btn = self.browser.find_element_by_tag_name('et-select')
                 print(switch_btn.get_attribute('innerHTML'))
                 print(switch_btn.text)
-                # switch_btn.click()
+                switch_btn.click()
                 # # self.browser.execute_script("arguments[0].click();", )
                 # print('click')
                 # print(self.browser.page_source)
