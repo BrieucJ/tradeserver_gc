@@ -39,32 +39,29 @@ class API():
         email_field.send_keys(self.user_name)
         password_field.send_keys(self.password)
         submit_btn.click()
-        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
-        if self.browser.current_url == 'https://www.etoro.com/watchlists':
-            print('LOGGED IN')
-            time.sleep(10)
-            self.logged_in = True
-            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']")
-            test = user_name.get_attribute('innerHTML')
-            print(test)
-        else:
-            print('NOT LOGGED IN')
-        assert(self.logged_in == True)
+        try:
+            self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
+            self.logged_in == True
+            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
+        except:
+            self.logged_in == False
 
     def switch_mode(self):
-        time.sleep(10)
-        element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
-        if ('demo-mode' not in element.get_attribute('class').split() and self.mode == 'real') or ('demo-mode' in element.get_attribute('class').split() and self.mode == 'demo'):
-            print('Current mode == selected mode')
-        else:
-            print('Switching')
-            switch_btn = self.browser.find_element_by_tag_name('et-select')
-            switch_btn.click()
-            # self.browser.execute_script("arguments[0].click();", )
-            print('click')
-            print(self.browser.page_source)
-            switch_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
-            print(switch_btns)
+        print('switch_mode')
+        if self.logged_in:
+            current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
+            if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
+                print(current_mode)
+                print(self.mode)
+                switch_btn = self.browser.find_element_by_tag_name('et-select')
+                print(switch_btn.get_attribute('innerHTML'))
+                print(switch_btn.text)
+                # switch_btn.click()
+                # # self.browser.execute_script("arguments[0].click();", )
+                # print('click')
+                # print(self.browser.page_source)
+                # switch_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
+                # print(switch_btns)
             # 
             # [0]
             # switch_demo_btn = menu.find_elements_by_tag_name('et-select-body-option')[1]
