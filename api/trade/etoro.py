@@ -43,6 +43,8 @@ class API():
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             self.logged_in == True
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
+            print(user_name)
+            self.switch_mode()
         except:
             self.logged_in == False
 
