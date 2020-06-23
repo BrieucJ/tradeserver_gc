@@ -41,15 +41,16 @@ class API():
         submit_btn.click()
         try:
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
-            self.logged_in == True
+            self.logged_in = True
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
             print(user_name)
             self.switch_mode()
         except:
-            self.logged_in == False
+            self.logged_in = False
 
     def switch_mode(self):
         print('switch_mode')
+        print(self.logged_in)
         if self.logged_in:
             print('logged in')
             current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
