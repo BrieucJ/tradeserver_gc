@@ -30,7 +30,6 @@ class API():
         self.login()
     
     def login(self):
-        print('login')
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
@@ -43,26 +42,23 @@ class API():
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             self.logged_in = True
             user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
-            print(user_name)
             self.switch_mode()
         except:
             self.logged_in = False
 
     def switch_mode(self):
         print('switch_mode')
-        print(self.logged_in)
         if self.logged_in:
             print('logged in')
             current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
-            print(current_mode)
             if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
                 print(current_mode)
-                print(self.mode)
                 switch_btn = self.browser.find_element_by_tag_name('et-select')
-                switch_btn.click()
+                self.browser.execute_script("arguments[0].click();", switch_btn)
+                # switch_btn.click()
                 print('CLICK')
                 print(switch_btn.get_attribute('innerHTML'))
-                # # self.browser.execute_script("arguments[0].click();", )
+                # # 
                 # print('click')
                 # print(self.browser.page_source)
                 # switch_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
