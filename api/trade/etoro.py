@@ -58,7 +58,7 @@ class API():
             current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
             if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
                 print('switching')
-                self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
+                #self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
                 switch_btn = self.browser.find_element_by_tag_name('et-select')
                 self.browser.execute_script("arguments[0].click();", switch_btn)
                 print('et-select clicked')
