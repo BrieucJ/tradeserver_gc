@@ -64,7 +64,7 @@ class API():
                 print('et-select clicked')
                 print('Mode btns')
                 print(switch_btn.get_attribute('innerHTML'))
-                self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "et-select-body-option")))
+                #self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "et-select-body-option")))
                 mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
                 print(mode_btns)
                 print(len(mode_btns))
