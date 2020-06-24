@@ -61,11 +61,6 @@ class API():
                 self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, "et-select")))
                 switch_btn = self.browser.find_element_by_tag_name('et-select')
                 switch_btn.click()
-                #self.browser.execute_script("arguments[0].click();", switch_btn)
-                print('et-select clicked')
-                print('Mode btns')
-                time.sleep(10)
-                print(switch_btn.get_attribute('innerHTML'))
                 self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "et-select-body-option")))
                 mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             if self.mode == 'real':
@@ -81,8 +76,6 @@ class API():
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
 
-        print('after if else')
-        time.sleep(1)
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(new_element.get_attribute('class'))
         print('END LOGGING')
