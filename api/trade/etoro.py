@@ -69,13 +69,15 @@ class API():
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
+                self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
             elif self.mode == 'demo':
                 print('Switching from real to demo')
                 mode_btns[1].click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
-
+                self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+        
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         print(new_element.get_attribute('class'))
         print('END LOGGING')
