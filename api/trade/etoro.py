@@ -28,6 +28,10 @@ class API():
         self.wait = WebDriverWait(self.browser, 20)
         self.browser.implicitly_wait(20)
         self.login()
+
+    def __del__():
+        self.browser.close()
+        self.logged_in = False
     
     def login(self):
         print('login')
@@ -79,18 +83,15 @@ class API():
                 self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
         
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
-        print(new_element.get_attribute('class'))
-        print('END LOGGING')
-        # if self.mode == 'real':
-        #     assert('demo-mode' not in new_element.get_attribute('class').split())
-        # else:
-        #     assert('demo-mode' in new_element.get_attribute('class').split())
+        if self.mode == 'real':
+            assert('demo-mode' not in new_element.get_attribute('class').split())
+        else:
+            assert('demo-mode' in new_element.get_attribute('class').split())
     
     def update_portfolio(self):
         print('Updating portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
-        time.sleep(2)
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
         if len(empty_portfolio) != 0:
             print('Portfolio is empty')
@@ -99,10 +100,5 @@ class API():
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             for r in rows:
+                print(r)
                 print(r.text)
-        self.close()
-    
-    def close(self):
-        print('Closing api')
-        self.browser.close()
-        self.logged_in = False
