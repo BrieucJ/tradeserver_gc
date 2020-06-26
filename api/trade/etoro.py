@@ -29,7 +29,7 @@ class API():
         self.browser.implicitly_wait(20)
         self.login()
 
-    def __del__():
+    def __del__(self):
         self.browser.close()
         self.logged_in = False
     
