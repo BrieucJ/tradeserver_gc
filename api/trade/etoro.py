@@ -46,8 +46,6 @@ class API():
         try:
             self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             self.logged_in = True
-            print('logged in')
-            user_name = self.browser.find_element_by_css_selector("a[automation-id='menu-user-page-link']").get_attribute('innerHTML')
         except:
             self.logged_in = False
         
@@ -100,5 +98,7 @@ class API():
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             for r in rows:
-                print(r)
-                print(r.text)
+                print('#######')
+                print(r.get_attribute('innerHTML'))
+                # print(r)
+                # print(r.text)
