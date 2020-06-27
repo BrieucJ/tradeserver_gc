@@ -81,6 +81,7 @@ class API():
                 self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
         
         new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
+        print(new_element.get_attribute('class').split())
         if self.mode == 'real':
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
@@ -98,7 +99,16 @@ class API():
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             for r in rows:
-                print('#######')
-                print(r.get_attribute('innerHTML'))
-                # print(r)
-                # print(r.text)
+                ticker = r.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")
+                invested_value = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-invested-value']")
+                invested_units = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-units-value']")
+                open_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-open-rate']")
+                current_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-last-price']")
+                stop_loss_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-stop-loss-rate']")
+                take_profit_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']")
+                print(f'Ticker: {ticker}')
+                print(f'invested_value: {invested_value}')
+                print(f'invested_units: {invested_units}')
+                print(f'open_rate: {open_rate}')
+                print(f'stop_loss_rate: {stop_loss_rate}')
+                print(f'take_profit_rate: {take_profit_rate}')
