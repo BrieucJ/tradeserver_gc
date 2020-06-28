@@ -25,8 +25,8 @@ class API():
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
-        self.wait = WebDriverWait(self.browser, 10)
-        self.browser.implicitly_wait(3)
+        self.wait = WebDriverWait(self.browser, 100)
+        self.browser.implicitly_wait(10)
         self.login()
 
     def __del__(self):
