@@ -7,12 +7,11 @@ from datetime import datetime
 from django.contrib.auth.models import User
 
 class API():
-    def __init__(self, user, mode='demo'):
+    def __init__(self, broker_username, broker_password, mode='demo'):
         self.mode = mode
         self.logged_in = False
-        self.user = user
-        self.user_name = Profile.objects.get(user=self.user).broker_username
-        self.password = Profile.objects.get(user=self.user).broker_password
+        self.user_name = broker_username
+        self.password = broker_password
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
         self.options = webdriver.ChromeOptions()
         self.options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')

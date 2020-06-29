@@ -78,7 +78,8 @@ class UpdatePortfolio(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        update_portfolio_task.delay(profile.broker_username, profile.broker_password)
+        print(request.user)
+        update_portfolio_task.delay(request.user.profile.broker_username, request.user.profile.broker_password)
         return Response('Connected', status=status.HTTP_200_OK)
     
     
