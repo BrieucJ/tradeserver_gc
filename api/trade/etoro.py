@@ -4,17 +4,19 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC 
 from datetime import datetime
+from .models import Profile, Portfolio, Position
 import random
 import json
 import time
 import os
 
 class API():
-    def __init__(self, username, password, mode='demo'):
+    def __init__(self, user, mode='demo'):
         self.mode = mode
         self.logged_in = False
-        self.user_name = username
-        self.password = password
+        self.user = user
+        self.user_name = Profile.objects.get(user=self.user).broker_username
+        self.password = Profile.objects.get(user=self.user).broker_password
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
         self.options = webdriver.ChromeOptions()
         self.options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
@@ -34,7 +36,6 @@ class API():
         self.logged_in = False
     
     def login(self):
-        print('login')
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
@@ -50,69 +51,62 @@ class API():
             self.logged_in = False
         
         if self.logged_in:
-            print('launch switch')
             self.switch_mode()
 
     def switch_mode(self):
-        print('switch_mode')
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
-            print('switching')
             self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
             switch_btn.click()
             try:
                 self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             except TimeoutException as err:
+                print('Timed out')
                 print(switch_btn.get_attribute('innerHTML'))
                 print(err)
-                print('Timed out')
-            
+
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
-        if self.mode == 'real':
-            print('Switching from demo to real')
-            mode_btns[0].click()
-            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-            toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
-            toggle_btn.click()
-            self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-        elif self.mode == 'demo':
-            print('Switching from real to demo')
-            mode_btns[1].click()
-            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-            toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
-            toggle_btn.click()
-            self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+            if self.mode == 'real':
+                mode_btns[0].click()
+                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
+                toggle_btn.click()
+                self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+            elif self.mode == 'demo':
+                mode_btns[1].click()
+                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
+                toggle_btn.click()
+                self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+            new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         
-        new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
-        print(new_element.get_attribute('class').split())
         if self.mode == 'real':
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
             assert('demo-mode' in new_element.get_attribute('class').split())
     
     def update_portfolio(self):
-        print('Updating portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        if len(empty_portfolio) != 0:
-            print('Portfolio is empty')
-        else:
-            print('Portfolio is not empty')
+        user_portfolio = self.user.portfolio.objects.all()
+        print(user_portfolio)
+        if len(empty_portfolio) == 0:
+            print('Updating portfolio')
+            #PORTFOLIO
+            cash = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-availible-unit-value']").text
+            total_invested_value = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-amount-unit-value']").text
+
+            #POSITIONS
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             for r in rows:
                 ticker = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
+                invest_date = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-open-date']").text
                 invested_value = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-invested-value']").text
                 invested_units = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-units-value']").text
                 open_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-open-rate']").text
                 current_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-last-price']").text
                 stop_loss_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-stop-loss-rate']").text
                 take_profit_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']").text
-                print(f'Ticker: {ticker}')
-                print(f'invested_value: {invested_value}')
-                print(f'invested_units: {invested_units}')
-                print(f'open_rate: {open_rate}')
-                print(f'stop_loss_rate: {stop_loss_rate}')
-                print(f'take_profit_rate: {take_profit_rate}')

@@ -23,12 +23,10 @@ class Command(BaseCommand):
         run_seed(self, options['mode'])
         self.stdout.write('done.')
 
-
 def clear_data():
     """Deletes all the table data"""
     Stock.objects.all().delete()
     PriceHistory.objects.all().delete()
-
 
 def create_stocks():
     print('Creating stocks...')
