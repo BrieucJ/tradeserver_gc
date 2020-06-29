@@ -29,8 +29,11 @@ class Position(models.Model):
 
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
-    portfolio_type = models.BooleanField()
     positions = models.ManyToManyField(Position)
+    portfolio_type = models.BooleanField()
+    cash = models.FloatField(default=0)
+    total_invested_value = models.FloatField(default=0)
+
     class Meta:
         unique_together = ('user', 'portfolio_type')
 

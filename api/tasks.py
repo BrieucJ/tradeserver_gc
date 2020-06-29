@@ -45,4 +45,6 @@ from .trade.etoro import API
 
 @shared_task
 def update_portfolio_task(broker_username, broker_password):
-    API(broker_username, broker_password).update_portfolio()
+    portfolio, positions = API(broker_username, broker_password).update_portfolio()
+    print(f'Portfolio: {portfolio}')
+    print(f'Positions: {positions}')
