@@ -4,11 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC 
 from datetime import datetime
-from .models import Profile, Portfolio, Position
-import random
-import json
-import time
-import os
+from django.contrib.auth.models import User
 
 class API():
     def __init__(self, user, mode='demo'):
@@ -90,17 +86,16 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        user_portfolio = self.user.portfolio.objects.all()
-        print(user_portfolio)
         if len(empty_portfolio) == 0:
-            print('Updating portfolio')
             #PORTFOLIO
             cash = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-availible-unit-value']").text
             total_invested_value = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-amount-unit-value']").text
+            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': float(cash), 'total_invested_value': float(total_invested_value)}
 
             #POSITIONS
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
+            positions = []
             for r in rows:
                 ticker = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
                 invest_date = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-open-date']").text
@@ -110,3 +105,11 @@ class API():
                 current_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-last-price']").text
                 stop_loss_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-stop-loss-rate']").text
                 take_profit_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']").text
+                # invest_date_obj = datetime.datetime.strptime(invest_date, '%Y/%m/%d %H:%M')
+                position = {'ticker': ticker, 'invest_date': invest_date, 'invested_value': invested_value, 'invested_units': invested_units, 'open_rate': open_rate, 'current_rate': current_rate, 'stop_loss_rate': stop_loss_rate, 'take_profit_rate': take_profit_rate}
+                positions.append(position)
+        else:
+            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': None, 'total_invested_value': None}
+            positions = []
+        
+        return portfolio, positions
