@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from django.contrib.auth.models import User
 
-
 class API():
     def __init__(self, broker_username, broker_password, mode='demo'):
         print('API __init__')
@@ -56,9 +55,11 @@ class API():
     def switch_mode(self):
         print('switch_mode')
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
+        print(current_mode)
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
-            self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
+            # self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
+            print(switch_btn)
             switch_btn.click()
             try:
                 self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
