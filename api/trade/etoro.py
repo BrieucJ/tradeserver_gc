@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -5,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC 
 from datetime import datetime
 from django.contrib.auth.models import User
+
 
 class API():
     def __init__(self, broker_username, broker_password, mode='demo'):
