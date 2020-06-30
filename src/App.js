@@ -29,9 +29,7 @@ class App extends React.Component {
   sign_up = async (params) => {
     this.setState({errors: {}})
     post('api/user/', params).then((resp) => {
-      console.log(params)
       var response = JSON.parse(resp.response)
-      console.log(response)
         if(resp.status === 201){
           localStorage.setItem('token', response.token)
           localStorage.setItem('user', JSON.stringify(response.user))
@@ -47,11 +45,8 @@ class App extends React.Component {
   }
 
   log_in = async (params) => {
-    console.log('login')
     this.setState({errors: {}})
-    console.log(params)
     post('api/token-auth/', params).then((resp) => {
-        console.log(resp)
         let response = JSON.parse(resp.response)
         if(resp.status == 200){
             localStorage.setItem('token', response.token)
@@ -89,9 +84,6 @@ class App extends React.Component {
         }
     })
   }
-
-
-
 
   render() {
       return (

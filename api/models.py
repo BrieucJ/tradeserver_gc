@@ -47,33 +47,24 @@ class PriceHistory(models.Model):
     volume = models.BigIntegerField(default=0)
     created_at = models.DateField(default=date.today)
     class Meta:
+        ordering = ['-price_date']
         unique_together = ('stock', 'price_date')
         
     def __str__(self):
         return f'{self.stock} - {self.price_date}'
 
-# class TradingModel(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_model')
-#     name = models.CharField(max_length=50)
-#     initial_balance = models.IntegerField(default=10000)
-#     end_balance = models.IntegerField(default=0)
-#     look_back = models.IntegerField(default=10)
-#     low_sma = models.IntegerField(default=10)
-#     high_sma = models.IntegerField(default=34)
-#     max_single_pos = models.FloatField(default=0.1)
-#     trading_interval = models.IntegerField(default=1)
-#     sma_diff = models.FloatField(default=0)
-#     sma_slope = models.FloatField(default=0)
-#     start_date = models.DateField(default=None)
-#     end_date = models.DateField(default=None)
-#     max_drawdown = models.FloatField(default=0)
-#     max_gain = models.FloatField(default=0)
-#     true_trading_period = models.FloatField(default=0)
-#     average_buy_pct = models.FloatField(default=0)
-#     annualized_return = models.FloatField(default=0)
-#     SP_return = models.FloatField(default=0)
-#     alpha = models.FloatField(default=0)
-#     created_at = models.DateField(default=date.today)
+class TradingModel(models.Model):
+    name = models.CharField(max_length=50)
+    look_back = models.IntegerField(default=10)
+    low_sma = models.IntegerField(default=10)
+    high_sma = models.IntegerField(default=34)
+    max_single_pos = models.FloatField(default=0.1)
+    sma_diff = models.FloatField(default=0)
+    sma_slope = models.FloatField(default=0)
+    created_at = models.DateField(default=date.today)
 
-#     class Meta:
-#         ordering = ['-created_at']
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.name

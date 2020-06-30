@@ -7,6 +7,7 @@
 # from celery.decorators import periodic_task
 from celery import task, shared_task, current_task
 from .trade.etoro import API
+from .trade.algo import Algo
 # from pandas_datareader import data
 # from pandas_datareader._utils import RemoteDataError
 # from .models import Stock, PriceHistory
@@ -48,3 +49,7 @@ def update_portfolio_task(broker_username, broker_password):
     portfolio, positions = API(broker_username, broker_password).update_portfolio()
     print(f'Portfolio: {portfolio}')
     print(f'Positions: {positions}')
+
+@shared_task
+def run_algo(broker_username, broker_password):
+    
