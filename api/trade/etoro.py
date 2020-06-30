@@ -33,6 +33,7 @@ class API():
         self.logged_in = False
     
     def login(self):
+        print('login')
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
@@ -51,6 +52,7 @@ class API():
             self.switch_mode()
 
     def switch_mode(self):
+        print('switch_mode')
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
             self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
@@ -84,6 +86,7 @@ class API():
             assert('demo-mode' in new_element.get_attribute('class').split())
     
     def update_portfolio(self):
+        print('update_portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
