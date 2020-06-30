@@ -1,6 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route, Redirect, useHistory } from "react-router-dom";
-import {post, get, put} from './utils/Api'
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 // PAGES
 import _404 from './pages/_404'
 import Home from './pages/Home'
@@ -10,7 +9,10 @@ import Auth from './pages/Auth'
 import Profile from './pages/Profile'
 // COMPONENTS
 import Menu from './components/Menu'
-import { Box, Container } from '@material-ui/core';
+import { Container } from '@material-ui/core';
+
+import {post, get, put} from './utils/Api'
+import {API_URL} from './utils/Constants'
 
 class App extends React.Component {
   constructor(props) {
@@ -20,6 +22,11 @@ class App extends React.Component {
       user: JSON.parse(localStorage.getItem('user')),
       errors: {}
     };
+  }
+
+  componentDidMount(){
+    console.log('MOUNTED')
+    console.log(API_URL)
   }
 
   handleChange = (e) => {
