@@ -30,7 +30,7 @@ if os.environ['ENV'] != 'dev':
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
 else: 
     CELERY_BROKER_URL =  'amqp://localhost' 
-    CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
+    # CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
 
 BROKER_POOL_LIMIT = 3
 
@@ -45,7 +45,6 @@ CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'http
 ALLOWED_HOSTS = []
 
 # Application definition
-
 INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',

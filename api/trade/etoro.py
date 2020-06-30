@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 
 class API():
     def __init__(self, broker_username, broker_password, mode='demo'):
+        print('API __init__')
         self.mode = mode
         self.logged_in = False
         self.user_name = broker_username
