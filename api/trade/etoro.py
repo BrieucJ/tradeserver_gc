@@ -26,7 +26,7 @@ class API():
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
         self.wait = WebDriverWait(self.browser, 100)
-        self.browser.implicitly_wait(10)
+        self.browser.implicitly_wait(60)
         self.login()
 
     def __del__(self):
@@ -61,21 +61,25 @@ class API():
             switch_btn = self.browser.find_element_by_tag_name('et-select')
             print(switch_btn)
             switch_btn.click()
-            try:
-                self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
-            except TimeoutException as err:
-                print('Timed out')
-                print(switch_btn.get_attribute('innerHTML'))
-                print(err)
+            print('click')
+            # try:
+            #     self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
+            # except TimeoutException as err:
+            #     print('Timed out')
+            #     print(switch_btn.get_attribute('innerHTML'))
+            #     print(err)
 
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
+            print(mode_btns)
             if self.mode == 'real':
+                print('switching from demo to real')
                 mode_btns[0].click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
                 self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
             elif self.mode == 'demo':
+                print('switching from real to demo')
                 mode_btns[1].click()
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
