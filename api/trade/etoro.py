@@ -21,7 +21,8 @@ class API():
         self.options.add_argument('--headless')
         self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--window-size=800,600")
+        self.options.add_argument("--start-maximized")
+        # self.options.add_argument("--window-size=800,600")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
@@ -51,7 +52,7 @@ class API():
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         print(current_mode)
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
-            self.wait.until(EC.visibility_of((By.TAG_NAME, 'et-select')))
+            self.wait.until(EC.presence_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
             print(switch_btn)
             # switch_btn.send_keys(Keys.ENTER)
