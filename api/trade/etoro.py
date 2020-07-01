@@ -25,8 +25,8 @@ class API():
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
-        self.wait = WebDriverWait(self.browser, 100)
-        self.browser.implicitly_wait(60)
+        self.wait = WebDriverWait(self.browser, 60)
+        self.browser.implicitly_wait(20)
         self.login()
 
     def __del__(self):
@@ -57,13 +57,14 @@ class API():
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         print(current_mode)
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
-            # self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
+            self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
             print(switch_btn)
             switch_btn.click()
             print('click')
+            self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             # try:
-            #     self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
+            #     
             # except TimeoutException as err:
             #     print('Timed out')
             #     print(switch_btn.get_attribute('innerHTML'))
