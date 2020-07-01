@@ -86,8 +86,8 @@ class API():
         if len(empty_portfolio) == 0:
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-account-balance')))
             #PORTFOLIO
-            cash = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-availible-unit-value']").text
-            total_invested_value = self.browser.find_element_by_css_selector("span[data-etoro-automation-id='account-balance-amount-unit-value']").text
+            cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
+            total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
             portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': float(cash), 'total_invested_value': float(total_invested_value)}
 
             #POSITIONS
