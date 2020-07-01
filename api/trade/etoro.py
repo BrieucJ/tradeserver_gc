@@ -21,7 +21,7 @@ class API():
         self.options.add_argument('--no-sandbox')
         self.options.add_argument('--headless')
         self.options.add_argument('--disable-dev-shm-usage')
-        self.options.add_argument("--window-size=1920,1080")
+        # self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
@@ -44,8 +44,10 @@ class API():
         password_field.send_keys(self.password)
         submit_btn.click()
         try:
-            self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
+            # self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
+            self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
             self.logged_in = True
+            print('Logged in')
         except:
             self.logged_in = False
         
@@ -54,6 +56,7 @@ class API():
 
     def switch_mode(self):
         print('switch_mode')
+        print(self.browser.current_url)
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         print(current_mode)
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
@@ -63,12 +66,6 @@ class API():
             switch_btn.click()
             print('click')
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
-            # try:
-            #     
-            # except TimeoutException as err:
-            #     print('Timed out')
-            #     print(switch_btn.get_attribute('innerHTML'))
-            #     print(err)
 
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             print(mode_btns)
