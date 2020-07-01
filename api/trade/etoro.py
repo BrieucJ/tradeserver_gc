@@ -44,11 +44,12 @@ class API():
         password_field.send_keys(self.password)
         submit_btn.click()
         try:
-            # self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
+            self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
             self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
             self.logged_in = True
             print('Logged in')
         except:
+            print('Not logged in')
             self.logged_in = False
         
         if self.logged_in:
@@ -66,7 +67,6 @@ class API():
             switch_btn.click()
             print('click')
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
-
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             print(mode_btns)
             if self.mode == 'real':
