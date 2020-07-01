@@ -43,17 +43,20 @@ class API():
         email_field.send_keys(self.user_name)
         password_field.send_keys(self.password)
         submit_btn.click()
-        try:
-            self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
-            self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
-            self.logged_in = True
-            print('Logged in')
-        except:
-            print('Not logged in')
-            self.logged_in = False
+        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
+        self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
+        self.switch_mode()
         
-        if self.logged_in:
-            self.switch_mode()
+        # # try:
+        # #     
+        # #     self.logged_in = True
+        # #     print('Logged in')
+        # # except:
+        # #     print('Not logged in')
+        # #     self.logged_in = False
+        
+        # if self.logged_in:
+            
 
     def switch_mode(self):
         print('switch_mode')
