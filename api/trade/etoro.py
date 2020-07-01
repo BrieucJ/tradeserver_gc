@@ -31,7 +31,7 @@ class API():
             self.browser.implicitly_wait(60)
         else:
             self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
-            self.wait = WebDriverWait(self.browser, 60)
+            self.wait = WebDriverWait(self.browser, 10)
             self.browser.implicitly_wait(10)
 
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium

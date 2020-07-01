@@ -28,7 +28,6 @@ SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 #CELERY
 if PRODUCTION: 
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERYD_CONCURRENCY = 1
 else: 
     CELERY_BROKER_URL =  'amqp://localhost'
     # CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
