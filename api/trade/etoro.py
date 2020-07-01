@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC 
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class API():
     def __init__(self, broker_username, broker_password, mode='demo'):
@@ -18,16 +19,23 @@ class API():
         self.options = webdriver.ChromeOptions()
         self.options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
         self.options.add_argument('--no-sandbox')
-        self.options.add_argument('--headless')
         self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_argument("--disable-gpu")
         self.options.add_argument("--start-maximized")
-        # self.options.add_argument("--window-size=800,600")
+        self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
-        self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
+        self.options.add_argument('--headless')
+        if settings.PRODUCTION:
+            self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), options=self.options)
+            self.wait = WebDriverWait(self.browser, 60)
+            self.browser.implicitly_wait(60)
+        else:
+            self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
+            self.wait = WebDriverWait(self.browser, 60)
+            self.browser.implicitly_wait(10)
+
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
-        self.wait = WebDriverWait(self.browser, 60)
-        self.browser.implicitly_wait(60)
+
         self.login()
 
     def __del__(self):
@@ -50,18 +58,12 @@ class API():
     def switch_mode(self):
         print('switch_mode')
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
-        print(current_mode)
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
             self.wait.until(EC.presence_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
-            print(switch_btn)
-            # switch_btn.send_keys(Keys.ENTER)
-            self.browser.execute_script("arguments[0].click();", switch_btn)
-            # switch_btn.click()
-            print('click')
+            switch_btn.click()
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
-            print(len(mode_btns))
             if self.mode == 'real':
                 print('switching from demo to real')
                 mode_btns[0].click()
@@ -93,7 +95,7 @@ class API():
             #PORTFOLIO
             cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
             total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
-            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': float(cash), 'total_invested_value': float(total_invested_value)}
+            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash, 'total_invested_value': total_invested_value}
 
             #POSITIONS
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")

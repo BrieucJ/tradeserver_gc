@@ -18,7 +18,7 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+PRODUCTION = True
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 
 #CELERY
-if os.environ['ENV'] != 'dev': 
+if PRODUCTION: 
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
     CELERYD_CONCURRENCY = 1
 else: 
@@ -36,7 +36,7 @@ else:
 BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ['ENV'] != 'dev': 
+if PRODUCTION: 
     DEBUG = True
 else:
     DEBUG = True
@@ -117,6 +117,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #     }
 # }
 
+
 DATABASES = {}
 DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
@@ -174,5 +175,5 @@ import django_heroku
 django_heroku.settings(locals())
 
 # override DATABASE_URL set by django_heroku because it forces SSL mode locally
-ssl_require = os.environ['ENV'] != 'dev'
+ssl_require = PRODUCTION
 locals()['DATABASES']['default'] = dj_database_url.config(conn_max_age=django_heroku.MAX_CONN_AGE, ssl_require=ssl_require)
