@@ -53,10 +53,12 @@ class API():
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
             self.wait.until(EC.presence_of_element_located((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
-            self.browser.execute_script("arguments[0].click();", switch_btn)
-            # switch_btn.click()
+            # switch_btn.send_keys(Keys.ENTER)
+            # self.browser.execute_script("arguments[0].click();", switch_btn)
+            switch_btn.click()
             print('click')
-            self.wait.until(EC.presence_of_element_located((By.TAG_NAME, 'et-select-body-option')))
+            time.sleep(2)
+            self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             print(len(mode_btns))
             if self.mode == 'real':
