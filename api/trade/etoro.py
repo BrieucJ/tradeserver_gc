@@ -21,12 +21,12 @@ class API():
         self.options.add_argument('--headless')
         self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_argument("--disable-gpu")
-        # self.options.add_argument("--window-size=1920,1080")
+        self.options.add_argument("--window-size=800,600")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), chrome_options=self.options)
-        self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium webdriveer
+        self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
         self.wait = WebDriverWait(self.browser, 60)
-        self.browser.implicitly_wait(20)
+        self.browser.implicitly_wait(60)
         self.login()
 
     def __del__(self):
@@ -53,11 +53,11 @@ class API():
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
             self.wait.until(EC.visibility_of((By.TAG_NAME, 'et-select')))
             switch_btn = self.browser.find_element_by_tag_name('et-select')
+            print(switch_btn)
             # switch_btn.send_keys(Keys.ENTER)
-            self.browser.execute_script("arguments[0].click();", switch_btn)
-            # switch_btn.click()
+            #self.browser.execute_script("arguments[0].click();", switch_btn)
+            switch_btn.click()
             print('click')
-            time.sleep(2)
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             print(len(mode_btns))
