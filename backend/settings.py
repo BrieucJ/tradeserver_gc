@@ -26,7 +26,9 @@ PRODUCTION = True
 SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 
 #CELERY
-if PRODUCTION: 
+CELERY_TASK_SERIALIZER='json'
+worker_max_tasks_per_child = 1
+if PRODUCTION:
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
 else: 
     CELERY_BROKER_URL =  'amqp://localhost'
@@ -36,7 +38,7 @@ BROKER_POOL_LIMIT = 3
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if PRODUCTION: 
-    DEBUG = True
+    DEBUG = False
 else:
     DEBUG = True
 
