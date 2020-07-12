@@ -4,7 +4,7 @@ import numpy as np
 from dateutil.relativedelta import relativedelta
 
 class SMAEngine():
-    def __init__(self, data, model, date=str(datetime.date.today()), initial_balance=10000, nav=10000, portfolio=None, backtest=True):
+    def __init__(self, data, model, date=str(datetime.date.today()), initial_balance=100000, nav=100000, portfolio=None, backtest=True):
         # print('__INIT__')
         self.symbol = None
         self.stop_loss = model.stop_loss
