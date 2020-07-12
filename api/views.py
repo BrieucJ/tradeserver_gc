@@ -9,10 +9,10 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
-from .serializers import ProfileSerializer, UserSerializer
+from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer
 from .trade.etoro import API
-from .tasks  import update_portfolio_task
-from .models import Profile
+from .tasks  import update_portfolio_task, create_sma_positions, update_price_history, create_orders
+from .models import Profile, Portfolio
 
 # class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
 #     serializer_class = StockSerializer
@@ -71,6 +71,29 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
             return Response({'user': serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class RetrievePortfolio(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PortfolioSerializer
+    queryset = Portfolio.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        u = request.user
+        try:
+            p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
+            pos_demo = p_demo.positions.all()
+        except Portfolio.DoesNotExist:
+            p_demo = None
+            pos_demo = None
+        
+        try:
+            p_real = Portfolio.objects.filter(user=u, portfolio_type=True).latest('date')
+            pos_real = p_real.positions.all()
+        except Portfolio.DoesNotExist:
+            p_real = None
+            pos_real = None
+        
+        return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'positions': PositionSerializer(pos_demo, many=True).data}, 'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'positions': PositionSerializer(pos_real, many=True).data}}, status=status.HTTP_200_OK)
+
 class UpdatePortfolio(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
@@ -78,10 +101,7 @@ class UpdatePortfolio(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        print(request.user)
-        print(request.user.profile.broker_username)
-        print(request.user.profile.broker_password)
-        update_portfolio_task.delay(request.user.profile.broker_username, request.user.profile.broker_password)
+        create_orders.delay()
         return Response('Connected', status=status.HTTP_200_OK)
     
     

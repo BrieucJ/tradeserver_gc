@@ -14,8 +14,31 @@ class Portfolio extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      portfolio_type: false,
+      portfolio_type: true,
+      demo_portfolio: '',
+      demo_positions: [],
+      real_portfolio: '',
+      real_positions: [],
     };
+  }
+
+  componentDidMount() {
+    this.retrieve_portfolio()
+  }
+
+  retrieve_portfolio = async () => {
+    get('api/retrieve_portfolio/').then((resp) => {
+      if (resp.status === 200){
+        var response = JSON.parse(resp.response)
+        console.log(response)
+        this.setState({
+          demo_portfolio: response.p_demo.portfolio,
+          demo_positions: response.p_demo.positions,
+          real_portfolio: response.p_real.portfolio,
+          real_positions: response.p_real.positions,
+        })
+      }
+    })
   }
 
   get_portfolio = async () => {
@@ -28,6 +51,47 @@ class Portfolio extends React.Component {
     this.setState({portfolio_type: !this.state.portfolio_type})
   }
 
+  renderPositions = () => {
+    var positions = []
+    if (this.state.portfolio_type) {
+      positions = this.state.real_positions
+    } else {
+      positions = this.state.demo_positions
+    }
+    return(
+      positions.map((position) => (
+        <TableRow key={position.symbol}>
+          <TableCell component="th" scope="row">{position.stock.symbol} </TableCell>
+          <TableCell align="right">{position.invest_date}</TableCell>
+          <TableCell align="right">{position.invest_value}</TableCell>
+          <TableCell align="right">{position.invest_units}</TableCell>
+          <TableCell align="right">{position.open_rate}</TableCell>
+          <TableCell align="right">{position.current_rate}</TableCell>
+          <TableCell align="right">{position.stop_loss_rate}</TableCell>
+          <TableCell align="right">{position.take_profit_rate}</TableCell>
+          <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {position.current_rate - position.open_rate } </TableCell>
+        </TableRow>
+      ))
+    )
+  }
+
+  renderPortfolio = () => {
+    if (this.state.portfolio_type) {
+      var portfolio = this.state.real_portfolio
+    } else {
+      var portfolio = this.state.demo_portfolio
+    }
+    return (
+      <Grid container direction="row" alignItems="center" justify="center">
+        <Typography style={{paddingRight: 10}}>
+          Cash: {portfolio.cash}
+        </Typography>
+        <Typography>
+          Total invested value: {portfolio.total_invested_value}
+        </Typography>
+      </Grid>
+    )
+  }
   render() {
     return (
       <Container>
@@ -52,26 +116,7 @@ class Portfolio extends React.Component {
           </Button>
         </Grid>
         <Grid container style={{paddingBottom: 10}} direction="column" alignItems="center" justify="center">
-          {this.state.portfolio_type && 
-            <Grid container direction="row" alignItems="center" justify="center">
-              <Typography style={{paddingRight: 10}}>
-                Cash: {real_portfolio.cash}
-              </Typography>
-              <Typography>
-                Total invested value: {real_portfolio.total_invested_value}
-              </Typography>
-            </Grid>
-          }
-          {!this.state.portfolio_type && 
-            <Grid container direction="row" alignItems="center" justify="center">
-              <Typography style={{paddingRight: 10}}>
-                Cash: {demo_portfolio.cash}
-              </Typography>
-              <Typography>
-                Total invested value: {demo_portfolio.total_invested_value}
-              </Typography>
-            </Grid>
-          }
+          {this.renderPortfolio()}
         </Grid>
         <Grid container direction="column">
           <TableContainer component={Paper}>
@@ -90,19 +135,7 @@ class Portfolio extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {positions.map((position) => (
-                  <TableRow key={position.ticker}>
-                    <TableCell component="th" scope="row">{position.ticker} </TableCell>
-                    <TableCell align="right">{position.invest_date}</TableCell>
-                    <TableCell align="right">{position.invested_value}</TableCell>
-                    <TableCell align="right">{position.invested_units}</TableCell>
-                    <TableCell align="right">{position.open_rate}</TableCell>
-                    <TableCell align="right">{position.current_rate}</TableCell>
-                    <TableCell align="right">{position.stop_loss_rate}</TableCell>
-                    <TableCell align="right">{position.take_profit_rate}</TableCell>
-                    <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {position.current_rate - position.open_rate } </TableCell>
-                  </TableRow>
-                ))}
+                {this.renderPositions()}
               </TableBody>
             </Table>
           </TableContainer>

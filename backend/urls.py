@@ -31,6 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('api/token-auth/', views.CustomAuthToken.as_view()),
     path('api/user/', views.UserView.as_view(), name='user'),
+    path('api/retrieve_portfolio/', views.RetrievePortfolio.as_view(), name='retrieve_portfolio'),
     path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
     re_path(r'^(?P<path>.*)/$', index),
     path('', index),

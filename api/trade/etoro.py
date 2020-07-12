@@ -10,9 +10,10 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 class API():
-    def __init__(self, broker_username, broker_password, mode='demo'):
+    def __init__(self, broker_username, broker_password, mode):
         print('API __init__')
         self.mode = mode
+        print(self.mode)
         self.user_name = broker_username
         self.password = broker_password
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
@@ -31,7 +32,7 @@ class API():
             self.browser.implicitly_wait(60)
         else:
             self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
-            self.wait = WebDriverWait(self.browser, 10)
+            self.wait = WebDriverWait(self.browser, 60)
             self.browser.implicitly_wait(10)
 
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
@@ -67,19 +68,21 @@ class API():
             if self.mode == 'real':
                 print('switching from demo to real')
                 mode_btns[0].click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
                 self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
             elif self.mode == 'demo':
                 print('switching from real to demo')
                 mode_btns[1].click()
-                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
+                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
                 self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
-            new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
         
+        new_element = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..')
+        print(new_element)
+        print(new_element.get_attribute('class').split())
         if self.mode == 'real':
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
@@ -91,10 +94,14 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
         if len(empty_portfolio) == 0:
+            print('PORTFOLIO NOT EMPTY')
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-account-balance')))
             #PORTFOLIO
             cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
+            print(cash)
+            print(self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']"))
             total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
+            print(total_invested_value)
             portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash, 'total_invested_value': total_invested_value}
 
             #POSITIONS
@@ -110,10 +117,10 @@ class API():
                 current_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-last-price']").text
                 stop_loss_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-stop-loss-rate']").text
                 take_profit_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']").text
-                # invest_date_obj = datetime.datetime.strptime(invest_date, '%Y/%m/%d %H:%M')
                 position = {'ticker': ticker, 'invest_date': invest_date, 'invested_value': invested_value, 'invested_units': invested_units, 'open_rate': open_rate, 'current_rate': current_rate, 'stop_loss_rate': stop_loss_rate, 'take_profit_rate': take_profit_rate}
                 positions.append(position)
         else:
+            print('PORTFOLIO EMPTY')
             portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': None, 'total_invested_value': None}
             positions = []
         
