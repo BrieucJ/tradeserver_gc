@@ -2,6 +2,7 @@ from django.db import models
 from datetime import date, datetime
 from django.contrib.auth.models import User
 from django_cryptography.fields import encrypt
+from django.utils import timezone
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -23,7 +24,8 @@ class Portfolio(models.Model):
     currency = models.CharField(max_length=1, default='€')
     cash = models.FloatField(default=0, null=True)
     total_invested_value = models.FloatField(default=0, null=True)
-    date = models.DateTimeField(default=datetime.now, auto_now=False, auto_now_add=False)
+    orders_created = models.BooleanField(default=False)
+    date = models.DateField(default=date.today)
 
     class Meta:
         ordering = ['-date']
@@ -108,21 +110,36 @@ class SMAPosition(models.Model):
     def __str__(self):
         return f'{self.model}_{self.stock}_{self.buy}'
 
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order')
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='order')
-    position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='order', default=None)
-    model = models.ForeignKey(SMAModel, on_delete=models.CASCADE, related_name='order', default=None)
-    order_type = models.CharField(default=None, max_length=4)
-    price_date = models.DateField(default=None)
+class SellOrder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_order')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sell_order')
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='sell_order', default=None)
+    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
     num_of_shares = models.IntegerField(default=None)
-    order_price = models.FloatField(default=None)
-    stop_loss = models.FloatField(default=None)
-    take_profit = models.FloatField(default=None)
-    status = models.CharField(default='created', max_length=25)
-    submit_date = models.DateField(default=None, null=True)
-    executed_date = models.DateField(default=None, null=True)
+    price_date = models.DateField(default=None)
+    created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
+    submited_at = models.DateTimeField(default=None, null=True)
+    executed_at = models.DateTimeField(default=None, null=True)
 
     class Meta:
-        unique_together = ['price_date', 'position', 'stock']
+        unique_together = ['price_date', 'position', 'stock', 'portfolio']
+        ordering = ['-price_date']
+
+class BuyOrder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buy_order')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='buy_order')
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='buy_order', default=None)
+    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='buy_order')
+    price_date = models.DateField(default=None)
+    num_of_shares = models.IntegerField(default=None)
+    order_price = models.FloatField(default=None, null=True)
+    stop_loss = models.FloatField(default=None, null=True)
+    take_profit = models.FloatField(default=None, null=True)
+    created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
+    submited_at = models.DateTimeField(default=None, null=True)
+    executed_at = models.DateTimeField(default=None, null=True)
+    
+    class Meta:
+        unique_together = ['user', 'price_date', 'stock', 'portfolio']
         ordering = ['-price_date']

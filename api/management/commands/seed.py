@@ -82,7 +82,9 @@ def backtest_sma_models():
             continue
         else:
             for model in models:
+                print(model)
                 backtest = SMAEngine(prices[:testing_period], model, backtest=True)
+                print(f'Discarding {stock} {model} {float(backtest.profitable_buy/backtest.buy_count) }{float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count))} {backtest.model_CAGR}')
                 if backtest.model_CAGR > 0 and float(backtest.profitable_buy/backtest.buy_count) > 0.5:
                     print(f'Saving {stock} {model} {float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count))} {backtest.model_CAGR}')
                     smab = SMABacktest(stock=stock, model=model,data_size=backtest.data_size, precision=float(backtest.profitable_buy/backtest.buy_count), 
