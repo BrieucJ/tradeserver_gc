@@ -14,7 +14,10 @@ class Stock(models.Model):
     name = models.CharField(max_length=50)
     sector = models.CharField(max_length=50)
     industry = models.CharField(max_length=50)
-
+    class Meta:
+        ordering = ['symbol']
+        unique_together = ['symbol']
+        
     def __str__(self):
         return self.symbol
 
