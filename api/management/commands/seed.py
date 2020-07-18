@@ -83,18 +83,21 @@ def backtest_sma_models():
             continue
         else:
             for model in models:
-                print(model)
                 backtest = SMAEngine(prices[:testing_period], model, backtest=True)
-                print(f'Discarding {stock} {model} {float(backtest.profitable_buy/backtest.buy_count)} {float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count))} {backtest.model_CAGR}')
-                print(backtest.model_CAGR)
-                print(float(backtest.profitable_buy/backtest.buy_count))
                 if backtest.model_CAGR > 0 and float(backtest.profitable_buy/backtest.buy_count) > 0.5:
-                    print(f'Saving {stock} {model} {float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count))} {backtest.model_CAGR}')
+                    print(f'#### SAVING {stock} {model} ####')
+                    print(f'PRECISION: {backtest.profitable_buy/backtest.buy_count}')
+                    print(f'TOTAL BUYS: {backtest.buy_count} | TOTAL SELLS: {backtest.sell_count} | PROFITABLE BUYS: {backtest.profitable_buy} | UNPROFITABLE BUYS: {backtest.unprofitable_buy}')
+                    print(f'CAGR: {backtest.model_CAGR} | SD: {backtest.model_SD}')
+                    print(f'MAX_DRAWDOWN: {backtest.max_drawdown} | STOP_LOSS: {backtest.stop_loss_count} | TAKE_PROFIT: {backtest.take_profit_count} ')
+                    print('#### STOCK ####')
+                    print(f'CAGR: {backtest.stock_CAGR} | SD: {backtest.stock_SD}')
                     smab = SMABacktest(stock=stock, model=model,data_size=backtest.data_size, precision=float(backtest.profitable_buy/backtest.buy_count), 
                     sharpe_ratio=float(backtest.model_CAGR/backtest.model_SD), score=float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count)), 
                     stock_return=backtest.stock_return, stock_sd=backtest.stock_SD, stock_cagr=backtest.stock_CAGR, 
                     model_return=backtest.model_return, model_sd=backtest.model_SD, model_cagr=backtest.model_CAGR, 
-                    max_drawdown=backtest.max_drawdown, buy_count=backtest.buy_count, sell_count=backtest.sell_count, stop_loss_count=backtest.stop_loss_count, take_profit_count=backtest.take_profit_count)
+                    max_drawdown=backtest.max_drawdown, buy_count=backtest.buy_count, sell_count=backtest.sell_count, stop_loss_count=backtest.stop_loss_count, take_profit_count=backtest.take_profit_count,
+                    profitable_buy_count=backtest.profitable_buy, unprofitable_buy_count=backtest.unprofitable_buy)
                     smab.save()
 
 

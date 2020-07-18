@@ -17,7 +17,7 @@ class Stock(models.Model):
     class Meta:
         ordering = ['symbol']
         unique_together = ['symbol']
-        
+
     def __str__(self):
         return self.symbol
 
@@ -88,6 +88,8 @@ class SMABacktest(models.Model):
     model_cagr = models.FloatField(default=0)
     model_sd = models.FloatField(default=0)
     buy_count = models.IntegerField(default=0)
+    profitable_buy_count = models.IntegerField(default=0)
+    unprofitable_buy_count = models.IntegerField(default=0)
     sell_count = models.IntegerField(default=0)
     stop_loss_count = models.IntegerField(default=0)
     take_profit_count = models.IntegerField(default=0)
