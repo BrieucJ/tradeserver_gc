@@ -72,16 +72,18 @@ def create_sma_models():
 def backtest_sma_models():
     print('Backtesting SMA models...')
     testing_period = 2000
+    min_period = 600
     models = SMAModel.objects.all()
     stocks = Stock.objects.all()
     for stock in stocks:
         print(stock)
         prices = stock.price_history.all()
-        if len(prices) < testing_period:
+        if len(prices) < min_period:
             print(f'Skipping {stock} - history too small')
             continue
         else:
             for model in models:
+                print(model)
                 backtest = SMAEngine(prices[:testing_period], model, backtest=True)
                 print(f'Discarding {stock} {model} {float(backtest.profitable_buy/backtest.buy_count)} {float((backtest.model_CAGR/backtest.model_SD)*(backtest.profitable_buy/backtest.buy_count))} {backtest.model_CAGR}')
                 print(backtest.model_CAGR)
