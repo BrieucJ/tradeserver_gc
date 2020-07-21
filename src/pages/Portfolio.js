@@ -1,14 +1,6 @@
 import React from 'react';
-import { Container, Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import {Container, Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
-
-
-var demo_portfolio = {'portfolio_type': false, 'cash': 100000, 'total_invested_value': 12000}
-var real_portfolio = {'portfolio_type': true, 'cash': 10000, 'total_invested_value': 1200}
-var positions = [
-  {'ticker': 'AAPL', 'invest_date': '12/06/20', 'invested_value': 340, 'invested_units': 1, 'open_rate': 340, 'current_rate': 400, 'stop_loss_rate': 300, 'take_profit_rate': 400},
-  {'ticker': 'MSFT', 'invest_date': '12/06/20', 'invested_value': 180, 'invested_units': 1, 'open_rate': 180, 'current_rate': 170, 'stop_loss_rate': 150, 'take_profit_rate': 220}
-]
 
 class Portfolio extends React.Component {
   constructor(props) {
@@ -17,8 +9,10 @@ class Portfolio extends React.Component {
       portfolio_type: true,
       demo_portfolio: '',
       demo_positions: [],
+      pending_orders_demo: [],
       real_portfolio: '',
       real_positions: [],
+      pending_orders_real: [],
     };
   }
 
@@ -34,8 +28,10 @@ class Portfolio extends React.Component {
         this.setState({
           demo_portfolio: response.p_demo.portfolio,
           demo_positions: response.p_demo.positions,
+          pending_orders_demo: response.p_demo.pending_orders,
           real_portfolio: response.p_real.portfolio,
           real_positions: response.p_real.positions,
+          pending_orders_real: response.p_real.pending_orders
         })
       }
     })
@@ -43,9 +39,23 @@ class Portfolio extends React.Component {
 
   get_portfolio = async () => {
     get('api/update_portfolio/').then((resp) => {
-        console.log(resp)
+        // console.log(resp)
     })
   }
+
+  update_orders = async () => {
+    get('api/update_orders/').then((resp) => {
+        // console.log(resp)
+    })
+  }
+
+  transmit_orders = async () => {
+    get('api/transmit_orders/').then((resp) => {
+        // console.log(resp)
+    })
+  }
+
+
 
   handlePortfolioChange = async (e) => {
     this.setState({portfolio_type: !this.state.portfolio_type})
@@ -58,6 +68,7 @@ class Portfolio extends React.Component {
     } else {
       positions = this.state.demo_positions
     }
+
     return(
       positions.map((position) => (
         <TableRow key={position.symbol}>
@@ -75,6 +86,31 @@ class Portfolio extends React.Component {
     )
   }
 
+  renderPendingOrders = () => {
+    var pending_orders = []
+    if (this.state.portfolio_type) {
+      pending_orders = this.state.pending_orders_real
+    } else {
+      pending_orders = this.state.pending_orders_demo
+    }
+    return(
+      pending_orders.map((pending_order) => (
+        <TableRow key={pending_order.id}>
+          <TableCell component="th" scope="row">{pending_order.stock.symbol} </TableCell>
+          <TableCell component="th" scope="row" style={{color: pending_order.sma_position.buy ? 'green' : 'red'}} >{pending_order.sma_position.buy ? 'BUY' : 'SELL'} </TableCell>
+          <TableCell align="right">{Math.round(pending_order.total_investment)}</TableCell>
+          <TableCell align="right">{Math.round(pending_order.num_of_shares)}</TableCell>
+          <TableCell align="right">{Math.round(pending_order.order_price)}</TableCell>
+          <TableCell align="right">{Math.round(pending_order.stop_loss)}</TableCell>
+          <TableCell align="right">{Math.round(pending_order.take_profit)}</TableCell>
+          <TableCell align="right"> {new Date(pending_order.price_date).toLocaleString()} </TableCell>
+          <TableCell align="right"> {new Date(pending_order.created_at).toLocaleString()} </TableCell>
+          <TableCell align="right"> {pending_order.submited_at === null ? 'Not submitted' : pending_order.submited_at} </TableCell>
+          <TableCell align="right"> {pending_order.executed_at === null ? 'Not executed' : pending_order.executed_at} </TableCell>
+        </TableRow>
+      )))
+  }
+
   renderPortfolio = () => {
     if (this.state.portfolio_type) {
       var portfolio = this.state.real_portfolio
@@ -82,7 +118,10 @@ class Portfolio extends React.Component {
       var portfolio = this.state.demo_portfolio
     }
     return (
-      <Grid container direction="row" alignItems="center" justify="center">
+      <Grid container direction="row" alignItems="center" justify="center" style={{padding:10}}>
+        <Typography style={{paddingRight: 10}}>
+          Date: {new Date(portfolio.date).toLocaleString()}
+        </Typography>
         <Typography style={{paddingRight: 10}}>
           Cash: {portfolio.cash}
         </Typography>
@@ -112,30 +151,79 @@ class Portfolio extends React.Component {
             color="primary"
             onClick={() => {this.get_portfolio()}}
           >
-            Get portfolio
+            Update portfolio
           </Button>
         </Grid>
         <Grid container style={{paddingBottom: 10}} direction="column" alignItems="center" justify="center">
           {this.renderPortfolio()}
         </Grid>
-        <Grid container direction="column">
+        <Grid container direction="column" alignItems="center" justify="center">
+            <Typography variant="h6" style={{padding: 10}}>
+              Portfolio
+            </Typography>
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell>Symbol</TableCell>
-                  <TableCell align="right">Investment date</TableCell>
-                  <TableCell align="right">Invested value </TableCell>
-                  <TableCell align="right">Invested units</TableCell>
-                  <TableCell align="right">Open rate</TableCell>
-                  <TableCell align="right">Current rate</TableCell>
-                  <TableCell align="right">Stop loss rate</TableCell>
-                  <TableCell align="right">Take profit rate</TableCell>
-                  <TableCell align="right">Unrealized gain/loss</TableCell>
+                  <TableCell style={{fontWeight:'bold'}}>Symbol</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Investment date</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Invested value </TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Invested units</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Open rate</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Current rate</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Stop loss</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Take profit</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Unrealized gain/loss</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {this.renderPositions()}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Grid container direction="row" alignItems="center" justify="center">
+            <Typography variant="h6" style={{padding: 10}}>
+              Pending orders
+            </Typography>
+          
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={() => {this.update_orders()}}
+              style={{margin: 10}}
+            >
+              Update orders
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={() => {this.transmit_orders()}}
+              style={{margin: 10}}
+            >
+              Transmit orders
+            </Button>
+          </Grid>
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{fontWeight:'bold'}}>Symbol</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Order type </TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Invested value </TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Invested units</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Open rate</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Stop loss</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Take profit</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Price date</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Creation date</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Sent date</TableCell>
+                  <TableCell style={{fontWeight:'bold'}} align="right">Execution date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.renderPendingOrders()}
               </TableBody>
             </Table>
           </TableContainer>

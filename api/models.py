@@ -20,23 +20,40 @@ class Stock(models.Model):
 
     def __str__(self):
         return self.symbol
+    
+    @property
+    def last_price(self):
+        return self.price_history.first()
 
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
     portfolio_type = models.BooleanField(default=False)
     currency = models.CharField(max_length=1, default='€')
-    cash = models.FloatField(default=0, null=True)
-    total_invested_value = models.FloatField(default=0, null=True)
-    orders_created = models.BooleanField(default=False)
-    date = models.DateField(default=date.today)
+    cash = models.FloatField(default=None, null=True)
+    total_invested_value = models.FloatField(default=None, null=True)
+    date = models.DateTimeField(default=datetime.now(tz=timezone.utc))
 
     class Meta:
         ordering = ['-date']
         unique_together = ['user', 'portfolio_type', 'date']
 
+class PendingOrder(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='pending_order')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pending_order')
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='pending_order')
+    total_investment = models.FloatField(default=0)
+    open_rate = models.FloatField(default=0)
+    current_price = models.FloatField(default=0)
+    stop_loss = models.FloatField(default=0)
+    take_profit = models.FloatField(default=0)
+    submited_at = models.DateTimeField(default=None, null=True)
+
+    class Meta:
+        ordering = ['-submited_at']
+
 class Position(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='positions')
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='positions')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position')
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='position')
     invest_date = models.DateField(default=None)
     invest_value = models.FloatField(default=0)
     invest_units = models.IntegerField(default=0)
@@ -105,6 +122,7 @@ class SMABacktest(models.Model):
 class SMAPosition(models.Model):
     model = models.ForeignKey(SMAModel, on_delete=models.CASCADE, related_name='sma_position')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sma_position')
+    sma_backtest = models.ForeignKey(SMABacktest, on_delete=models.CASCADE, related_name='sma_position')
     price_date = models.DateField(default=None)
     buy = models.BooleanField(default=None, null=True)
 
@@ -118,9 +136,9 @@ class SMAPosition(models.Model):
 class SellOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sell_order')
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='sell_order', default=None)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='sell_order')
     sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
-    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order')
     num_of_shares = models.IntegerField(default=None)
     price_date = models.DateField(default=None)
     created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
@@ -139,6 +157,7 @@ class BuyOrder(models.Model):
     price_date = models.DateField(default=None)
     num_of_shares = models.IntegerField(default=None)
     order_price = models.FloatField(default=None, null=True)
+    total_investment = models.FloatField(default=None, null=True)
     stop_loss = models.FloatField(default=None, null=True)
     take_profit = models.FloatField(default=None, null=True)
     created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))

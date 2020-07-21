@@ -32,7 +32,13 @@ urlpatterns = [
     path('api/token-auth/', views.CustomAuthToken.as_view()),
     path('api/user/', views.UserView.as_view(), name='user'),
     path('api/retrieve_portfolio/', views.RetrievePortfolio.as_view(), name='retrieve_portfolio'),
+    path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
+    path('api/retrieve_model/', views.RetrieveModel.as_view(), name='retrieve_model'),
+    path('api/update_sma_positions/', views.UpdateSMAPosition.as_view(), name='update_sma_positions'),
+    path('api/update_stocks/', views.UpdateStocks.as_view(), name='update_stocks'),
     path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
+    path('api/update_orders/', views.UpdateOrders.as_view(), name='update_orders'),
+    path('api/transmit_orders/', views.TransmitOrders.as_view(), name='transmit_orders'),
     re_path(r'^(?P<path>.*)/$', index),
     path('', index),
 ]

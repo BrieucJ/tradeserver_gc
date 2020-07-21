@@ -90,13 +90,12 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
+        self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-account-balance')))
+        #PORTFOLIO
+        cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
+        total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
+        portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash, 'total_invested_value': total_invested_value}
         if len(empty_portfolio) == 0:
-            self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-account-balance')))
-            #PORTFOLIO
-            cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
-            total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
-            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash, 'total_invested_value': total_invested_value}
-
             #POSITIONS
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
@@ -113,9 +112,9 @@ class API():
                 position = {'ticker': ticker, 'invest_date': invest_date, 'invested_value': invested_value, 'invested_units': invested_units, 'open_rate': open_rate, 'current_rate': current_rate, 'stop_loss_rate': stop_loss_rate, 'take_profit_rate': take_profit_rate}
                 positions.append(position)
         else:
-            portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': None, 'total_invested_value': None}
             positions = []
-        
+        print(portfolio)
+        print(positions)
         return portfolio, positions
     
     def get_pending_order(self):
@@ -207,29 +206,31 @@ class API():
         stop_loss_btn.click()
         stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
         if len(stop_loss_switch_btn) != 0:
+            print('switch-to-rate-button')
             stop_loss_switch_btn[0].click()
-            stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-            for _ in range(12):
-                stop_loss_input.send_keys(Keys.ARROW_RIGHT)
-                stop_loss_input.send_keys(Keys.BACK_SPACE)
-            time.sleep(1)
-            stop_loss_input.send_keys(str(order.stop_loss))
-            stop_loss_input.send_keys(Keys.ENTER)
+        
+        stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+        for _ in range(12):
+            stop_loss_input.send_keys(Keys.ARROW_RIGHT)
+            stop_loss_input.send_keys(Keys.BACK_SPACE)
+        time.sleep(1)
+        stop_loss_input.send_keys(str(order.stop_loss))
+        stop_loss_input.send_keys(Keys.ENTER)
 
         #TAKE PROFIT
         take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
         take_profit_btn.click()
         take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-rate-editing-switch-to-rate-button']")
         if len(take_profit_switch_btn) != 0:
+            print('switch-to-rate-button')
             stop_loss_switch_btn[0].click()
-            take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-            for _ in range(12):
-                take_profit_input.send_keys(Keys.ARROW_RIGHT)
-                take_profit_input.send_keys(Keys.BACK_SPACE)
-            time.sleep(1)
-            take_profit_input.send_keys(str(order.take_profit))
-            take_profit_input.send_keys(Keys.ENTER)
-
+        take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+        for _ in range(12):
+            take_profit_input.send_keys(Keys.ARROW_RIGHT)
+            take_profit_input.send_keys(Keys.BACK_SPACE)
+        time.sleep(1)
+        take_profit_input.send_keys(str(order.take_profit))
+        take_profit_input.send_keys(Keys.ENTER)
 
         #PLACE ORDER
         self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))

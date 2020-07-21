@@ -1,5 +1,5 @@
 
-from .models import Profile, Portfolio, Position, Stock
+from .models import Profile, Portfolio, Position, Stock, SMABacktest, SMAPosition, PriceHistory, SMAModel, BuyOrder, SellOrder
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -9,9 +9,33 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = '__all__'
 
+class PriceHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PriceHistory
+        fields = '__all__'
+
+class SMAPositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SMAPosition
+        fields = '__all__'
+
 class StockSerializer(serializers.ModelSerializer):
+    last_price = PriceHistorySerializer(read_only=True)
     class Meta:
         model = Stock
+        fields = ['symbol', 'name', 'sector', 'industry', 'last_price']
+
+class SMAModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SMAModel
+        fields = '__all__'
+
+class SMABacktestSerializer(serializers.ModelSerializer):
+    stock = StockSerializer()
+    model = SMAModelSerializer()
+    sma_position = SMAPositionSerializer(many=True, read_only=True)
+    class Meta:
+        model = SMABacktest
         fields = '__all__'
 
 class PositionSerializer(serializers.ModelSerializer):
@@ -23,6 +47,20 @@ class PositionSerializer(serializers.ModelSerializer):
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Portfolio
+        fields = '__all__'
+
+class BuyOrderSerializer(serializers.ModelSerializer):
+    stock = StockSerializer()
+    sma_position = SMAPositionSerializer()
+    class Meta:
+        model = BuyOrder
+        fields = '__all__'
+
+class SellOrderSerializer(serializers.ModelSerializer):
+    stock = StockSerializer()
+    sma_position = SMAPositionSerializer()
+    class Meta:
+        model = SellOrder
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
