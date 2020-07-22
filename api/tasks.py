@@ -43,8 +43,9 @@ def save_portfolio(portfolio, positions, pending_orders, user_id):
         pos = Position(stock=stock, portfolio=p, invest_date=investment_date, invest_value=invest_value, invest_units=int(float(position['invested_units'])), open_rate=float(position['open_rate']), current_rate=float(position['current_rate']), stop_loss_rate=float(position['stop_loss_rate']), take_profit_rate=float(position['take_profit_rate']))
         pos.save()
     #PENDING_ORDERS
+    print(pending_orders)
     for pending_order in pending_orders:
-        stock = Stock.objects.filter(symbol=pending_order['ticker'])
+        # stock = Stock.objects.filter(symbol=pending_order['ticker'])
         print(pending_order)
         # po = PendingOrder(stock=stock, user=user, portfolio=p, total_investment=pending_order['total_investment'], open_rate=pending_order['open_rate'], current_price=pending_order['current_price'],stop_loss=pending_order['stop_loss'],take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
         # po.save()

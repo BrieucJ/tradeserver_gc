@@ -128,6 +128,7 @@ class API():
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='orders-table']")
             rows = table.find_elements_by_css_selector("div[class='ui-table-row-container ng-scope']")
             for r in rows:
+                order_type = len(r.find_elements_by_css_selector("span[data-etoro-automation-id='orders-table-body-cell-action-buy']"))
                 ticker = r.find_element_by_css_selector("span[data-etoro-automation-id='orders-table-body-cell-action-market-name']").text
                 total_investment = r.find_element_by_css_selector("ui-table-cell[data-etoro-automation-id='orders-table-body-cell-amount']").text
                 open_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='orders-table-body-cell-rate-order']").text
@@ -138,7 +139,7 @@ class API():
                 time = r.find_element_by_css_selector("p[data-etoro-automation-id='orders-table-body-cell-open-date-time-value']").text
                 date_time = date + ' ' + time
                 submited_at = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S")
-                order = {'tiker': ticker, 'total_investment': total_investment, 'open_rate': open_rate, 'current_price': current_price, 'stop_loss': stop_loss, 'take_profit': take_profit, 'submited_at': submited_at}
+                order = {'ticker': ticker, 'order_type':order_type, 'total_investment': total_investment, 'open_rate': open_rate, 'current_price': current_price, 'stop_loss': stop_loss, 'take_profit': take_profit, 'submited_at': submited_at}
                 pending_orders.append(order)
         return pending_orders
 
