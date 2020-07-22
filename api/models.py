@@ -37,19 +37,19 @@ class Portfolio(models.Model):
         ordering = ['-date']
         unique_together = ['user', 'portfolio_type', 'date']
 
-class PendingOrder(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='pending_order')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pending_order')
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='pending_order')
-    total_investment = models.FloatField(default=0)
-    open_rate = models.FloatField(default=0)
-    current_price = models.FloatField(default=0)
-    stop_loss = models.FloatField(default=0)
-    take_profit = models.FloatField(default=0)
-    submited_at = models.DateTimeField(default=None, null=True)
+# class PendingOrder(models.Model):
+#     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='pending_order')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pending_order')
+#     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='pending_order')
+#     total_investment = models.FloatField(default=0)
+#     open_rate = models.FloatField(default=0)
+#     current_price = models.FloatField(default=0)
+#     stop_loss = models.FloatField(default=0)
+#     take_profit = models.FloatField(default=0)
+#     submited_at = models.DateTimeField(default=None, null=True)
 
-    class Meta:
-        ordering = ['-submited_at']
+#     class Meta:
+#         ordering = ['-submited_at']
 
 class Position(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position')
@@ -137,22 +137,21 @@ class SellOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sell_order')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='sell_order')
-    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
+    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order')
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order')
     num_of_shares = models.IntegerField(default=None)
     price_date = models.DateField(default=None)
     created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
     submited_at = models.DateTimeField(default=None, null=True)
-    executed_at = models.DateTimeField(default=None, null=True)
 
     class Meta:
-        unique_together = ['price_date', 'position', 'stock', 'portfolio']
+        unique_together = ['user', 'price_date', 'position', 'stock', 'portfolio']
         ordering = ['-price_date']
 
 class BuyOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buy_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='buy_order')
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='buy_order', default=None)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='buy_order')
     sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='buy_order')
     price_date = models.DateField(default=None)
     num_of_shares = models.IntegerField(default=None)
@@ -162,7 +161,6 @@ class BuyOrder(models.Model):
     take_profit = models.FloatField(default=None, null=True)
     created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
     submited_at = models.DateTimeField(default=None, null=True)
-    executed_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
         unique_together = ['user', 'price_date', 'stock', 'portfolio']

@@ -104,6 +104,15 @@ class Profile extends React.Component {
                 >
                 Update account
             </Button>
+            <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => {this.props.logout()}}
+            >
+                Logout
+            </Button>
             </Grid>
         </Grid>
     ); 

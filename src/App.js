@@ -1,5 +1,9 @@
 import React, {Fragment} from 'react';
 import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { ThemeProvider, responsiveFontSizes} from '@material-ui/core/styles';
+import {dark_theme, light_theme} from './utils/Theme';
+
 // PAGES
 import _404 from './pages/_404'
 import Home from './pages/Home'
@@ -10,15 +14,13 @@ import Auth from './pages/Auth'
 import Profile from './pages/Profile'
 // COMPONENTS
 import Menu from './components/Menu'
-import { Container } from '@material-ui/core';
-
 import {post, put} from './utils/Api'
-import {API_URL} from './utils/Constants'
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
+      theme: 'dark',
       logged_in: localStorage.getItem('token') ? true : false,
       user: JSON.parse(localStorage.getItem('user')),
       errors: {}
@@ -27,6 +29,14 @@ class App extends React.Component {
 
   handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
+  }
+
+  handleThemeChange = () => {
+    if (this.state.theme === 'light'){
+      this.setState({ theme: 'dark' });
+    } else {
+      this.setState({ theme: 'light' });
+    }    
   }
 
   sign_up = async (params) => {
@@ -91,31 +101,28 @@ class App extends React.Component {
   render() {
       return (
           <Router>
+            <ThemeProvider theme={this.state.theme === 'light' ? responsiveFontSizes(light_theme) : responsiveFontSizes(dark_theme)}>
+              <CssBaseline />
               <Switch>
                 {!this.state.logged_in &&
                 <Fragment>
-                  <div style={{backgroundColor: '#CFD8DC', minHeight: '100vh'}}>
                   <Route exact path='/' render={(props) => <Auth {...props} sign_up={(params) => {this.sign_up(params)}} log_in={(params) => {this.log_in(params)}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />
                   <Redirect from='*' to='/' />
-                  </div>
                 </Fragment>
                 }
                 {this.state.logged_in &&
-                <Fragment>
-                  <div style={{backgroundColor: '#CFD8DC', minHeight: '100vh'}}>
-                  <Menu logout={() => {this.logout()}}/>
-                  <Container style={{minHeight: 'calc(100vh - 84px)', backgroundColor:'#CFD8DC'}}>
+                  <Fragment>
+                    <Menu handleThemeChange={() => {this.handleThemeChange()}}/>
                     <Route exact path="/" render={(props) => <Home {...props} user={this.state.user}/>}/>
                     <Route exact path="/portfolio" render={(props) => <Portfolio {...props}/>} />
                     <Route exact path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
                     <Route exact path="/model" render={(props) => <Model {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
-                    <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />
+                    <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} logout={() => {this.logout()}}/>
                     <Route exact path='/404' render={(props) => <_404 {...props} />} />
-                  </Container>
-                  </div>
-                </Fragment>
+                  </Fragment>
                 }
               </Switch>
+              </ThemeProvider>
           </Router>
       ); 
   }

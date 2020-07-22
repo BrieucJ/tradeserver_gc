@@ -9,7 +9,7 @@ import itertools
 # python manage.py seed --mode=refresh
 
 START_DATE = '2000-01-01'
-END_DATE = datetime.date.today() - datetime.timedelta(days=10)
+END_DATE = datetime.date.today()
 
 MODE_REFRESH = 'refresh'
 MODE_CLEAR = 'clear'

@@ -1,6 +1,11 @@
 import React from 'react';
-import { Button, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import { Button, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
 import {get} from '../utils/Api'
+import { withStyles } from '@material-ui/core/styles';
+
+const styles = {
+  
+}
 
 class Market extends React.Component {
   constructor(props) {
@@ -31,8 +36,8 @@ class Market extends React.Component {
     return(
       stocks.map((stock) => (
         <TableRow key={stock.symbol}>
-          <TableCell component="th" scope="row">{stock.symbol} </TableCell>
-          <TableCell component="th" scope="row">{stock.name} </TableCell>
+          <TableCell component="th" scope="row"> {stock.symbol}  </TableCell>
+          <TableCell component="th" scope="row" >{stock.name}</TableCell>
           <TableCell component="th" scope="row">{stock.sector} </TableCell>
           <TableCell component="th" scope="row">{stock.industry} </TableCell>
           <TableCell component="th" scope="row" align="right">{stock.last_price.price_date} </TableCell>
@@ -80,35 +85,38 @@ class Market extends React.Component {
   }
 
   render() {
+    const { classes, theme } = this.props;
     return (
       <Grid container direction="row" alignItems="center" justify="center">
            <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                onClick={() => {this.update_stocks()}}
-                style={{margin: 10}}
+              color="primary" 
+              size={theme.breakpoints.down("md") ? 'small' : 'medium'}
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={() => {this.update_stocks()}}
+              style={{margin: 5}}
             >
                 Update stocks
             </Button>
           <TableContainer component={Paper}>
-            <Table aria-label="simple table">
+            <Table aria-label="simple table" style={{tableLayout:'fixed', width:'100%'}}>
               <TableHead>
                 <TableRow>
-                  <TableCell style={{fontWeight:'bold'}}>Symbol
+                  <TableCell> <Typography variant='body2'>Symbol</Typography>
                     <TableSortLabel active={this.state.sorting_col==='symbol'} direction={this.state.sorting_dir} id='symbol' onClick={e => {this.handleSorting(e)}} />
                   </TableCell>
-                  <TableCell style={{fontWeight:'bold'}}>Name
+                  <TableCell > <Typography variant='body2'>Name</Typography>
                     <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
                   </TableCell>
-                  <TableCell style={{fontWeight:'bold'}}>Sector
+                  <TableCell ><Typography variant='body2'>Sector</Typography>
                     <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
                   </TableCell>
-                  <TableCell style={{fontWeight:'bold'}}>Industry
+                  <TableCell ><Typography variant='body2'>Industry</Typography>
                     <TableSortLabel active={this.state.sorting_col==='industry'} direction={this.state.sorting_dir} id='industry' onClick={e => {this.handleSorting(e)}} />
                   </TableCell>
-                  <TableCell align="right" style={{fontWeight:'bold'}}>Last price date </TableCell>
-                  <TableCell align="right" style={{fontWeight:'bold'}}>Last closing price</TableCell>
+                  <TableCell align="right" ><Typography variant='body2'>Price date</Typography> </TableCell>
+                  <TableCell align="right" ><Typography variant='body2'>Closing price</Typography></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -121,4 +129,4 @@ class Market extends React.Component {
   }
 }
 
-export default Market
+export default withStyles(styles, { withTheme: true })(Market);

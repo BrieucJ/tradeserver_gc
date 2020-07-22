@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
-from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder, PendingOrder
+from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder
 from re import sub
 from decimal import Decimal
 
@@ -45,8 +45,9 @@ def save_portfolio(portfolio, positions, pending_orders, user_id):
     #PENDING_ORDERS
     for pending_order in pending_orders:
         stock = Stock.objects.filter(symbol=pending_order['ticker'])
-        po = PendingOrder(stock=stock, user=user, portfolio=p, total_investment=pending_order['total_investment'], open_rate=pending_order['open_rate'], current_price=pending_order['current_price'],stop_loss=pending_order['stop_loss'],take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'], )
-        po.save()
+        print(pending_order)
+        # po = PendingOrder(stock=stock, user=user, portfolio=p, total_investment=pending_order['total_investment'], open_rate=pending_order['open_rate'], current_price=pending_order['current_price'],stop_loss=pending_order['stop_loss'],take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
+        # po.save()
 
 @shared_task
 def update_orders(user_id, portfolio_type):
@@ -69,15 +70,11 @@ def update_orders(user_id, portfolio_type):
                 print(f'SELLING {stock} POSITION')
                 order = SellOrder(user=user, stock=position.stock, sma_position=sma_position, portfolio=portfolio, position=position, num_of_shares=position.invest_units, price_date=sma_position.price_date)
                 order.save()
-            else:
-                print(f'SELLING {stock} POSITION')
-                order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position, num_of_shares=position.invest_units, price_date=position.stock.price_history.first().price_date)
-                order.save()
         
         #PENDING ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
-        pending_buy_orders = portfolio.buy_order.filter(executed_at=None)
-        pending_sell_orders = portfolio.sell_order.filter(executed_at=None)
+        pending_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False)
+        pending_sell_orders = portfolio.sell_order.filter(submited_at__isnull=False)
         print(len(pending_buy_orders))
         print(len(pending_sell_orders))
         for order in pending_buy_orders:
@@ -104,7 +101,7 @@ def update_orders(user_id, portfolio_type):
             for b in backtests:
                 cash = portfolio.cash
                 max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
-                pending_buy_orders = portfolio.buy_order.filter(executed_at=None).aggregate(Sum('total_investment'))
+                pending_buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).aggregate(Sum('total_investment'))
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
                 else:
@@ -168,7 +165,7 @@ def transmit_orders(user_id, portfolio_type):
     
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=30, hour=22, day_of_week='1-5')), name="update_price_history", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=30, hour=22, day_of_week='1-5')), name="update_price_history", ignore_result=False)
 def update_price_history():
     stocks = Stock.objects.all() 
     for s in stocks:
@@ -198,7 +195,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/3', day_of_week='1-5')), name="update_portfolio_task", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/3', day_of_week='1-5')), name="update_portfolio_task", ignore_result=False)
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()
@@ -225,7 +222,7 @@ def update_portfolio_task():
                 pending_orders = api.get_pending_order()
                 save_portfolio.delay(portfolio, positions, pending_orders, user.id)
 
-@periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
     users = User.objects.all()
     for user in users:

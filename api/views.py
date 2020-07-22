@@ -81,8 +81,8 @@ class RetrievePortfolio(generics.RetrieveAPIView):
         try:
             p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
             pos_demo = p_demo.position.all()
-            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at=None), many=True).data 
-            pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at=None), many=True).data  
+            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.all(), many=True).data 
+            pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.all(), many=True).data  
             pending_orders_demo = pending_buy_orders_demo + pending_sell_orders_demo 
         except Portfolio.DoesNotExist:
             p_demo = None
@@ -91,8 +91,8 @@ class RetrievePortfolio(generics.RetrieveAPIView):
         try:
             p_real = Portfolio.objects.filter(user=u, portfolio_type=True).latest('date')
             pos_real = p_real.position.all()
-            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at=None), many=True).data 
-            pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at=None), many=True).data  
+            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.all(), many=True).data 
+            pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.all(), many=True).data  
             pending_orders_real = pending_buy_orders_real + pending_sell_orders_real 
         except Portfolio.DoesNotExist:
             p_real = None
@@ -152,13 +152,14 @@ class UpdatePortfolio(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        update_portfolio_task.delay()
+        task = update_portfolio_task.delay()
+        result = task.wait(timeout=None, interval=0.5)
         u = request.user
         try:
             p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
             pos_demo = p_demo.position.all()
-            pending_buy_orders = BuyOrderSerializer(p_demo.buy_order.filter(executed_at=None), many=True).data 
-            pending_sell_orders = SellOrderSerializer(p_demo.sell_order.filter(executed_at=None), many=True).data  
+            pending_buy_orders = BuyOrderSerializer(p_demo.buy_order.all(), many=True).data 
+            pending_sell_orders = SellOrderSerializer(p_demo.sell_order.all(), many=True).data  
             pending_orders = pending_buy_orders + pending_sell_orders 
         except Portfolio.DoesNotExist:
             p_demo = None
@@ -168,8 +169,8 @@ class UpdatePortfolio(generics.RetrieveAPIView):
         try:
             p_real = Portfolio.objects.filter(user=u, portfolio_type=True).latest('date')
             pos_real = p_real.position.all()
-            pending_buy_orders = BuyOrderSerializer(p_real.buy_order.filter(executed_at=None), many=True).data 
-            pending_sell_orders = SellOrderSerializer(p_real.sell_order.filter(executed_at=None), many=True).data  
+            pending_buy_orders = BuyOrderSerializer(p_real.buy_order.all(), many=True).data 
+            pending_sell_orders = SellOrderSerializer(p_real.sell_order.all(), many=True).data  
             pending_orders = pending_buy_orders + pending_sell_orders 
         except Portfolio.DoesNotExist:
             p_real = None
@@ -187,7 +188,7 @@ class UpdateOrders(generics.RetrieveAPIView):
         print('Retrieve')
         update_orders.delay(request.user.id, False)
         # update_orders.delay(request.user.id, True)
-        return Response({'SUCCESS': 'SUCCESS'})
+        return Response({'pending_orders': 'SUCCESS'})
 
 class TransmitOrders(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)

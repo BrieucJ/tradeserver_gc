@@ -1,6 +1,11 @@
-import React from 'react';
-import {Container, Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import React, {Fragment} from 'react';
+import { Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@material-ui/core';
 import {get} from '../utils/Api'
+import { withStyles } from '@material-ui/core/styles';
+
+const styles = {
+
+}
 
 class Portfolio extends React.Component {
   constructor(props) {
@@ -24,7 +29,6 @@ class Portfolio extends React.Component {
     get('api/retrieve_portfolio/').then((resp) => {
       if (resp.status === 200){
         var response = JSON.parse(resp.response)
-        console.log(response)
         this.setState({
           demo_portfolio: response.p_demo.portfolio,
           demo_positions: response.p_demo.positions,
@@ -39,7 +43,18 @@ class Portfolio extends React.Component {
 
   get_portfolio = async () => {
     get('api/update_portfolio/').then((resp) => {
-        // console.log(resp)
+      if (resp.status === 200){
+        var response = JSON.parse(resp.response)
+        console.log(response)
+        this.setState({
+          demo_portfolio: response.p_demo.portfolio,
+          demo_positions: response.p_demo.positions,
+          pending_orders_demo: response.p_demo.pending_orders,
+          real_portfolio: response.p_real.portfolio,
+          real_positions: response.p_real.positions,
+          pending_orders_real: response.p_real.pending_orders,
+        })
+      }
     })
   }
 
@@ -119,23 +134,24 @@ class Portfolio extends React.Component {
     }
     return (
       <Grid container direction="row" alignItems="center" justify="center" style={{padding:10}}>
-        <Typography style={{paddingRight: 10}}>
+        <Typography variant='body2' style={{paddingRight: 10}}>
           Date: {new Date(portfolio.date).toLocaleString()}
         </Typography>
-        <Typography style={{paddingRight: 10}}>
-          Cash: {portfolio.cash}
+        <Typography variant='body2' style={{paddingRight: 10}}>
+          Cash: {portfolio.cash}{portfolio.currency}
         </Typography>
-        <Typography>
-          Total invested value: {portfolio.total_invested_value}
+        <Typography variant='body2'>
+          Total invested value: {portfolio.total_invested_value}{portfolio.currency}
         </Typography>
       </Grid>
     )
   }
   render() {
+    const { classes, theme } = this.props;
     return (
-      <Container>
+      <Fragment>
         <Grid container direction="row" alignItems="center" justify="center">
-          <Typography>
+          <Typography variant="h6">
             {this.state.portfolio_type && 'Real portfolio'}
             {!this.state.portfolio_type && 'Demo portfolio'}
           </Typography>
@@ -146,34 +162,35 @@ class Portfolio extends React.Component {
             color="primary"
           />
           <Button
+            color="primary" 
+            size={theme.breakpoints.down("md") ? 'small' : 'medium'}
             type="submit"
             variant="contained"
-            color="primary"
             onClick={() => {this.get_portfolio()}}
           >
             Update portfolio
           </Button>
         </Grid>
-        <Grid container style={{paddingBottom: 10}} direction="column" alignItems="center" justify="center">
+        <Grid container direction="column" alignItems="center" justify="center">
           {this.renderPortfolio()}
         </Grid>
         <Grid container direction="column" alignItems="center" justify="center">
-            <Typography variant="h6" style={{padding: 10}}>
+            <Typography variant="h6" style={{padding: 5}}>
               Portfolio
             </Typography>
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell style={{fontWeight:'bold'}}>Symbol</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Investment date</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Invested value </TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Invested units</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Open rate</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Current rate</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Stop loss</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Take profit</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Unrealized gain/loss</TableCell>
+                  <TableCell>Symbol</TableCell>
+                  <TableCell align="right">Investment date</TableCell>
+                  <TableCell align="right">Invested value </TableCell>
+                  <TableCell align="right">Invested units</TableCell>
+                  <TableCell align="right">Open rate</TableCell>
+                  <TableCell align="right">Current rate</TableCell>
+                  <TableCell align="right">Stop loss</TableCell>
+                  <TableCell align="right">Take profit</TableCell>
+                  <TableCell align="right">Unrealized gain/loss</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -181,45 +198,48 @@ class Portfolio extends React.Component {
               </TableBody>
             </Table>
           </TableContainer>
-          <Grid container direction="row" alignItems="center" justify="center">
-            <Typography variant="h6" style={{padding: 10}}>
+          <Grid  container direction="column" alignItems="center" justify="center">
+            <Typography variant="h6" style={{padding: 5}}>
               Pending orders
             </Typography>
-          
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              onClick={() => {this.update_orders()}}
-              style={{margin: 10}}
-            >
-              Update orders
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              onClick={() => {this.transmit_orders()}}
-              style={{margin: 10}}
-            >
-              Transmit orders
-            </Button>
+            <Grid  container direction="row" justify="center">
+              <Button
+                color="primary" 
+                size={theme.breakpoints.down("md") ? 'small' : 'medium'}
+                type="submit"
+                variant="contained"
+                onClick={() => {this.update_orders()}}
+                style={{margin: 5}}
+              >
+                Update orders
+              </Button>
+              <Button
+                color="primary" 
+                size={theme.breakpoints.down("md") ? 'small' : 'medium'}
+                type="submit"
+                variant="contained"
+                onClick={() => {this.transmit_orders()}}
+                style={{margin: 5}}
+              >
+                Transmit orders
+              </Button>
+            </Grid>
           </Grid>
           <TableContainer component={Paper}>
-            <Table aria-label="simple table">
+            <Table aria-label="simple table" >
               <TableHead>
                 <TableRow>
-                  <TableCell style={{fontWeight:'bold'}}>Symbol</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Order type </TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Invested value </TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Invested units</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Open rate</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Stop loss</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Take profit</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Price date</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Creation date</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Sent date</TableCell>
-                  <TableCell style={{fontWeight:'bold'}} align="right">Execution date</TableCell>
+                  <TableCell>Symbol</TableCell>
+                  <TableCell align="right">Order type </TableCell>
+                  <TableCell align="right">Invested value </TableCell>
+                  <TableCell align="right">Invested units</TableCell>
+                  <TableCell align="right">Open rate</TableCell>
+                  <TableCell align="right">Stop loss</TableCell>
+                  <TableCell align="right">Take profit</TableCell>
+                  <TableCell align="right">Price date</TableCell>
+                  <TableCell align="right">Creation date</TableCell>
+                  <TableCell align="right">Sent date</TableCell>
+                  <TableCell align="right">Execution date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -228,9 +248,8 @@ class Portfolio extends React.Component {
             </Table>
           </TableContainer>
         </Grid>
-      </Container>
+      </Fragment>
     ); 
   }
 }
-
-export default Portfolio
+export default withStyles(styles, { withTheme: true })(Portfolio);
