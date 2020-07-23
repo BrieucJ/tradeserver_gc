@@ -174,10 +174,8 @@ worker_max_tasks_per_child = 1
 CELERY_TIMEZONE = 'Europe/Paris'
 BROKER_POOL_LIMIT = 3
 if PRODUCTION:
-    print('PRODUCTION')
-    print(os.environ.get('DATABASE_URL',True))
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERY_RESULT_BACKEND = os.environ.get('DATABASE_URL',True)
+    CELERY_RESULT_BACKEND = 'db+' + os.environ.get('DATABASE_URL',True)
 else: 
     CELERY_BROKER_URL =  'amqp://localhost'
     CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
