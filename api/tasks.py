@@ -94,6 +94,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders):
                     so.submited_at = pending_order['submited_at']
             else:
                 print('UNKNOWN ORDER')
+                print(pending_order)
             so.save()
 
 @shared_task
@@ -106,7 +107,6 @@ def update_orders(user_id, portfolio_type):
     print(portfolio.cash)
     if portfolio != None:
         print('PORTFOLIO EXIST')
-
         #POSITIONS REALLOCATION
         print("POSITIONS REALLOCATION")
         positions = portfolio.position.all()
@@ -194,9 +194,12 @@ def transmit_orders(user_id, portfolio_type):
         orders = list(chain(sell_orders, buy_orders))
         print(orders)
         if len(orders) != 0:
-            pending_orders = API(user.profile.broker_username, user.profile.broker_password, mode=mode).transmit_orders(orders=orders)
-            print('PENDING ORDERS')
-            print(pending_orders)
+            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+            pending_orders = api.transmit_orders(orders=orders)
+            portfolio, positions = api.update_portfolio()
+            pending_orders = api.get_pending_order()
+            save_portfolio.delay(portfolio, user.id, positions, pending_orders)
+
     
 
 #PERIODIC TASKS
@@ -230,7 +233,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/1', day_of_week='1-5')), name="update_portfolio_task", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/1', day_of_week='1-5')), name="update_portfolio_task", ignore_result=True)
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()

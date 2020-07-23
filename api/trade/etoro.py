@@ -270,7 +270,4 @@ class API():
             else:
                 print('Error unknown order_type')
                 continue
-        
-        pending_orders = self.get_pending_order()
-        return pending_orders
             

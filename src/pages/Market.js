@@ -40,8 +40,8 @@ class Market extends React.Component {
           <TableCell component="th" scope="row" >{stock.name}</TableCell>
           <TableCell component="th" scope="row">{stock.sector} </TableCell>
           <TableCell component="th" scope="row">{stock.industry} </TableCell>
-          <TableCell component="th" scope="row" align="right">{stock.last_price.price_date} </TableCell>
-          <TableCell component="th" scope="row" align="right">{Math.round(stock.last_price.close)} </TableCell>
+          <TableCell component="th" scope="row" align="right">{stock.last_price === null ? 'None' : stock.last_price.price_date} </TableCell>
+          <TableCell component="th" scope="row" align="right">{stock.last_price === null ? 'None' : Math.round(stock.last_price.close)} </TableCell>
         </TableRow>
       ))
     )
