@@ -13,10 +13,10 @@ class Model extends React.Component {
   }
 
   componentDidMount(){
-    this.retrieve_market()
+    this.retrieve_model()
   }
 
-  retrieve_market = async () => {
+  retrieve_model = async () => {
     get('api/retrieve_model/').then((resp) => {
       if (resp.status === 200){
         var response = JSON.parse(resp.response)
@@ -36,16 +36,14 @@ class Model extends React.Component {
           <TableCell align="right" >{parseFloat(sma_backtest.model_cagr*100).toFixed(2)+"%"}</TableCell>
           <TableCell align="right" >{parseFloat(sma_backtest.precision*100).toFixed(2)+"%"}</TableCell>
           <TableCell align="right" >{Math.round(sma_backtest.score)}</TableCell>
-          <TableCell align="right" >{sma_backtest.sma_position[0].price_date}</TableCell>
-          <TableCell align="right" style={{color: sma_backtest.sma_position[0].buy ? 'green' : 'red'}} >{sma_backtest.sma_position[0].buy ? 'BUY' : 'SELL'}</TableCell>
+          <TableCell align="right" >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].price_date}</TableCell>
+          <TableCell align="right" style={{color: sma_backtest.sma_position.length === 0 ? 'black' : sma_backtest.sma_position[0].buy ? 'green' : 'red'}} >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].buy ? 'BUY' : 'SELL'}</TableCell>
         </TableRow>
       ))
     )
   }
 
   sorter = (col, order) => {
-    console.log(col)
-    console.log(order)
     if (order === 'asc') {
         this.state.sma_backtests.sort(function(a, b) { return a[col] - b[col] } )
       } else {
