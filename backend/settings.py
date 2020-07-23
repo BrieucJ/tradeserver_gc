@@ -31,7 +31,7 @@ worker_max_tasks_per_child = 1
 CELERY_TIMEZONE = 'Europe/Paris'
 if PRODUCTION:
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERY_RESULT_BACKEND = os.environ.DATABASE_URL
+    CELERY_RESULT_BACKEND = os.environ.get('DATABASE_URL')
 else: 
     CELERY_BROKER_URL =  'amqp://localhost'
     CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
