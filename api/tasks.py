@@ -230,7 +230,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/3', day_of_week='1-5')), name="update_portfolio_task", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/1', day_of_week='1-5')), name="update_portfolio_task", ignore_result=False)
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()
@@ -263,8 +263,3 @@ def portfolio_rebalancing():
         update_orders.delay(user.id, True)
         transmit_orders.delay(user.id, False)
         transmit_orders.delay(user.id, True)
-
-@periodic_task(run_every=(crontab(minute='*/1', day_of_week='1-5')), name="test_task", ignore_result=False)
-def test_task():
-    print('TEST TASK')
-    print(datetime.datetime.now(tz=timezone.utc))
