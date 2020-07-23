@@ -175,7 +175,7 @@ CELERY_TIMEZONE = 'Europe/Paris'
 BROKER_POOL_LIMIT = 3
 if PRODUCTION:
     CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERY_RESULT_BACKEND = locals()['DATABASES']['default']
+    CELERY_RESULT_BACKEND = 'db+postgres://jzfmgncteilczm:6b9addb1b0bd73ad078134e9ac0d654f750ef05ae3d106990507ebe79aa3360a@ec2-52-202-66-191.compute-1.amazonaws.com:5432/dc4uu6ladtsjm2'
 else: 
     CELERY_BROKER_URL =  'amqp://localhost'
     CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
