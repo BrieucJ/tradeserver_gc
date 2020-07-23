@@ -153,7 +153,7 @@ class UpdatePortfolio(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
         task = update_portfolio_task.delay()
-        result = task.wait(timeout=None, interval=0.5)
+        # result = task.wait(timeout=None, interval=0.5)
         u = request.user
         try:
             p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
