@@ -28,12 +28,12 @@ class API():
         self.options.add_argument('--headless')
         if settings.PRODUCTION:
             self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), options=self.options)
-            self.wait = WebDriverWait(self.browser, 60)
-            self.browser.implicitly_wait(60)
+            self.wait = WebDriverWait(self.browser, 100)
+            self.browser.implicitly_wait(100)
         else:
             self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
-            self.wait = WebDriverWait(self.browser, 60)
-            self.browser.implicitly_wait(60)
+            self.wait = WebDriverWait(self.browser, 100)
+            self.browser.implicitly_wait(100)
 
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
         self.login()
@@ -237,7 +237,6 @@ class API():
         self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
         place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
         place_order_btn.click()
-    
 
     def execute_sell_order(self, order):
         print('execute_sell_order')
@@ -256,6 +255,38 @@ class API():
         sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-all-positions-closs-all-button']")
         sell_button.click()
 
+    def cancel_order(self, order):
+        self.browser.get('https://www.etoro.com/portfolio/orders')
+        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
+        row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
+        cancel_btn = row.find_element_by_css_selector("a[data-etoro-automation-id='orders-table-body-close-order-action']")
+        cancel_btn.click()
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-all-positions-window']")))
+        cancel_modal = self.browser.find_element_by_css_selector("div[class='close-order-container']")
+        execute_btn = cancel_modal.find_element_by_css_selector("button[class^='close-order-button']") # ^ => partial class match
+        execute_btn.click()
+
+    def update_trade_history(self):
+        print('update_trade_history')
+        self.browser.get('https://www.etoro.com/portfolio/history')
+        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/history')
+        trade_history = []
+        rows = self.browser.find_elements_by_css_selector("div[class='ui-table-row ng-scope']")
+        print(len(rows))
+        for r in rows:
+            ticker = r.find_element_by_css_selector("div[class='i-portfolio-table-name']").text.split(' ')[1]
+            infos = r.find_element_by_tag_name("ui-table-body-slot").find_elements_by_tag_name("ui-table-cell")
+            total_investment = infos[0].text
+            num_of_shares = infos[1].text
+            open_rate = infos[2].text
+            open_date = infos[3].text
+            close_rate = infos[4].text
+            close_date = infos[5].text
+            p_l = infos[6].text
+            hist = {'ticker': ticker, 'total_investment': total_investment, 'num_of_shares': num_of_shares, 'open_rate': open_rate, 'open_date': open_date, 'close_rate': close_rate, 'p_l': p_l}
+            trade_history.append(hist)
+        return trade_history
+
     def transmit_orders(self, orders):
         print('transmit orders')
         print(orders)
@@ -263,10 +294,19 @@ class API():
             #BUY/SELL SWITCH
             if str(order.__class__.__name__) == 'BuyOrder':
                 print('BUY')
-                self.execute_buy_order(order)
+                if order.canceled_at != None:
+                    print('CANCELING BUY ORDER')
+                    self.cancel_order(order)
+                else:
+                    self.execute_buy_order(order)
             elif str(order.__class__.__name__) == 'SellOrder':
-                print('SELL')
-                self.execute_sell_order(order)
+                
+                if order.canceled_at != None:
+                    print('CANCELING SELL ORDER')
+                    self.cancel_order(order)
+                else:
+                    print('SELL')
+                    self.execute_sell_order(order)
             else:
                 print('Error unknown order_type')
                 continue

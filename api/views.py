@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer
 from .trade.etoro import API
-from .tasks  import update_portfolio_task, update_sma_positions, update_price_history, transmit_orders, update_orders
+from .tasks  import update_portfolio_task, update_sma_positions, update_price_history, transmit_orders, update_orders, update_trade_history
 from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition
 
 # class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -188,6 +188,17 @@ class UpdateOrders(generics.RetrieveAPIView):
         print('Retrieve')
         update_orders.delay(request.user.id, False)
         # update_orders.delay(request.user.id, True)
+        return Response({'pending_orders': 'SUCCESS'})
+
+class UpdateTradeHistory(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer()
+
+    def retrieve(self, request, *args, **kwargs):
+        print('Retrieve')
+        update_trade_history.delay(request.user.id, False)
+        # update_trade_history.delay(request.user.id, True)
         return Response({'pending_orders': 'SUCCESS'})
 
 class TransmitOrders(generics.RetrieveAPIView):

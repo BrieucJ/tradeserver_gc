@@ -38,6 +38,7 @@ urlpatterns = [
     path('api/update_stocks/', views.UpdateStocks.as_view(), name='update_stocks'),
     path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
     path('api/update_orders/', views.UpdateOrders.as_view(), name='update_orders'),
+    path('api/update_trade_history/', views.UpdateTradeHistory.as_view(), name='update_trade_history'),
     path('api/transmit_orders/', views.TransmitOrders.as_view(), name='transmit_orders'),
     re_path(r'^(?P<path>.*)/$', index),
     path('', index),

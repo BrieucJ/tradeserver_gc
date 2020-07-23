@@ -47,6 +47,8 @@ class Position(models.Model):
     current_rate = models.FloatField(default=0)
     stop_loss_rate = models.FloatField(default=0)
     take_profit_rate = models.FloatField(default=0)
+    close_rate = models.FloatField(default=0)
+    closed_at = models.DateTimeField(default=None, null=True)
 
 class PriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
@@ -150,6 +152,7 @@ class BuyOrder(models.Model):
     created_at = models.DateTimeField(default=datetime.now, blank=True)
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
+    canceled_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
         unique_together = ['user', 'stock', 'portfolio']
