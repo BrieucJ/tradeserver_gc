@@ -18,7 +18,7 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PRODUCTION = True
+PRODUCTION = False
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -174,8 +174,10 @@ worker_max_tasks_per_child = 1
 CELERY_TIMEZONE = 'Europe/Paris'
 BROKER_POOL_LIMIT = 3
 if PRODUCTION:
-    CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERY_RESULT_BACKEND = 'db+' + os.environ.get('DATABASE_URL',True)
+    print('PRODUCTION')
+    print(os.environ['REDIS_URL'])
+    CELERY_BROKER_URL =  os.environ['REDIS_URL']
+    CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
 else: 
-    CELERY_BROKER_URL =  'amqp://localhost'
-    CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
+    CELERY_BROKER_URL =  'redis://'
+    CELERY_RESULT_BACKEND = 'redis://'
