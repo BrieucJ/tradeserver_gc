@@ -174,8 +174,6 @@ worker_max_tasks_per_child = 1
 CELERY_TIMEZONE = 'Europe/Paris'
 BROKER_POOL_LIMIT = 3
 if PRODUCTION:
-    print('PRODUCTION')
-    print(os.environ['REDIS_URL'])
     CELERY_BROKER_URL =  os.environ['REDIS_URL']
     CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
 else: 
