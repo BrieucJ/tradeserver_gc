@@ -31,7 +31,7 @@ class Portfolio(models.Model):
     currency = models.CharField(max_length=1, default='€')
     cash = models.FloatField(default=None, null=True)
     total_invested_value = models.FloatField(default=None, null=True)
-    date = models.DateTimeField(default=datetime.now(tz=timezone.utc))
+    date = models.DateTimeField(default=datetime.now, blank=True)
 
     class Meta:
         ordering = ['-date']
@@ -127,7 +127,7 @@ class SellOrder(models.Model):
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order')
     num_of_shares = models.IntegerField(default=None)
     price_date = models.DateField(default=None)
-    created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
+    created_at = models.DateTimeField(default=datetime.now, blank=True)
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
 
@@ -147,7 +147,7 @@ class BuyOrder(models.Model):
     total_investment = models.FloatField(default=None, null=True)
     stop_loss = models.FloatField(default=None, null=True)
     take_profit = models.FloatField(default=None, null=True)
-    created_at = models.DateTimeField(default=datetime.now(tz=timezone.utc))
+    created_at = models.DateTimeField(default=datetime.now, blank=True)
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
     

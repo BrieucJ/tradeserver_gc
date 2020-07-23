@@ -25,19 +25,6 @@ PRODUCTION = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '3j98+c=+v5^pu&6na&m%t@&&nf7rsu1uhp_lu_75$&lb#30h1y'
 
-#CELERY
-CELERY_TASK_SERIALIZER='json'
-worker_max_tasks_per_child = 1
-CELERY_TIMEZONE = 'Europe/Paris'
-if PRODUCTION:
-    CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
-    CELERY_RESULT_BACKEND = os.environ.get('DATABASE_URL', True)
-else: 
-    CELERY_BROKER_URL =  'amqp://localhost'
-    CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'
-
-BROKER_POOL_LIMIT = 3
-
 # SECURITY WARNING: don't run with debug turned on in production!
 if PRODUCTION: 
     DEBUG = False
@@ -180,3 +167,15 @@ django_heroku.settings(locals())
 # override DATABASE_URL set by django_heroku because it forces SSL mode locally
 ssl_require = PRODUCTION
 locals()['DATABASES']['default'] = dj_database_url.config(conn_max_age=django_heroku.MAX_CONN_AGE, ssl_require=ssl_require)
+
+#CELERY
+CELERY_TASK_SERIALIZER='json'
+worker_max_tasks_per_child = 1
+CELERY_TIMEZONE = 'Europe/Paris'
+BROKER_POOL_LIMIT = 3
+if PRODUCTION:
+    CELERY_BROKER_URL =  'amqp://xolivgwp:32PqmXA0Kluiv-yv5ZssxHaV_9j75eXX@emu.rmq.cloudamqp.com/xolivgwp'
+    CELERY_RESULT_BACKEND = locals()['DATABASES']['default']
+else: 
+    CELERY_BROKER_URL =  'amqp://localhost'
+    CELERY_RESULT_BACKEND = 'db+postgresql://django:somepassword@127.0.0.1:5432/django'

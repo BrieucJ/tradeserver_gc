@@ -20,7 +20,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      theme: 'dark',
+      theme: localStorage.getItem('theme'),
       logged_in: localStorage.getItem('token') ? true : false,
       user: JSON.parse(localStorage.getItem('user')),
       errors: {}
@@ -33,8 +33,10 @@ class App extends React.Component {
 
   handleThemeChange = () => {
     if (this.state.theme === 'light'){
+      localStorage.setItem('theme', 'dark')
       this.setState({ theme: 'dark' });
     } else {
+      localStorage.setItem('theme', 'light')
       this.setState({ theme: 'light' });
     }    
   }
@@ -100,8 +102,8 @@ class App extends React.Component {
 
   render() {
       return (
+        <ThemeProvider theme={this.state.theme === 'light' ? responsiveFontSizes(light_theme) : responsiveFontSizes(dark_theme)}>
           <Router>
-            <ThemeProvider theme={this.state.theme === 'light' ? responsiveFontSizes(light_theme) : responsiveFontSizes(dark_theme)}>
               <CssBaseline />
               <Switch>
                 {!this.state.logged_in &&
@@ -122,8 +124,9 @@ class App extends React.Component {
                   </Fragment>
                 }
               </Switch>
-              </ThemeProvider>
+              
           </Router>
+          </ThemeProvider>
       ); 
   }
 }

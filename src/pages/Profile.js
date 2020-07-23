@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Grid, Button } from '@material-ui/core';
+import { TextField, Grid, Button, Divider } from '@material-ui/core';
 
 class Profile extends React.Component {
     constructor(props) {
@@ -7,11 +7,7 @@ class Profile extends React.Component {
         this.state = {
         };
       }
-    
 
-      componentDidMount = () => {
-          console.log(this.props)
-      }
     handleChange = (e) => {
         this.setState({ [e.target.name]: e.target.value});
     }
@@ -20,12 +16,10 @@ class Profile extends React.Component {
     return (
         <Grid
             container
-            spacing={2}
             direction='column'
             alignItems='center'
-            style={{ minHeight: '100vh'}}
         >   
-            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+            <Grid container item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.username}
@@ -39,7 +33,7 @@ class Profile extends React.Component {
                     helperText={this.props.errors.username}
                 />
             </Grid>
-            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+            <Grid container item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.email}
@@ -53,7 +47,7 @@ class Profile extends React.Component {
                     helperText={this.props.errors.email}
                 />
             </Grid>
-            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+            <Grid container item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     defaultValue=''
@@ -68,7 +62,7 @@ class Profile extends React.Component {
                     helperText={this.props.errors.password}
                 />
             </Grid>
-            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+            <Grid container item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.broker_username}
@@ -83,7 +77,7 @@ class Profile extends React.Component {
                     helperText={this.props.errors.broker_username}
                 />
             </Grid>
-            <Grid container item xs={12} sm={4} md={4} lg={4} xl={4} >
+            <Grid container item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     defaultValue={this.props.user.broker_password}
@@ -98,7 +92,7 @@ class Profile extends React.Component {
                     helperText={this.props.errors.broker_password}
                 />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={10}>
                 <Button
                     type="submit"
                     fullWidth
@@ -107,16 +101,16 @@ class Profile extends React.Component {
                     onClick={() => {this.props.update_user(this.state)}}
                 >
                 Update account
-            </Button>
-            <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={() => {this.props.logout()}}
-            >
-                Logout
-            </Button>
+                </Button>
+                <Divider style={{margin: 10}}/>
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    onClick={() => {this.props.logout()}}
+                >
+                    Logout
+                </Button>
             </Grid>
         </Grid>
     ); 

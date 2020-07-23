@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react';
-import { Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@material-ui/core';
+import { Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 

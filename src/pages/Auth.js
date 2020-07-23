@@ -18,19 +18,18 @@ class Auth extends React.Component {
     return (
         <Grid
             container
-            spacing={2}
             direction="column"
             alignItems="center"
             justify="center"
             style={{ minHeight: '100vh' }}
         >   
-            <Grid item xs={12}>
+            <Grid item xs={10} style={{margin:10}}>
                 <Typography style={{'color':'red'}}>
                     {this.props.errors.non_field_errors}
                 </Typography>
             </Grid>
             
-            <Grid item xs={12}>
+            <Grid item xs={10} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     name="username"
@@ -45,7 +44,7 @@ class Auth extends React.Component {
                 />
             </Grid>
             {this.state.sign_up && 
-                <Grid item xs={12}>
+                <Grid item xs={10} style={{margin:10}}>
                     <TextField
                         onChange={e => {this.handleChange(e);}}
                         name="email"
@@ -59,7 +58,7 @@ class Auth extends React.Component {
                     />
                 </Grid>
             }
-            <Grid item xs={12}>
+            <Grid item xs={10} style={{margin:10}}>
                 <TextField
                     onChange={e => {this.handleChange(e);}}
                     variant="outlined"
@@ -73,7 +72,7 @@ class Auth extends React.Component {
                     helperText={this.props.errors.password}
                 />
             </Grid> 
-            <Grid item xs={12}>
+            <Grid item xs={10} style={{margin:10}}>
                 {this.state.sign_up &&
                 <Button
                     type="submit"
@@ -97,7 +96,7 @@ class Auth extends React.Component {
                 </Button>
                 }
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={10} style={{margin:10}}>
                 <Typography color='inherit' style={{cursor: 'pointer'}} onClick={()=>{this.setState({sign_up: !this.state.sign_up})}}>
                     {!this.state.sign_up && 'Sign up'}
                     {this.state.sign_up && 'Log in'}
