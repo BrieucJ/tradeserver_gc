@@ -132,7 +132,7 @@ class SellOrder(models.Model):
     executed_at = models.DateTimeField(default=None, null=True)
 
     class Meta:
-        unique_together = ['user', 'price_date', 'position', 'stock', 'portfolio']
+        unique_together = ['user', 'position', 'stock', 'portfolio']
         ordering = ['-created_at']
 
 class BuyOrder(models.Model):
@@ -152,5 +152,5 @@ class BuyOrder(models.Model):
     executed_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
-        unique_together = ['user', 'price_date', 'stock', 'portfolio']
+        unique_together = ['user', 'stock', 'portfolio']
         ordering = ['-created_at']
