@@ -39,7 +39,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders):
             p.currency = currency
             p.cash = cash_value
             p.total_invested_value = total_invested_val
-            p.date = date=datetime.datetime.now(tz=timezone.utc)
+            p.date = datetime.datetime.now(tz=timezone.utc)
             p.save()
         else:
             print('CREATING PORTFOLIO')
@@ -263,3 +263,8 @@ def portfolio_rebalancing():
         update_orders.delay(user.id, True)
         transmit_orders.delay(user.id, False)
         transmit_orders.delay(user.id, True)
+
+@periodic_task(run_every=(crontab(minute='*/1', day_of_week='1-5')), name="test_task", ignore_result=False)
+def test_task():
+    print('TEST TASK')
+    print(datetime.datetime.now(tz=timezone.utc))
