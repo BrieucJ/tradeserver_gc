@@ -117,7 +117,7 @@ class App extends React.Component {
                     <Route exact path="/portfolio" render={(props) => <Portfolio {...props}/>} />
                     <Route exact path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
                     <Route exact path="/model" render={(props) => <Model {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
-                    <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} logout={() => {this.logout()}}/>
+                    <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} logout={() => {this.logout()}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />
                     <Route exact path='/404' render={(props) => <_404 {...props} />} />
                   </Fragment>
                 }
