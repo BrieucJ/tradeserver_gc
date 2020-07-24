@@ -27,7 +27,7 @@ class API():
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.options.add_argument('--headless')
-        self.browser = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=self.options)
+        self.browser = webdriver.Chrome(ChromeDriverManager().install(), options=self.options)
         self.wait = WebDriverWait(self.browser, 100)
         self.browser.implicitly_wait(100)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
