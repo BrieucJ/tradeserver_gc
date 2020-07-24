@@ -68,7 +68,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders):
             print('CREATING POSITION')
             invest_units = int(float(position['invested_units']))
             open_rate = float(position['open_rate'].replace(',',''))
-            current_rate=float(position['current_rate'].replace(',','')))
+            current_rate=float(position['current_rate'].replace(',',''))
             stop_loss_rate=float(position['stop_loss_rate'].replace(',',''))
             take_profit_rate=float(position['take_profit_rate'].replace(',',''))
             pos = Position(stock=stock, portfolio=p, invest_date=investment_date, invest_value=invest_value, invest_units=invest_units, open_rate=open_rate, current_rate=current_rate, stop_loss_rate=stop_loss_rate, take_profit_rate=take_profit_rate)
