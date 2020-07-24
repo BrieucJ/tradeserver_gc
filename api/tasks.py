@@ -76,6 +76,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders):
             if p.buy_order.filter(stock=stock).count() != 0:
                 bo = p.buy_order.filter(stock=stock).first()
                 bo.executed_at = investment_date
+                if bo.submitted_at == None:
+                    bo.submitted_at = investment_date
                 bo.save()
 
     #ORDERS
