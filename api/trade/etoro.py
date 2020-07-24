@@ -31,16 +31,14 @@ class API():
         self.options.add_argument('--headless')
         if settings.PRODUCTION:
             print('USING PROD SETTINGS')
-            self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), options=self.options)
+            self.browser = webdriver.Chrome(executable_path=os.environ.get('CHROMEDRIVER_PATH'), options=self.options)
             print(self.browser.capabilities['version'])
-            self.wait = WebDriverWait(self.browser, 100)
-            self.browser.implicitly_wait(100)
         else:
             print('USING DEV SETTINGS')
             self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
-            self.wait = WebDriverWait(self.browser, 100)
-            self.browser.implicitly_wait(100)
 
+        self.wait = WebDriverWait(self.browser, 100)
+        self.browser.implicitly_wait(100)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
         self.login()
 
