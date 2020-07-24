@@ -143,6 +143,11 @@ def update_orders(user_id, portfolio_type):
                 
                 current_price_history = b.stock.price_history.first()
                 in_portfolio = portfolio.position.filter(stock=b.stock).count() != 0
+                print(sma_position != None)
+                print(current_price_history != None)
+                print(in_portfolio == False)
+                print(current_price_history.price_date > (datetime.date.today() - timedelta(days=1)))
+                print(sma_position.price_date > (datetime.date.today() - timedelta(days=1)))
                 if sma_position != None and current_price_history != None and in_portfolio == False and current_price_history.price_date > (datetime.date.today() - timedelta(days=1)) and sma_position.price_date > (datetime.date.today() - timedelta(days=1)):
                     print(f'STOCK: {b.stock} | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
                     num_of_shares = int(max_allocation_per_stock/current_price_history.close)
