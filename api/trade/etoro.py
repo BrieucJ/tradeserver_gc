@@ -31,7 +31,7 @@ class API():
         self.options.add_argument('--headless')
         if settings.PRODUCTION:
             print('USING PROD SETTINGS')
-            self.browser = webdriver.Chrome(executable_path=os.environ['CHROMEDRIVER_PATH'], options=self.options)
+            self.browser = webdriver.Chrome(executable_path=os.environ['GOOGLE_CHROME_SHIM'], options=self.options)
             print(self.browser.capabilities['version'])
         else:
             print('USING DEV SETTINGS')
