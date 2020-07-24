@@ -15,9 +15,6 @@ class API():
         print('API __init__')
         self.mode = mode
         print(self.mode)
-        print(type(settings.PRODUCTION))
-        print(settings.PRODUCTION)
-
         self.user_name = broker_username
         self.password = broker_password
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
@@ -30,14 +27,7 @@ class API():
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.options.add_argument('--headless')
-        if settings.PRODUCTION:
-            print('USING PROD SETTINGS')
-            self.browser = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=self.options)
-            print(self.browser.capabilities['version'])
-        else:
-            print('USING DEV SETTINGS')
-            self.browser = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=self.options)
-
+        self.browser = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=self.options)
         self.wait = WebDriverWait(self.browser, 100)
         self.browser.implicitly_wait(100)
         self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """ Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"""}) #inject js script to hide selenium
