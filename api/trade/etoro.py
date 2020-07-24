@@ -199,6 +199,7 @@ class API():
         share_input.send_keys(Keys.ENTER)
 
         #STOP LOSS
+        print('STOP LOSS')
         stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
         stop_loss_btn.click()
         stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
@@ -215,6 +216,7 @@ class API():
         stop_loss_input.send_keys(Keys.ENTER)
 
         #TAKE PROFIT
+        print('TAKE PROFIT')
         take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
         take_profit_btn.click()
         take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-rate-editing-switch-to-rate-button']")
@@ -233,6 +235,7 @@ class API():
         self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
         place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
         place_order_btn.click()
+        print('ORDER SUBMITTED')
 
     def execute_sell_order(self, order):
         print('execute_sell_order')
