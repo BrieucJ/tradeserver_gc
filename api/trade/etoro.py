@@ -19,7 +19,8 @@ class API():
         self.password = broker_password
         self.user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36'
         self.options = webdriver.ChromeOptions()
-        self.options.binary_location = os.environ['GOOGLE_CHROME_BIN']
+        if settings.PRODUCTION:
+            self.options.binary_location = os.environ['GOOGLE_CHROME_BIN']
         self.options.add_argument('--no-sandbox')
         self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_argument("--disable-gpu")

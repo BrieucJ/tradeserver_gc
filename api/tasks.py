@@ -119,12 +119,12 @@ def update_orders(user_id, portfolio_type):
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
         pending_sell_orders = portfolio.sell_order.filter(executed_at__isnull=True)
         for order in pending_buy_orders:
-            if order.created_at <= (datetime.date.today() - timedelta(days=1)):
+            if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
                 order.canceled_at = datetime.now()
                 order.save()
         
         for order in pending_sell_orders:
-            if order.created_at <= (datetime.date.today() - timedelta(days=1)):
+            if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
                 order.canceled_at = datetime.now()
                 order.save()
 
@@ -133,7 +133,13 @@ def update_orders(user_id, portfolio_type):
         if portfolio.cash != None and portfolio.total_invested_value != None:
             for b in backtests:
                 cash = portfolio.cash
-                max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
+                if cash + portfolio.total_invested_value > 10000:
+                    max_allocation_per_stock = 0.05 * (cash + portfolio.total_invested_value)
+                elif cash + portfolio.total_invested_value > 100000:
+                    max_allocation_per_stock = 0.01 * (cash + portfolio.total_invested_value)
+                else:
+                    max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
+
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
@@ -143,12 +149,7 @@ def update_orders(user_id, portfolio_type):
                 
                 current_price_history = b.stock.price_history.first()
                 in_portfolio = portfolio.position.filter(stock=b.stock).count() != 0
-                print(sma_position != None)
-                print(current_price_history != None)
-                print(in_portfolio == False)
-                print(current_price_history.price_date > (datetime.date.today() - timedelta(days=1)))
-                print(sma_position.price_date > (datetime.date.today() - timedelta(days=1)))
-                if sma_position != None and current_price_history != None and in_portfolio == False and current_price_history.price_date > (datetime.date.today() - timedelta(days=1)) and sma_position.price_date > (datetime.date.today() - timedelta(days=1)):
+                if sma_position != None and current_price_history != None and in_portfolio == False and current_price_history.price_date >= (datetime.date.today() - timedelta(days=1)) and sma_position.price_date >= (datetime.date.today() - timedelta(days=1)):
                     print(f'STOCK: {b.stock} | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
                     num_of_shares = int(max_allocation_per_stock/current_price_history.close)
                     if sma_position.buy and num_of_shares != 0 and max_allocation_per_stock < available_cash:
