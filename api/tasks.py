@@ -249,7 +249,6 @@ def update_price_history():
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()
-    print(len(users))
     for user in users:
         if user.profile.broker_password != None and user.profile.broker_password != None:
             #DEMO PORTFOLIO

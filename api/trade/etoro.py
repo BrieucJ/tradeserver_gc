@@ -14,6 +14,7 @@ class API():
         print('API __init__')
         self.mode = mode
         print(self.mode)
+        print(type(settings.PRODUCTION))
         print(settings.PRODUCTION)
         self.user_name = broker_username
         self.password = broker_password
@@ -28,10 +29,12 @@ class API():
         self.options.add_argument(f'user-agent={self.user_agent}')
         self.options.add_argument('--headless')
         if settings.PRODUCTION:
+            print('USING PROD SETTINGS')
             self.browser = webdriver.Chrome(executable_path=str(os.environ.get('CHROMEDRIVER_PATH')), options=self.options)
             self.wait = WebDriverWait(self.browser, 100)
             self.browser.implicitly_wait(100)
         else:
+            print('USING DEV SETTINGS')
             self.browser = webdriver.Chrome(executable_path='chromedriver', options=self.options)
             self.wait = WebDriverWait(self.browser, 100)
             self.browser.implicitly_wait(100)
