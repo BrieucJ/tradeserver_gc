@@ -256,18 +256,18 @@ def update_portfolio_task():
             if demo_portfolio == None or demo_portfolio.date < datetime.datetime.now(tz=timezone.utc):
                 print('updating demo portfolio')
                 api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
-                # portfolio, positions = api.update_portfolio()
-                # pending_orders = api.get_pending_order()
-                # save_portfolio.delay(portfolio, user.id, positions, pending_orders)
+                portfolio, positions = api.update_portfolio()
+                pending_orders = api.get_pending_order()
+                save_portfolio.delay(portfolio, user.id, positions, pending_orders)
 
             #REAL PORTFOLIO
             real_portfolio = user.portfolio.filter(portfolio_type=True).first()
             if real_portfolio == None or real_portfolio.date < datetime.datetime.now(tz=timezone.utc):
                 print('updating real portfolio')
                 api = API(user.profile.broker_username, user.profile.broker_password, mode='real')
-                # portfolio, positions = api.update_portfolio()
-                # pending_orders = api.get_pending_order()
-                # save_portfolio.delay(portfolio, user.id, positions, pending_orders)
+                portfolio, positions = api.update_portfolio()
+                pending_orders = api.get_pending_order()
+                save_portfolio.delay(portfolio, user.id, positions, pending_orders)
 
 @periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
