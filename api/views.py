@@ -11,7 +11,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer
 from .trade.etoro import API
-from .tasks  import update_portfolio_task, update_sma_positions, update_price_history, transmit_orders, update_orders, update_trade_history
+from .tasks  import update_portfolio_task, update_sma_positions, update_price_history, transmit_orders, update_orders
 from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition
 
 # class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -77,29 +77,72 @@ class RetrievePortfolio(generics.RetrieveAPIView):
     queryset = Portfolio.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        u = request.user
-        try:
-            p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
-            pos_demo = p_demo.position.all()
-            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.all(), many=True).data 
-            pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.all(), many=True).data  
-            pending_orders_demo = pending_buy_orders_demo + pending_sell_orders_demo 
-        except Portfolio.DoesNotExist:
-            p_demo = None
-            pos_demo = None
-            pending_orders_demo = []
-        try:
-            p_real = Portfolio.objects.filter(user=u, portfolio_type=True).latest('date')
-            pos_real = p_real.position.all()
-            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.all(), many=True).data 
-            pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.all(), many=True).data  
-            pending_orders_real = pending_buy_orders_real + pending_sell_orders_real 
-        except Portfolio.DoesNotExist:
-            p_real = None
-            pos_real = None
-            pending_orders_real = []
+        user = request.user
+        #demo
+        p_demo = user.portfolio.filter(portfolio_type=False).first()
+        if p_demo == None:
+            current_pos_demo = []
+        else:
+            current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True), many=True).data 
+        
+        #real
+        p_real = user.portfolio.filter(portfolio_type=True).first()
+        if p_real == None:
+            current_pos_real = []
+        else:
+            current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True), many=True).data 
 
-        return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'positions': PositionSerializer(pos_demo, many=True).data, 'pending_orders': pending_orders_demo}, 'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'positions': PositionSerializer(pos_real, many=True).data, 'pending_orders': pending_orders_real}}, status=status.HTTP_200_OK)
+        return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'current_positions': current_pos_demo}, 'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'current_positions': current_pos_real}}, status=status.HTTP_200_OK)
+
+class RetrieveOrder(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PortfolioSerializer
+    queryset = Portfolio.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        #demo
+        p_demo = user.portfolio.filter(portfolio_type=False).first()
+        if p_demo == None:
+            pending_buy_orders_demo = []
+            pending_sell_orders_demo = []
+        else:
+            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True), many=True).data
+        
+        #real
+        p_real = user.portfolio.filter(portfolio_type=True).first()
+        if p_real == None:
+            pending_buy_orders_real = []
+            pending_sell_orders_real = []
+        else:
+            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True), many=True).data
+
+        return Response({'p_demo': {'pending_buy_orders': pending_buy_orders_demo,  'pending_sell_orders': pending_sell_orders_demo}, 'p_real': {'pending_buy_orders': pending_buy_orders_real,  'pending_sell_orders': pending_sell_orders_real}}, status=status.HTTP_200_OK)
+
+class RetrieveHistory(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PortfolioSerializer
+    queryset = Portfolio.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        #demo
+        p_demo = user.portfolio.filter(portfolio_type=False).first()
+        if p_demo == None:
+            history_demo = []
+        else:
+            history_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=False), many=True).data 
+        
+        #real
+        p_real = user.portfolio.filter(portfolio_type=True).first()
+        if p_real == None:
+            history_real = []
+        else:
+            history_real = PositionSerializer(p_real.position.filter(close_date__isnull=False), many=True).data 
+
+        return Response({'p_demo': {'history': history_demo }, 'p_real': {'history': history_real }}, status=status.HTTP_200_OK)
 
 class RetrieveMarket(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -132,52 +175,6 @@ class UpdateSMAPosition(generics.RetrieveAPIView):
         update_sma_positions.delay()
         sma_backtest = SMABacktestSerializer(queryset, many=True)
         return Response({'sma_backtest': sma_backtest.data})
-
-class UpdateStocks(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        queryset = self.get_queryset()
-        update_price_history.delay()
-        stocks = StockSerializer(queryset, many=True)
-        return Response({'stocks': stocks.data})
-
-class UpdatePortfolio(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = PortfolioSerializer
-    queryset = Portfolio.objects.all()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        task = update_portfolio_task.delay()
-        # result = task.wait(timeout=None, interval=0.5)
-        u = request.user
-        try:
-            p_demo = Portfolio.objects.filter(user=u, portfolio_type=False).latest('date')
-            pos_demo = p_demo.position.all()
-            pending_buy_orders = BuyOrderSerializer(p_demo.buy_order.all(), many=True).data 
-            pending_sell_orders = SellOrderSerializer(p_demo.sell_order.all(), many=True).data  
-            pending_orders = pending_buy_orders + pending_sell_orders 
-        except Portfolio.DoesNotExist:
-            p_demo = None
-            pos_demo = None
-            pending_orders = []
-        
-        try:
-            p_real = Portfolio.objects.filter(user=u, portfolio_type=True).latest('date')
-            pos_real = p_real.position.all()
-            pending_buy_orders = BuyOrderSerializer(p_real.buy_order.all(), many=True).data 
-            pending_sell_orders = SellOrderSerializer(p_real.sell_order.all(), many=True).data  
-            pending_orders = pending_buy_orders + pending_sell_orders 
-        except Portfolio.DoesNotExist:
-            p_real = None
-            pos_real = None
-            pending_orders = []
-        
-        return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'positions': PositionSerializer(pos_demo, many=True).data, 'pending_orders': pending_orders}, 'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'positions': PositionSerializer(pos_real, many=True).data, 'pending_orders': pending_orders}}, status=status.HTTP_200_OK)
     
 class UpdateOrders(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -188,17 +185,6 @@ class UpdateOrders(generics.RetrieveAPIView):
         print('Retrieve')
         update_orders.delay(request.user.id, False)
         # update_orders.delay(request.user.id, True)
-        return Response({'pending_orders': 'SUCCESS'})
-
-class UpdateTradeHistory(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        update_trade_history.delay(request.user.id, False)
-        # update_trade_history.delay(request.user.id, True)
         return Response({'pending_orders': 'SUCCESS'})
 
 class TransmitOrders(generics.RetrieveAPIView):

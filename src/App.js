@@ -8,8 +8,10 @@ import {dark_theme, light_theme} from './utils/Theme';
 import _404 from './pages/_404'
 import Home from './pages/Home'
 import Portfolio from './pages/Portfolio'
+import Order from './pages/Order'
 import Market from './pages/Market'
 import Model from './pages/Model'
+import History from './pages/History'
 import Auth from './pages/Auth'
 import Profile from './pages/Profile'
 // COMPONENTS
@@ -23,12 +25,18 @@ class App extends React.Component {
       theme: localStorage.getItem('theme'),
       logged_in: localStorage.getItem('token') ? true : false,
       user: JSON.parse(localStorage.getItem('user')),
+      portfolio_type: localStorage.getItem('portfolio_type') === 'true',
       errors: {}
     };
   }
 
   handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
+  }
+
+  handlePortfolioChange = () => {
+    localStorage.setItem('portfolio_type', !this.state.portfolio_type)
+    this.setState({portfolio_type: !this.state.portfolio_type})
   }
 
   handleThemeChange = () => {
@@ -114,9 +122,11 @@ class App extends React.Component {
                 }
                 {this.state.logged_in &&
                   <Fragment>
-                    <Menu handleThemeChange={() => {this.handleThemeChange()}}/>
-                    <Route exact path="/" render={(props) => <Home {...props} user={this.state.user}/>}/>
-                    <Route exact path="/portfolio" render={(props) => <Portfolio {...props}/>} />
+                    <Menu handleThemeChange={() => {this.handleThemeChange()}} handlePortfolioChange={() => {this.handlePortfolioChange()}} portfolio_type={this.state.portfolio_type}/>
+                    <Route exact path="/" render={(props) => <Home {...props} user={this.state.user} />}/>
+                    <Route exact path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
+                    <Route exact path="/order" render={(props) => <Order {...props} portfolio_type={this.state.portfolio_type}/>} />
+                    <Route exact path="/history" render={(props) => <History {...props} portfolio_type={this.state.portfolio_type}/>} />
                     <Route exact path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
                     <Route exact path="/model" render={(props) => <Model {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
                     <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} logout={() => {this.logout()}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />

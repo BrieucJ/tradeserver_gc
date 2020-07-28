@@ -1,5 +1,5 @@
 import React from 'react';
-import {AppBar, Toolbar, Link, Typography, IconButton, Hidden, SwipeableDrawer, Box, List, ListItem, ListItemText} from '@material-ui/core/';
+import {AppBar, Toolbar, Link, Typography, IconButton, Hidden, SwipeableDrawer, Box, List, ListItem, ListItemText, Switch} from '@material-ui/core/';
 import {AccountCircle} from '@material-ui/icons';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -28,7 +28,9 @@ class Menu extends React.Component {
   toggle_drawer = () => {
     this.setState({drawer_open: !this.state.drawer_open})
   }
-
+  componentDidMount = () => {
+    console.log(this.props)
+  }
   drawer = () => {
     return(
       <SwipeableDrawer
@@ -47,13 +49,12 @@ class Menu extends React.Component {
     )
   }
 
-
   render() {
     const { classes, theme } = this.props;
     return (
         <AppBar position="static" style={{marginBottom:20}}>
             <Toolbar style={{justifyContent: 'space-between'}}>
-              <Hidden mdUp>
+              <Hidden lgUp>
                 <IconButton edge="start" aria-label="menu" onClick={() => {this.toggle_drawer()}}>
                   <MenuIcon />
                 </IconButton>
@@ -66,6 +67,12 @@ class Menu extends React.Component {
                 <ListItem button component="a" key={'portfolio'} href="/portfolio">
                   <ListItemText primary={'Portfolio'} />
                 </ListItem>
+                <ListItem button component="a" key={'order'} href="/order">
+                  <ListItemText primary={'Order'} />
+                </ListItem>
+                <ListItem button component="a" key={'history'} href="/history">
+                  <ListItemText primary={'History'} />
+                </ListItem>
                 <ListItem button component="a" key={'market'} href="/market">
                   <ListItemText primary={'Market'} />
                 </ListItem>
@@ -75,6 +82,11 @@ class Menu extends React.Component {
               </List>
               </Hidden>
               <Box>
+              <Switch
+                checked={this.props.portfolio_type}
+                onChange={() => {this.props.handlePortfolioChange()}}
+                name="portfolio_type"
+              />
                 <IconButton onClick={() => {this.props.handleThemeChange()}}>
                   {theme.palette.type === 'dark' ? <Brightness7Icon  /> : <Brightness4Icon />}
                 </IconButton>
@@ -95,6 +107,12 @@ class Menu extends React.Component {
                 </ListItem>
                 <ListItem button component="a" key={'portfolio'} href="/portfolio">
                   <ListItemText primary={'Portfolio'} />
+                </ListItem>
+                <ListItem button component="a" key={'order'} href="/order">
+                  <ListItemText primary={'Order'} />
+                </ListItem>
+                <ListItem button component="a" key={'history'} href="/history">
+                  <ListItemText primary={'History'} />
                 </ListItem>
                 <ListItem button component="a" key={'market'} href="/market">
                   <ListItemText primary={'Market'} />

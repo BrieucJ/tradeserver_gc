@@ -21,9 +21,10 @@ class SMAPositionSerializer(serializers.ModelSerializer):
 
 class StockSerializer(serializers.ModelSerializer):
     last_price = PriceHistorySerializer(read_only=True)
+    last_sma_position = SMAPositionSerializer(read_only=True)
     class Meta:
         model = Stock
-        fields = ['symbol', 'name', 'sector', 'industry', 'last_price']
+        fields = ['symbol', 'name', 'sector', 'industry', 'last_price', 'last_sma_position']
 
 class SMAModelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,6 +60,7 @@ class BuyOrderSerializer(serializers.ModelSerializer):
 class SellOrderSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
     sma_position = SMAPositionSerializer()
+    position = PositionSerializer()
     class Meta:
         model = SellOrder
         fields = '__all__'

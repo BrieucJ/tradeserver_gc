@@ -14,6 +14,7 @@ class Stock(models.Model):
     name = models.CharField(max_length=50)
     sector = models.CharField(max_length=50)
     industry = models.CharField(max_length=50)
+    valid = models.BooleanField(default=False)
     class Meta:
         ordering = ['symbol']
         unique_together = ['symbol']
@@ -24,6 +25,10 @@ class Stock(models.Model):
     @property
     def last_price(self):
         return self.price_history.first()
+    
+    def last_sma_position(self):
+        return self.sma_position.first()
+            
 
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
@@ -31,24 +36,36 @@ class Portfolio(models.Model):
     currency = models.CharField(max_length=1, default='€')
     cash = models.FloatField(default=None, null=True)
     total_invested_value = models.FloatField(default=None, null=True)
-    date = models.DateTimeField(default=timezone.now, blank=True)
+    initial_balance = models.FloatField(default=None, null=True)
+    updated_at = models.DateTimeField(default=timezone.now, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-updated_at']
         unique_together = ['user', 'portfolio_type']
 
 class Position(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position', default=None, null=True)
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='position')
-    invest_date = models.DateField(default=None)
-    invest_value = models.FloatField(default=0)
-    invest_units = models.IntegerField(default=0)
+
+    open_date = models.DateTimeField(default=None, null=True)
     open_rate = models.FloatField(default=0)
-    current_rate = models.FloatField(default=0)
+    num_of_shares = models.IntegerField(default=0)
+    total_investment = models.FloatField(default=0)
     stop_loss_rate = models.FloatField(default=0)
     take_profit_rate = models.FloatField(default=0)
+    
+    current_rate = models.FloatField(default=0)
+    updated_at = models.DateTimeField(default=None, null=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True)
+
     close_rate = models.FloatField(default=0)
-    closed_at = models.DateTimeField(default=None, null=True)
+    close_date = models.DateTimeField(default=None, null=True)
+    
+    class Meta:
+        ordering = ['-open_date']
+        constraints = [models.UniqueConstraint(fields=['stock'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
+
 
 class PriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
@@ -125,10 +142,8 @@ class SellOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sell_order')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='sell_order')
-    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order')
+    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='sell_order', default=None, null=True)
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='sell_order')
-    num_of_shares = models.IntegerField(default=None)
-    price_date = models.DateField(default=None)
     created_at = models.DateTimeField(default=timezone.now, blank=True)
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
@@ -141,11 +156,11 @@ class BuyOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='buy_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='buy_order')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='buy_order')
-    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='buy_order')
-    price_date = models.DateField(default=None)
+    sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='buy_order', default=None, null=True)
+    price_date = models.DateField(default=None, null=True)
     num_of_shares = models.IntegerField(default=None)
-    order_price = models.FloatField(default=None, null=True)
-    current_price = models.FloatField(default=None, null=True)
+    order_rate = models.FloatField(default=None, null=True)
+    current_rate = models.FloatField(default=None, null=True)
     total_investment = models.FloatField(default=None, null=True)
     stop_loss = models.FloatField(default=None, null=True)
     take_profit = models.FloatField(default=None, null=True)

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
+import { Container, Button, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 
@@ -26,7 +26,6 @@ class Market extends React.Component {
       if (resp.status === 200){
         var response = JSON.parse(resp.response)
         this.setState({'stocks': response.stocks})
-        console.log(response.stocks)
       }
     })
   }
@@ -87,18 +86,8 @@ class Market extends React.Component {
   render() {
     const { classes, theme } = this.props;
     return (
+      <Container>
       <Grid container direction="row" alignItems="center" justify="center">
-           <Button
-              color="primary" 
-              size={theme.breakpoints.down("md") ? 'small' : 'medium'}
-              type="submit"
-              variant="contained"
-              color="primary"
-              onClick={() => {this.update_stocks()}}
-              style={{margin: 5}}
-            >
-                Update stocks
-            </Button>
           <TableContainer component={Paper}>
             <Table aria-label="simple table" style={{tableLayout:'fixed', width:'100%'}}>
               <TableHead>
@@ -125,6 +114,7 @@ class Market extends React.Component {
             </Table>
           </TableContainer>
       </Grid>
+      </Container>
     )
   }
 }

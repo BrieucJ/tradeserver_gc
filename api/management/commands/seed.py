@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from api.trade.sma_engine import SMAEngine
+from api.trade.etoro import API
 from ...models import Stock, PriceHistory, SMAModel, SMABacktest, SMAPosition
 import pandas as pd
 from pandas_datareader import data
@@ -38,11 +39,14 @@ def clear_data():
 def create_stocks():
     print('Creating stocks...')
     SP500_df = pd.read_csv('./SP500_index.csv')
+    api = API('TEST', 'TEST', mode='test')
     for index, row in SP500_df.iterrows():
         symbol = row['Symbol']
         if '.' in symbol: #replace wikipedia . to yahoo -
             symbol = symbol.replace('.','-')
-        s = Stock(symbol=symbol, name=row['Security'], sector=row['GICS Sector'], industry=row['GICS Sub Industry'])
+        validated = api.validate_ticker(str(symbol).lower())
+        print(f'{symbol} | {validated}')
+        s = Stock(symbol=symbol, name=row['Security'], sector=row['GICS Sector'], industry=row['GICS Sub Industry'], valid=validated)
         s.save()
 
 def create_price_history():
@@ -74,7 +78,7 @@ def backtest_sma_models():
     testing_period = 2000
     min_period = 600
     models = SMAModel.objects.all()
-    stocks = Stock.objects.all()
+    stocks = Stock.objects.filter(valid=True)
     for stock in stocks:
         print(stock)
         prices = stock.price_history.all()
