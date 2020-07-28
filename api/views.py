@@ -52,7 +52,9 @@ class Home(generics.RetrieveAPIView):
         queryset = self.get_queryset()
         last_price_date = PriceHistory.objects.first().price_date
         last_order_date = request.user.buy_order.filter(submited_at__isnull=True).first().created_at
-        return Response({'last_price_date': last_price_date, 'last_order_date': last_order_date})
+        last_submited_order_date = request.user.buy_order.filter(submited_at__isnull=False).first().created_at
+        last_portfolio_date = request.user.portfolio.first().updated_at
+        return Response({'last_price_date': last_price_date, 'last_order_date': last_order_date, 'last_submited_order_date':last_submited_order_date, 'last_portfolio_date': last_portfolio_date})
 
 
 class CustomAuthToken(ObtainAuthToken):
@@ -186,7 +188,17 @@ class UpdatePriceHistory(generics.RetrieveAPIView):
         print('Retrieve')
         update_price_history.delay()
         return Response({'updating': True})
-    
+
+class UpdatePortfolio(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer()
+
+    def retrieve(self, request, *args, **kwargs):
+        print('Retrieve')
+        update_portfolio.delay()
+        return Response({'updating': True})
+
 class UpdateOrders(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = Stock.objects.all()

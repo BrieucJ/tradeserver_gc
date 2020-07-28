@@ -26,7 +26,6 @@ from .views import index
 # router.register(r'pricehistory', views.PriceHistoryViewSet, basename='pricehistory')
 # router.register(r'tradingmodel', views.TradingModelViewSet, basename='tradingmodel')
 
-
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('api/token-auth/', views.CustomAuthToken.as_view()),
@@ -38,6 +37,7 @@ urlpatterns = [
     path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
     path('api/retrieve_model/', views.RetrieveModel.as_view(), name='retrieve_model'),
     path('api/update_price_history/', views.UpdatePriceHistory.as_view(), name='update_price_history'),
+    path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
     path('api/update_orders/', views.UpdateOrders.as_view(), name='update_orders'),
     path('api/transmit_orders/', views.TransmitOrders.as_view(), name='transmit_orders'),
     re_path(r'^(?P<path>.*)/$', index),

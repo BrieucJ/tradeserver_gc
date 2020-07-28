@@ -331,7 +331,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolio_task", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolio_task", ignore_result=False)
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()
