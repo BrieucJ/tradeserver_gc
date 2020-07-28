@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Button, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import { Container, Grid, Typography, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
 
 class Model extends React.Component {
@@ -71,16 +71,10 @@ class Model extends React.Component {
   render() {
     return (
       <Container>
-        <Grid container direction="row" alignItems="center" justify="center"> 
-            <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                onClick={() => {this.update_sma_positions()}}
-                style={{margin: 10}}
-            >
-                Update positions
-            </Button>
+        <Grid container direction="row" alignItems="center" justify="center">
+        <Typography variant="h4" style={{margin:5}}>
+            Models
+          </Typography>
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
               <TableHead>

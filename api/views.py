@@ -12,7 +12,7 @@ from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio_task, update_sma_positions, update_price_history, transmit_orders, update_orders
-from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition
+from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory
 
 # class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
 #     serializer_class = StockSerializer
@@ -42,6 +42,18 @@ from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition
     
 #     def perform_create(self, serializer):
 #         serializer.save(user=self.request.user)
+
+class Home(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = StockSerializer
+    queryset = Stock.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        last_price_date = PriceHistory.objects.first().price_date
+        last_order_date = request.user.buy_order.filter(submited_at__isnull=True).first().created_at
+        return Response({'last_price_date': last_price_date, 'last_order_date': last_order_date})
+
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -164,17 +176,16 @@ class RetrieveModel(generics.RetrieveAPIView):
         sma_backtest = SMABacktestSerializer(queryset, many=True)
         return Response({'sma_backtest': sma_backtest.data})
 
-class UpdateSMAPosition(generics.RetrieveAPIView):
+
+class UpdatePriceHistory(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = SMABacktest.objects.all()
     serializer_class = SMABacktestSerializer()
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        queryset = self.get_queryset()
-        update_sma_positions.delay()
-        sma_backtest = SMABacktestSerializer(queryset, many=True)
-        return Response({'sma_backtest': sma_backtest.data})
+        update_price_history.delay()
+        return Response({'updating': True})
     
 class UpdateOrders(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -184,8 +195,8 @@ class UpdateOrders(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
         update_orders.delay(request.user.id, False)
-        # update_orders.delay(request.user.id, True)
-        return Response({'pending_orders': 'SUCCESS'})
+        update_orders.delay(request.user.id, True)
+        return Response({'updating': True})
 
 class TransmitOrders(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -195,5 +206,5 @@ class TransmitOrders(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
         transmit_orders.delay(request.user.id, False)
-        # transmit_orders.delay(request.user.id, True)
-        return Response({'SUCCESS': 'SUCCESS'})
+        transmit_orders.delay(request.user.id, True)
+        return Response({'updating': True})

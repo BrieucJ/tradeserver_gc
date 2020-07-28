@@ -19,12 +19,7 @@ class Portfolio extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props)
     this.retrieve_portfolio()
-  }
-
-  componentDidUpdate() {
-    console.log(this.props)
   }
 
   retrieve_portfolio = async () => {

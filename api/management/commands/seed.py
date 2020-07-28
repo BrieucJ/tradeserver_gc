@@ -51,7 +51,7 @@ def create_stocks():
 
 def create_price_history():
     print('Creating price history...')
-    stocks = Stock.objects.all()
+    stocks = Stock.objects.filter(valid=True)
     for s in stocks:
         print(s.symbol)
         if s.price_history.exists() == False:

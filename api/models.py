@@ -28,7 +28,6 @@ class Stock(models.Model):
     
     def last_sma_position(self):
         return self.sma_position.first()
-            
 
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
@@ -65,7 +64,6 @@ class Position(models.Model):
     class Meta:
         ordering = ['-open_date']
         constraints = [models.UniqueConstraint(fields=['stock'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
-
 
 class PriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')

@@ -145,6 +145,12 @@ def update_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
                     if sell_order.submited_at == None:
                         sell_order.submited_at = th['close_date']
                     sell_order.save()
+                buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
+                if buy_order:
+                    buy_order.executed_at = th['close_date']
+                    buy_order.current_rate = th['current_rate']
+                    buy_order.submited_at = th['submited_at']
+                    buy_order.save()
             else:
                 print('unknown position')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
@@ -216,10 +222,10 @@ def update_orders(user_id, portfolio_type):
                 order.canceled_at = datetime.now()
                 order.save()
         
-        for order in pending_sell_orders:
-            if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
-                order.canceled_at = datetime.now()
-                order.save()
+        # for order in pending_sell_orders:
+        #     if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
+        #         order.canceled_at = datetime.now()
+        #         order.save()
 
         #INVESTMENTS
         print('PORTFOLIO INVESTMENTS')
@@ -239,7 +245,6 @@ def update_orders(user_id, portfolio_type):
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
                 
-                last_business_day = pd.datetime.today() - pd.tseries.offsets.BDay(1)
                 sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
@@ -257,22 +262,7 @@ def update_orders(user_id, portfolio_type):
                         print(err)
                         continue       
 
-@shared_task
-def update_sma_positions():
-    print('update_sma_positions')
-    stocks = Stock.objects.all()
-    for stock in stocks:
-        prices = stock.price_history.all()
-        last_sma_position = stock.sma_position.first()
-        backtests = stock.backtest.all()
-        if last_sma_position == None or prices.first().price_date > last_sma_position.price_date:
-            for b in backtests:
-                print(b)
-                sma_engine = SMAEngine(prices, b.model, date=prices.first().price_date, backtest=False)
-                if 'buy' in sma_engine.order.keys():
-                    print(f'BUY: {sma_engine.order["buy"]}')
-                    s = SMAPosition(stock=stock, sma_backtest=b ,model=b.model, buy=sma_engine.order["buy"], price_date=prices.first().price_date)
-                    s.save()
+
 
 @shared_task
 def transmit_orders(user_id, portfolio_type):
@@ -293,10 +283,27 @@ def transmit_orders(user_id, portfolio_type):
             api.transmit_orders(orders=orders)
             update_portfolio_task.delay()
 
+@shared_task
+def update_sma_positions():
+    print('update_sma_positions')
+    stocks = Stock.objects.all()
+    for stock in stocks:
+        prices = stock.price_history.all()
+        last_sma_position = stock.sma_position.first()
+        backtests = stock.backtest.all()
+        if last_sma_position == None or prices.first().price_date > last_sma_position.price_date:
+            for b in backtests:
+                if not SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=prices.first().price_date).first():
+                    sma_engine = SMAEngine(prices, b.model, date=prices.first().price_date, backtest=False)
+                    if 'buy' in sma_engine.order.keys():
+                        print(f'BUY: {sma_engine.order["buy"]}')
+                        s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=prices.first().price_date)
+                        s.save()
+
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=30, hour=22, day_of_week='1-5')), name="update_price_history", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=False)
 def update_price_history():
-    stocks = Stock.objects.all() 
+    stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
         print(s.symbol)
         start_date = s.price_history.first().price_date
@@ -324,7 +331,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/1', day_of_week='1-5')), name="update_portfolio_task", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolio_task", ignore_result=False)
 def update_portfolio_task():
     print('update_portfolio_task')
     users = User.objects.all()
@@ -355,7 +362,6 @@ def update_portfolio_task():
                     create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
                 else:
                     update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-
 
 @periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
