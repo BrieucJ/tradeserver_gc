@@ -195,7 +195,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
 @shared_task
 def update_orders(user_id, portfolio_type):
-    print('create_orders')
+    print('update_orders')
     backtests = SMABacktest.objects.all()
     user = User.objects.get(id=user_id)
     portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
@@ -230,15 +230,15 @@ def update_orders(user_id, portfolio_type):
         #INVESTMENTS
         print('PORTFOLIO INVESTMENTS')
         if portfolio.cash != None and portfolio.total_invested_value != None:
+            cash = portfolio.cash
+            if cash + portfolio.total_invested_value > 10000:
+                max_allocation_per_stock = 0.05 * (cash + portfolio.total_invested_value)
+            elif cash + portfolio.total_invested_value > 100000:
+                max_allocation_per_stock = 0.01 * (cash + portfolio.total_invested_value)
+            else:
+                max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
+            print(f'CASH: {cash}')
             for b in backtests:
-                cash = portfolio.cash
-                if cash + portfolio.total_invested_value > 10000:
-                    max_allocation_per_stock = 0.05 * (cash + portfolio.total_invested_value)
-                elif cash + portfolio.total_invested_value > 100000:
-                    max_allocation_per_stock = 0.01 * (cash + portfolio.total_invested_value)
-                else:
-                    max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
-
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
@@ -248,21 +248,19 @@ def update_orders(user_id, portfolio_type):
                 sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
-                num_of_shares = int(max_allocation_per_stock/last_price.close)
-
-                if sma_position != None and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy and num_of_shares != 0:
-                    print(f'BUYING STOCK: {b.stock} | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
-                    stop_loss = last_price.close - b.model.stop_loss * last_price.close
-                    take_profit = last_price.close + b.model.take_profit * last_price.close
-                    total_cost = num_of_shares * last_price.close
-                    order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
-                    try:
-                        order.save()
-                    except IntegrityError as err:
-                        print(err)
-                        continue       
-
-
+                if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
+                    num_of_shares = int(max_allocation_per_stock/last_price.close)
+                    if num_of_shares > 0:
+                        print(f'BUYING STOCK: {b.stock} (   {num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
+                        stop_loss = last_price.close - b.model.stop_loss * last_price.close
+                        take_profit = last_price.close + b.model.take_profit * last_price.close
+                        total_cost = num_of_shares * last_price.close
+                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
+                        try:
+                            order.save()
+                        except IntegrityError as err:
+                            print(err)
+                            continue
 
 @shared_task
 def transmit_orders(user_id, portfolio_type):
