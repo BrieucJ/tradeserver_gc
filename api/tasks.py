@@ -299,7 +299,7 @@ def update_sma_positions():
                         s.save()
 
 @shared_task
-def update_portfolio(user_id, portfolio_type):
+def update_portfolio(user_id):
     print('update_portfolio')
     user = User.objects.get(id=user_id)
     demo_portfolio = user.portfolio.filter(portfolio_type=False).first()
