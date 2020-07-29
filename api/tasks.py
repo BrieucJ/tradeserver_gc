@@ -281,7 +281,7 @@ def transmit_orders(user_id, portfolio_type):
         if len(orders) != 0:
             api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
             api.transmit_orders(orders=orders)
-            update_portfolio_task.delay()
+            update_portfolio.delay()
 
 @shared_task
 def update_sma_positions():
@@ -331,37 +331,22 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolio_task", ignore_result=False)
-def update_portfolio_task():
-    print('update_portfolio_task')
-    users = User.objects.all()
-    for user in users:
-        if user.profile.broker_password != None and user.profile.broker_password != None:
-            #DEMO PORTFOLIO
-            demo_portfolio = user.portfolio.filter(portfolio_type=False).first()
-            if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-                print('updating demo portfolio')
-                api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
-                portfolio, positions = api.update_portfolio()
-                pending_orders = api.get_pending_order()
-                trade_history = api.update_trade_history()
-                if demo_portfolio == None:
-                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-                else:
-                    update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-
-            #REAL PORTFOLIO
-            real_portfolio = user.portfolio.filter(portfolio_type=True).first()
-            if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-                print('updating real portfolio')
-                api = API(user.profile.broker_username, user.profile.broker_password, mode='real')
-                portfolio, positions = api.update_portfolio()
-                pending_orders = api.get_pending_order()
-                trade_history = api.update_trade_history()
-                if real_portfolio == None:
-                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-                else:
-                    update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolio", ignore_result=False)
+def update_portfolio(user_id, portfolio_type):
+    print('update_portfolio')
+    user = User.objects.get(id=user_id)
+    user_portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
+    if user.profile.broker_password != None and user.profile.broker_password != None:
+        if user_portfolio == None or user_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
+            print('updating demo portfolio')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+            portfolio, positions = api.update_portfolio()
+            pending_orders = api.get_pending_order()
+            trade_history = api.update_trade_history()
+            if demo_portfolio == None:
+                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            else:
+                update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
 
 @periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
