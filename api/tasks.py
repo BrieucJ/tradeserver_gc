@@ -190,7 +190,7 @@ def update_orders(user_id, portfolio_type):
     backtests = SMABacktest.objects.all()
     user = User.objects.get(id=user_id)
     portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
-    last_business_day = pd.datetime.today() - pd.tseries.offsets.BDay(1)
+    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
     if portfolio:
         positions = portfolio.position.all()
@@ -326,8 +326,11 @@ def update_price_history():
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
         print(s.symbol)
-        start_date = s.price_history.first().price_date
-        end_date = datetime.date.today()
+        if s.price_history.first():
+            start_date = s.price_history.first().price_date
+        else:
+            start_date = datetime.datetime(2000, 1, 1)
+        end_date = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
         if start_date < end_date:
             try:
                 df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
@@ -345,7 +348,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=30, hour=22, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour=5, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
     users = User.objects.all()
     for user in users:
