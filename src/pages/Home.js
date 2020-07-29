@@ -90,7 +90,7 @@ class Home extends React.Component {
           </Grid>
           <Grid container item direction="row" alignItems="center" justify="center">
             <Typography variant='h6' >
-            {new Date(this.state.last_portfolio_date).toISOString().split('T')[0]}
+            {this.state.last_portfolio_date === null ? 'None' : new Date(this.state.last_portfolio_date).toISOString().split('T')[0]}
             </Typography>
             <Button variant="contained" color="primary" onClick={()=>{this.update_portfolio()}} style={{margin:5}}>
               Update Portfolio
@@ -98,7 +98,7 @@ class Home extends React.Component {
           </Grid>
           <Grid container item direction="row" alignItems="center" justify="center">
             <Typography variant='h6' >
-              {new Date(this.state.last_order_date).toISOString().split('T')[0]}
+              {this.state.last_order_date === null ? 'None' : new Date(this.state.last_order_date).toISOString().split('T')[0]}
             </Typography>
             <Button variant="contained" color="primary" onClick={()=>{this.update_orders()}} style={{margin:5}}>
               Update Orders
@@ -106,7 +106,7 @@ class Home extends React.Component {
           </Grid>
           <Grid container item direction="row" alignItems="center" justify="center">
             <Typography variant='h6' >
-              {new Date(this.state.last_submited_order_date).toISOString().split('T')[0]}
+              {this.state.last_submited_order_date === null ? 'None' : new Date(this.state.last_submited_order_date).toISOString().split('T')[0]}
             </Typography>
             <Button variant="contained" color="primary" onClick={()=>{this.transmit_orders()}} style={{margin:5}}>
               Transmit Orders

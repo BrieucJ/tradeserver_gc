@@ -51,9 +51,18 @@ class Home(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         last_price_date = PriceHistory.objects.first().price_date
-        last_order_date = request.user.buy_order.filter(submited_at__isnull=True).first().created_at
-        last_submited_order_date = request.user.buy_order.filter(submited_at__isnull=False).first().created_at
-        last_portfolio_date = request.user.portfolio.first().updated_at
+        if request.user.buy_order.filter(submited_at__isnull=True).first():
+            last_order_date = request.user.buy_order.filter(submited_at__isnull=True).first().created_at
+        else:
+            last_order_date = None
+        if request.user.buy_order.filter(submited_at__isnull=False).first():
+            last_submited_order_date = request.user.buy_order.filter(submited_at__isnull=False).first().created_at
+        else:
+            last_submited_order_date = None
+        if request.user.portfolio.first():
+            last_portfolio_date = request.user.portfolio.first().updated_at
+        else:
+            last_portfolio_date = None
         return Response({'last_price_date': last_price_date, 'last_order_date': last_order_date, 'last_submited_order_date':last_submited_order_date, 'last_portfolio_date': last_portfolio_date})
 
 
@@ -196,9 +205,7 @@ class UpdatePortfolio(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        result = update_portfolio.delay(request.user.id, False)
-        result_output = result.wait(timeout=None, interval=0.5)
-        update_portfolio.delay(request.user.id, True)
+        update_portfolio.delay(request.user.id, False)
         return Response({'updating': True})
 
 class UpdateOrders(generics.RetrieveAPIView):

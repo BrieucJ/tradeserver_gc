@@ -84,7 +84,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
 
 @shared_task
-def update_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
+def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
     print('update_portfolio')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
@@ -300,6 +300,28 @@ def update_sma_positions():
                         s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=prices.first().price_date)
                         s.save()
 
+@shared_task
+def update_portfolio(user_id, portfolio_type):
+    print('update_portfolio')
+    user = User.objects.get(id=user_id)
+    user_portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
+    if portfolio_type:
+        mode = 'real'
+    else:
+        mode = 'demo'
+    if user.profile.broker_password != None and user.profile.broker_password != None:
+        if user_portfolio == None or user_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
+            print('updating portfolio')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+            portfolio, positions = api.update_portfolio()
+            pending_orders = api.get_pending_order()
+            trade_history = api.update_trade_history()
+            if user_portfolio == None:
+                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            else:
+                save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+    update_portfolio(user.id, True)
+
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=False)
 def update_price_history():
@@ -331,27 +353,6 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolio", ignore_result=False)
-def update_portfolio(user_id, portfolio_type):
-    print('update_portfolio')
-    user = User.objects.get(id=user_id)
-    user_portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
-    if portfolio_type:
-        mode = 'real'
-    else:
-        mode = 'demo'
-    if user.profile.broker_password != None and user.profile.broker_password != None:
-        if user_portfolio == None or user_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-            print('updating portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-            portfolio, positions = api.update_portfolio()
-            pending_orders = api.get_pending_order()
-            trade_history = api.update_trade_history()
-            if user_portfolio == None:
-                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-            else:
-                update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-
 @periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
     users = User.objects.all()
@@ -360,3 +361,10 @@ def portfolio_rebalancing():
         update_orders.delay(user.id, True)
         transmit_orders.delay(user.id, False)
         transmit_orders.delay(user.id, True)
+
+
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolios", ignore_result=False)
+def update_portfolios():
+    users = User.objects.all()
+    for user in users:
+        update_portfolio(user.id, False) #True portfolio called by update_portfolio function
