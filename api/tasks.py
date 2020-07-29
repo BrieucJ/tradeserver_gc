@@ -343,7 +343,7 @@ def update_portfolio(user_id, portfolio_type):
             portfolio, positions = api.update_portfolio()
             pending_orders = api.get_pending_order()
             trade_history = api.update_trade_history()
-            if demo_portfolio == None:
+            if user_portfolio == None:
                 create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             else:
                 update_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
