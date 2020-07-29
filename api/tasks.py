@@ -336,10 +336,14 @@ def update_portfolio(user_id, portfolio_type):
     print('update_portfolio')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
+    if portfolio_type:
+        mode = 'real'
+    else:
+        mode = 'demo'
     if user.profile.broker_password != None and user.profile.broker_password != None:
         if user_portfolio == None or user_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-            print('updating demo portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+            print('updating portfolio')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
             portfolio, positions = api.update_portfolio()
             pending_orders = api.get_pending_order()
             trade_history = api.update_trade_history()
