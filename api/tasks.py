@@ -279,7 +279,7 @@ def transmit_orders(user_id, portfolio_type):
         if len(orders) != 0:
             api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
             api.transmit_orders(orders=orders)
-            update_portfolio.delay()
+            update_portfolio.delay(user_id)
 
 @shared_task
 def update_sma_positions():
@@ -299,7 +299,7 @@ def update_sma_positions():
                         s.save()
 
 @shared_task
-def update_portfolio(user_id):
+def update_portfolio(user_id, portfolio_type):
     print('update_portfolio')
     user = User.objects.get(id=user_id)
     demo_portfolio = user.portfolio.filter(portfolio_type=False).first()
