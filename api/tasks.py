@@ -301,26 +301,35 @@ def update_sma_positions():
                         s.save()
 
 @shared_task
-def update_portfolio(user_id, portfolio_type):
+def update_portfolio(user_id):
     print('update_portfolio')
     user = User.objects.get(id=user_id)
-    user_portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
-    if portfolio_type:
-        mode = 'real'
-    else:
-        mode = 'demo'
+    demo_portfolio = user.portfolio.filter(portfolio_type=False).first()
+    real_portfolio = user.portfolio.filter(portfolio_type=True).first()
+
     if user.profile.broker_password != None and user.profile.broker_password != None:
-        if user_portfolio == None or user_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-            print('updating portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+        #demo portolio
+        if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
+            print(f'Updating demo portfolio')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
             portfolio, positions = api.update_portfolio()
             pending_orders = api.get_pending_order()
             trade_history = api.update_trade_history()
-            if user_portfolio == None:
+            if demo_portfolio == None:
                 create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             else:
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-    update_portfolio(user.id, True)
+        #real portfolio
+        if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
+            print(f'Updating real portfolio')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+            portfolio, positions = api.update_portfolio()
+            pending_orders = api.get_pending_order()
+            trade_history = api.update_trade_history()
+            if real_portfolio == None:
+                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            else:
+                save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
 
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=False)
@@ -331,25 +340,19 @@ def update_price_history():
         start_date = s.price_history.first().price_date
         end_date = datetime.date.today()
         if start_date < end_date:
-            print(f'start date: {start_date}')
-            print(f'end date: {end_date}')
             try:
                 df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
-                print(df.index.size)
             except RemoteDataError as err:
                 print(f'#### {s.symbol} - {err} ####')
                 continue
             
             for index, row in df.iterrows():
-                print(index)
                 if len(row) > 0:
                     try:
                         p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=end_date)
                         p.full_clean()
                         p.save()
-                        print('saving')
                     except ValidationError as err:
-                        print(f'#### {s.symbol} - {err} ####')
                         continue
     update_sma_positions.delay()
 
@@ -362,9 +365,8 @@ def portfolio_rebalancing():
         transmit_orders.delay(user.id, False)
         transmit_orders.delay(user.id, True)
 
-
 @periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolios", ignore_result=False)
 def update_portfolios():
     users = User.objects.all()
     for user in users:
-        update_portfolio(user.id, False) #True portfolio called by update_portfolio function
+        update_portfolio.delay(user.id)

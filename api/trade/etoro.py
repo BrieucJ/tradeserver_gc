@@ -42,6 +42,7 @@ class API():
 
     def __del__(self):
         self.browser.close()
+        print('FINISH')
     
     def login(self):
         print('login')
