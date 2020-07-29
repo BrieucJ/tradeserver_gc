@@ -72,7 +72,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
             print('SELL order pending')
             existing_position = user_portfolio.position.filter(close_date__isnull=True, stock=stock)
             if len(existing_position) == 0:
-                position = Position(stock=stock, portfolio=user_portfolio, open_rate=pending_order['open_rate'], num_of_shares=pending_order['num_of_shares'], current_rate=position['current_rate'], total_investment=pending_order['total_investment'])
+                position = Position(stock=stock, portfolio=user_portfolio, open_rate=pending_order['open_rate'], num_of_shares=pending_order['num_of_shares'], current_rate=pending_order['current_rate'], total_investment=pending_order['total_investment'])
                 position.save()
             else:
                 position = existing_position.first()
@@ -172,11 +172,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.current_rate = pending_order['current_rate']
                 buy_order.submited_at = pending_order['submited_at']
                 buy_order.save()
-            else:
-                #print('creating unknown buy order')
-                buy_order = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
-                            total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
-                buy_order.save()
         elif pending_order['order_type'] == 0:
             #print('SELL ORDER')
             sell_order = user_portfolio.sell_order.filter(stock=stock, executed_at__isnull=True).first()
@@ -185,12 +180,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 if sell_order.submited_at == None:
                     sell_order.submited_at = datetime.datetime.now(tz=timezone.utc)
                     sell_order.save()
-            else:
-                print('creating unknow sell order')
-                so = SellOrder(user=user, stock=stock, portfolio=user_portfolio, position=position, submited_at=datetime.datetime.now(tz=timezone.utc))
-                so.save()
         else:
-            print('UNKNOW ORDER TYPE')
+            print('UNKNOW ORDER')
 
 
 @shared_task
@@ -251,7 +242,7 @@ def update_orders(user_id, portfolio_type):
                 if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
                     num_of_shares = int(max_allocation_per_stock/last_price.close)
                     if num_of_shares > 0:
-                        print(f'BUYING STOCK: {b.stock} (   {num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
+                        print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
                         stop_loss = last_price.close - b.model.stop_loss * last_price.close
                         take_profit = last_price.close + b.model.take_profit * last_price.close
                         total_cost = num_of_shares * last_price.close
@@ -320,7 +311,7 @@ def update_portfolio(user_id):
         #real portfolio
         if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating real portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+            api = API(user.profile.broker_username, user.profile.broker_password, mode='real')
             portfolio, positions = api.update_portfolio()
             pending_orders = api.get_pending_order()
             trade_history = api.update_trade_history()
@@ -354,7 +345,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour=0, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=30, hour=22, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
 def portfolio_rebalancing():
     users = User.objects.all()
     for user in users:
