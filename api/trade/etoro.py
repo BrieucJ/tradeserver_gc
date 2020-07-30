@@ -25,7 +25,7 @@ class API():
         self.options = webdriver.ChromeOptions()
         if settings.PRODUCTION:
             self.options.binary_location = os.environ['GOOGLE_CHROME_BIN']
-            self.options.add_argument('--headless')
+        self.options.add_argument('--headless')
         self.options.add_argument('--no-sandbox')
         self.options.add_argument('--disable-dev-shm-usage')
         # self.options.add_argument("--disable-gpu")
@@ -239,10 +239,10 @@ class API():
 
         self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div[automation-id='trade-button']")))
 
-        time.sleep(1) #dirty fix!!
         trade_btn = self.browser.find_element_by_css_selector("div[automation-id='trade-button']")
         trade_btn.click()
-        self.wait.until(EC.visibility_of(self.browser.find_element_by_id("open-position-view")))
+
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[id='open-position-view']")))
 
         #SWITCH TO ORDER MODE IF PRESENT (to be investigated)
         toggle_btn = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='execution-trade-mode-drop-box']")
@@ -312,7 +312,6 @@ class API():
         take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
         take_profit_btn.click()
         take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
-        print(len(take_profit_switch_btn))
         if len(take_profit_switch_btn) != 0:
             print('switch-to-rate-button')
             take_profit_switch_btn[0].click()
