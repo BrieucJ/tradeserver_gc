@@ -171,7 +171,7 @@ locals()['DATABASES']['default'] = dj_database_url.config(conn_max_age=django_he
 
 #CELERY
 CELERY_TASK_SERIALIZER='json'
-# worker_max_tasks_per_child = 1
+CELERYD_MAX_TASKS_PER_CHILD=1
 CELERY_TIMEZONE = 'Europe/Paris'
 # BROKER_POOL_LIMIT = 3
 if PRODUCTION:

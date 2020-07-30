@@ -17,7 +17,7 @@ from django.utils import timezone
 
 class API():
     def __init__(self, broker_username, broker_password, mode):
-        print('API __init__')
+        print(f'API __init__ {mode}')
         self.mode = mode
         self.user_name = broker_username
         self.password = broker_password
@@ -42,7 +42,6 @@ class API():
 
     def __del__(self):
         self.browser.close()
-        print('FINISH')
     
     def login(self):
         print('login')

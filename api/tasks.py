@@ -24,17 +24,17 @@ import pandas as pd
 
 @shared_task
 def create_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    print('create_portfolio')
+    # print('create_portfolio')
     user = User.objects.get(id=user_id)
     
     #portfolio
-    print('creating portfolio')
+    # print('creating portfolio')
     user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], currency=portfolio['currency'], cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'],
                                 initial_balance=float(portfolio['total_invested_value'])+float(portfolio['cash']), created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
     user_portfolio.save()
 
     #positions
-    print('creating current positions')
+    # print('creating current positions')
     #print(positions)
     for position in positions:
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
@@ -45,7 +45,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
         pos.save()
 
     #trade history
-    print('creating old positions')
+    # print('creating old positions')
     for th in trade_history:
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
@@ -58,7 +58,6 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
     #orders
     print('creating orders')
     for pending_order in pending_orders:
-        print(pending_order)
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
         else:
@@ -69,7 +68,6 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
                         total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
             bo.save()
         elif pending_order['order_type'] == 0:
-            print('SELL order pending')
             existing_position = user_portfolio.position.filter(close_date__isnull=True, stock=stock)
             if len(existing_position) == 0:
                 position = Position(stock=stock, portfolio=user_portfolio, open_rate=pending_order['open_rate'], num_of_shares=pending_order['num_of_shares'], current_rate=pending_order['current_rate'], total_investment=pending_order['total_investment'])
@@ -85,12 +83,12 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
 @shared_task
 def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    print('update_portfolio')
+    # print('save_portfolio')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
 
     #portfolio
-    print('updating portfolio')
+    # print('updating portfolio')
     user_portfolio.cash=portfolio['cash']
     user_portfolio.total_invested_value=portfolio['total_invested_value']
     if user_portfolio.initial_balance == None:
@@ -99,7 +97,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     user_portfolio.save()
 
     #positions
-    print('updating positions')
+    # print('updating positions')
     for position in positions:
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=position['ticker']).first()
@@ -121,7 +119,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.save()
 
     #trade history
-    print('Updating old positions')
+    # print('Updating old positions')
     for th in trade_history:
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
@@ -157,7 +155,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 pos.save()
 
     #orders
-    print('Updating order')
+    # print('Updating order')
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
@@ -176,7 +174,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             #print('SELL ORDER')
             sell_order = user_portfolio.sell_order.filter(stock=stock, executed_at__isnull=True).first()
             if sell_order:
-                print('updating know sell order')
+                # print('updating know sell order')
                 if sell_order.submited_at == None:
                     sell_order.submited_at = datetime.datetime.now(tz=timezone.utc)
                     sell_order.save()
@@ -228,7 +226,7 @@ def update_orders(user_id, portfolio_type):
                 max_allocation_per_stock = 0.01 * (cash + portfolio.total_invested_value)
             else:
                 max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
-            print(f'CASH: {cash}')
+
             for b in backtests:
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))
                 if pending_buy_orders['total_investment__sum'] == None:
@@ -236,13 +234,14 @@ def update_orders(user_id, portfolio_type):
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
                 
+                print(f'available_cash: {available_cash}')
                 sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
+
                 if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
                     num_of_shares = int(max_allocation_per_stock/last_price.close)
                     if num_of_shares > 0:
-                        print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
                         stop_loss = last_price.close - b.model.stop_loss * last_price.close
                         take_profit = last_price.close + b.model.take_profit * last_price.close
                         total_cost = num_of_shares * last_price.close
@@ -250,8 +249,10 @@ def update_orders(user_id, portfolio_type):
                         try:
                             order.save()
                         except IntegrityError as err:
-                            print(err)
                             continue
+                        else:
+                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
+
 
 @shared_task
 def transmit_orders(user_id, portfolio_type):
@@ -321,7 +322,7 @@ def update_portfolio(user_id):
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=True)
 def update_price_history():
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
@@ -348,7 +349,7 @@ def update_price_history():
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour=5, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour=6, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=True)
 def portfolio_rebalancing():
     users = User.objects.all()
     for user in users:
@@ -357,7 +358,7 @@ def portfolio_rebalancing():
         transmit_orders.delay(user.id, False)
         transmit_orders.delay(user.id, True)
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolios", ignore_result=False)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolios", ignore_result=True)
 def update_portfolios():
     users = User.objects.all()
     for user in users:
