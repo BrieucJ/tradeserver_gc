@@ -177,7 +177,7 @@ CELERY_TIMEZONE = 'Europe/Paris'
 # BROKER_POOL_LIMIT = 3
 if PRODUCTION:
     CELERY_BROKER_URL =  os.environ['REDIS_URL']
-    CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
+    # CELERY_RESULT_BACKEND = os.environ['REDIS_URL']
 else: 
     CELERY_BROKER_URL =  'redis://'
-    CELERY_RESULT_BACKEND = 'redis://'
+    # CELERY_RESULT_BACKEND = 'redis://'
