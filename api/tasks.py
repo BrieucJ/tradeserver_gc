@@ -203,7 +203,11 @@ def update_orders(user_id, portfolio_type):
                 if sma_position != None and sma_position.buy == False:
                     print(f'SELLING {stock} POSITION')
                     order = SellOrder(user=user, stock=position.stock, sma_position=sma_position, portfolio=portfolio, position=position)
-                    order.save()
+                    try:
+                        order.save()
+                    except IntegrityError as err:
+                        print(f'SELL ORDER ERROR: {err}')
+                        continue
         
         #PENDING ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
