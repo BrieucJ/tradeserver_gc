@@ -43,6 +43,7 @@ class API():
 
     def __del__(self):
         self.browser.close()
+        self.browser.quit()
     
     def login(self):
         print('login')
