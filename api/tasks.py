@@ -146,7 +146,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
                 if buy_order:
                     buy_order.executed_at = th['close_date']
-                    buy_order.current_rate = th['current_rate']
                     buy_order.submited_at = th['submited_at']
                     buy_order.save()
             else:
