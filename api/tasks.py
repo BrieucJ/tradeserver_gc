@@ -149,10 +149,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                     buy_order.current_rate = th['current_rate']
                     buy_order.submited_at = th['submited_at']
                     buy_order.save()
-                else:
-                    bo = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
-                        total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
-                    bo.save()
             else:
                 print('unknown position')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
@@ -174,6 +170,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.current_rate = pending_order['current_rate']
                 buy_order.submited_at = pending_order['submited_at']
                 buy_order.save()
+             else:
+                bo = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
+                    total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
+                bo.save()
         elif pending_order['order_type'] == 0:
             #print('SELL ORDER')
             sell_order = user_portfolio.sell_order.filter(stock=stock, executed_at__isnull=True).first()
