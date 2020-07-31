@@ -109,8 +109,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             pos.updated_at = datetime.datetime.now(tz=timezone.utc)
             pos.save()
         else:
-            position = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
-            position.save()
+            new_pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
+            new_pos.save()
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
             if buy_order:
                 buy_order.executed_at = position['open_date']
@@ -205,11 +205,15 @@ def update_orders(user_id, portfolio_type):
         #PENDING ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
-        pending_sell_orders = portfolio.sell_order.filter(executed_at__isnull=True)
+        print(pending_buy_orders)
         for order in pending_buy_orders:
-            if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
-                order.canceled_at = datetime.now()
+            if order.submited_at != None and order.created_at.date() != datetime.date.today():
+                print('CANCEL')
+                order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
+            if order.submited_at == None and order.created_at.date() != datetime.date.today():
+                print('DELETE')
+                order.delete()
         
         # for order in pending_sell_orders:
         #     if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
@@ -234,25 +238,26 @@ def update_orders(user_id, portfolio_type):
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
                 
-                print(f'available_cash: {available_cash}')
-                sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
-                last_price = b.stock.price_history.filter(price_date=last_business_day).first()
-                in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
+                if available_cash < max_allocation_per_stock:
+                    break
+                else:
+                    sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
+                    last_price = b.stock.price_history.filter(price_date=last_business_day).first()
+                    in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
 
-                if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
-                    num_of_shares = int(max_allocation_per_stock/last_price.close)
-                    if num_of_shares > 0:
-                        stop_loss = last_price.close - b.model.stop_loss * last_price.close
-                        take_profit = last_price.close + b.model.take_profit * last_price.close
-                        total_cost = num_of_shares * last_price.close
-                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
-                        try:
-                            order.save()
-                        except IntegrityError as err:
-                            continue
-                        else:
-                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
-
+                    if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
+                        num_of_shares = int(max_allocation_per_stock/last_price.close)
+                        if num_of_shares > 0:
+                            stop_loss = last_price.close - b.model.stop_loss * last_price.close
+                            take_profit = last_price.close + b.model.take_profit * last_price.close
+                            total_cost = num_of_shares * last_price.close
+                            order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
+                            try:
+                                order.save()
+                            except IntegrityError as err:
+                                continue
+                            else:
+                                print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
 
 @shared_task
 def transmit_orders(user_id, portfolio_type):
@@ -265,12 +270,13 @@ def transmit_orders(user_id, portfolio_type):
         mode = 'demo'
 
     if portfolio != None:
-        sell_orders = portfolio.sell_order.filter(submited_at=None)
-        buy_orders = portfolio.buy_order.filter(submited_at=None)
+        sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
+        buy_orders = portfolio.buy_order.filter(submited_at__isnull=True)
         orders = list(chain(sell_orders, buy_orders))
         if len(orders) != 0:
-            api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-            api.transmit_orders(orders=orders)
+            for order in orders:
+                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+                api.transmit_orders(orders=[order])
             update_portfolio.delay(user_id)
 
 @shared_task
@@ -322,7 +328,7 @@ def update_portfolio(user_id):
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_price_history", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=45, hour='*/2')), name="update_price_history", ignore_result=True)
 def update_price_history():
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
@@ -335,7 +341,7 @@ def update_price_history():
         if start_date < end_date:
             try:
                 df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
-            except RemoteDataError as err:
+            except [RemoteDataError] as err:
                 print(f'#### {s.symbol} - {err} ####')
                 continue
             
@@ -346,10 +352,11 @@ def update_price_history():
                         p.full_clean()
                         p.save()
                     except ValidationError as err:
+                        print(err)
                         continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=0, hour=6, day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=30, hour='*/2', day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=True)
 def portfolio_rebalancing():
     users = User.objects.all()
     for user in users:

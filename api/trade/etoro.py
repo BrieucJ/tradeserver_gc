@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 
+import random
 from re import sub
 from decimal import Decimal
 from datetime import datetime
@@ -25,10 +26,10 @@ class API():
         self.options = webdriver.ChromeOptions()
         if settings.PRODUCTION:
             self.options.binary_location = os.environ['GOOGLE_CHROME_BIN']
-        self.options.add_argument('--headless')
+            self.options.add_argument('--headless')
         self.options.add_argument('--no-sandbox')
         self.options.add_argument('--disable-dev-shm-usage')
-        # self.options.add_argument("--disable-gpu")
+        self.options.add_argument("--disable-gpu")
         self.options.add_argument("--start-maximized")
         self.options.add_argument("--window-size=1920,1080")
         self.options.add_argument(f'user-agent={self.user_agent}')
@@ -237,98 +238,104 @@ class API():
         print('execute_buy_order')
         self.browser.get(f'https://www.etoro.com/markets/{str(order.stock.symbol).lower()}')
 
-        self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div[automation-id='trade-button']")))
-
-        trade_btn = self.browser.find_element_by_css_selector("div[automation-id='trade-button']")
+        self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'trade-button')))
+        trade_btn = self.browser.find_element_by_tag_name('trade-button')
+        print(trade_btn.get_attribute('innerHTML'))
+        # time.sleep(random.randint(5,10)) #dirty fix
+        # restricted = self.browser.execute_script("return head;")
+        # print(restricted)
         trade_btn.click()
+        try:
+            self.browser.find_element_by_css_selector("div[id='open-position-view']")
+        except NoSuchElementException as err:
+            print(err)
+        else:
+            print('ELSE')
+            #SWITCH TO ORDER MODE IF PRESENT (to be investigated)
+            toggle_btn = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='execution-trade-mode-drop-box']")
+            if len(toggle_btn) !=0:
+                print('SWITCH TO ORDER MODE')
+                toggle_btn[0].click()
+                order_btn = self.browser.find_element_by_css_selector("a[data-etoro-automation-id='execution-trade-mode-switch-to-order']")
+                order_btn.click()
+            
+            self.wait.until(EC.visibility_of(self.browser.find_element_by_css_selector("div[class='set-rate']")))
 
-        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[id='open-position-view']")))
+            buy_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-buy-button']")
+            buy_btn.click()
+            print('buy_btn click')
 
-        #SWITCH TO ORDER MODE IF PRESENT (to be investigated)
-        toggle_btn = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='execution-trade-mode-drop-box']")
-        if len(toggle_btn) !=0:
-            print('SWITCH TO ORDER MODE')
-            toggle_btn[0].click()
-            order_btn = self.browser.find_element_by_css_selector("a[data-etoro-automation-id='execution-trade-mode-switch-to-order']")
-            order_btn.click()
-        
-        self.wait.until(EC.visibility_of(self.browser.find_element_by_css_selector("div[class='set-rate']")))
-        
-        buy_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-buy-button']")
-        buy_btn.click()
-        print('buy_btn click')
+            #ORDER TYPE SWITCH
+            switch_order_rate_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-order-rate']")
+            switch_units_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-to-units']")
+            if len(switch_order_rate_btn) != 0:
+                print('switched to order_rate')
+                switch_order_rate_btn[0].click()
+            if len(switch_units_btn) != 0:
+                switch_units_btn[0].click()
+                print('switched to units')
 
-        #ORDER TYPE SWITCH
-        switch_order_rate_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-order-rate']")
-        switch_units_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-to-units']")
-        if len(switch_order_rate_btn) != 0:
-            print('switched to order_rate')
-            switch_order_rate_btn[0].click()
-        if len(switch_units_btn) != 0:
-            switch_units_btn[0].click()
-            print('switched to units')
+            # PRICE AND SHARE INPUT (order is important)
+            price_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-order-rate-input-section']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+            share_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-units-input-section']").find_element_by_tag_name("input")
 
-        # PRICE AND SHARE INPUT (order is important)
-        price_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-order-rate-input-section']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-        share_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-units-input-section']").find_element_by_tag_name("input")
+            # clearing price input before inserting data selenium .clear() not working input max_chars=12
+            price_input.click()
+            for _ in range(12):
+                price_input.send_keys(Keys.ARROW_RIGHT)
+                price_input.send_keys(Keys.BACK_SPACE)
+            time.sleep(1)
+            price_input.send_keys(str(order.order_rate))
+            price_input.send_keys(Keys.ENTER)
 
-        # clearing price input before inserting data selenium .clear() not working input max_chars=12
-        price_input.click()
-        for _ in range(12):
-            price_input.send_keys(Keys.ARROW_RIGHT)
-            price_input.send_keys(Keys.BACK_SPACE)
-        time.sleep(1)
-        price_input.send_keys(str(order.order_rate))
-        price_input.send_keys(Keys.ENTER)
+            # clearing share input before inserting data selenium .clear() not working input max_chars=12
+            share_input.click()
+            for _ in range(12):
+                share_input.send_keys(Keys.ARROW_RIGHT)
+                share_input.send_keys(Keys.BACK_SPACE)
+            time.sleep(1)
+            share_input.send_keys(str(order.num_of_shares))
+            share_input.send_keys(Keys.ENTER)
 
-        # clearing share input before inserting data selenium .clear() not working input max_chars=12
-        share_input.click()
-        for _ in range(12):
-            share_input.send_keys(Keys.ARROW_RIGHT)
-            share_input.send_keys(Keys.BACK_SPACE)
-        time.sleep(1)
-        share_input.send_keys(str(order.num_of_shares))
-        share_input.send_keys(Keys.ENTER)
+            #STOP LOSS
+            print('STOP LOSS')
+            stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
+            stop_loss_btn.click()
+            stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
+            if len(stop_loss_switch_btn) != 0:
+                print('switch-to-rate-button')
+                stop_loss_switch_btn[0].click()
+            
+            stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+            for _ in range(12):
+                stop_loss_input.send_keys(Keys.ARROW_RIGHT)
+                stop_loss_input.send_keys(Keys.BACK_SPACE)
+            time.sleep(1)
+            stop_loss_input.send_keys(str(order.stop_loss))
+            stop_loss_input.send_keys(Keys.ENTER)
 
-        #STOP LOSS
-        print('STOP LOSS')
-        stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
-        stop_loss_btn.click()
-        stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
-        if len(stop_loss_switch_btn) != 0:
-            print('switch-to-rate-button')
-            stop_loss_switch_btn[0].click()
-        
-        stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-        for _ in range(12):
-            stop_loss_input.send_keys(Keys.ARROW_RIGHT)
-            stop_loss_input.send_keys(Keys.BACK_SPACE)
-        time.sleep(1)
-        stop_loss_input.send_keys(str(order.stop_loss))
-        stop_loss_input.send_keys(Keys.ENTER)
+            #TAKE PROFIT
+            print('TAKE PROFIT')
+            take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
+            take_profit_btn.click()
+            take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
+            if len(take_profit_switch_btn) != 0:
+                print('switch-to-rate-button')
+                take_profit_switch_btn[0].click()
 
-        #TAKE PROFIT
-        print('TAKE PROFIT')
-        take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
-        take_profit_btn.click()
-        take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
-        if len(take_profit_switch_btn) != 0:
-            print('switch-to-rate-button')
-            take_profit_switch_btn[0].click()
+            take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+            for _ in range(12):
+                take_profit_input.send_keys(Keys.ARROW_RIGHT)
+                take_profit_input.send_keys(Keys.BACK_SPACE)
+            time.sleep(1)
+            take_profit_input.send_keys(str(order.take_profit))
+            take_profit_input.send_keys(Keys.ENTER)
 
-        take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-        for _ in range(12):
-            take_profit_input.send_keys(Keys.ARROW_RIGHT)
-            take_profit_input.send_keys(Keys.BACK_SPACE)
-        time.sleep(1)
-        take_profit_input.send_keys(str(order.take_profit))
-        take_profit_input.send_keys(Keys.ENTER)
-
-        #PLACE ORDER
-        self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
-        place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
-        place_order_btn.click()
-        print('ORDER SUBMITTED')
+            #PLACE ORDER
+            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
+            place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
+            place_order_btn.click()
+            print('ORDER SUBMITTED')
 
     def execute_sell_order(self, order):
         print('execute_sell_order')
