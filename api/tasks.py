@@ -348,7 +348,7 @@ def update_price_history():
         if start_date < end_date:
             try:
                 df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
-            except [RemoteDataError] as err:
+            except RemoteDataError as err:
                 print(f'#### {s.symbol} - {err} ####')
                 continue
             
