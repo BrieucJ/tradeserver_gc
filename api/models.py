@@ -33,15 +33,25 @@ class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
     portfolio_type = models.BooleanField(default=False)
     currency = models.CharField(max_length=1, default='€')
-    cash = models.FloatField(default=None, null=True)
-    total_invested_value = models.FloatField(default=None, null=True)
-    initial_balance = models.FloatField(default=None, null=True)
     updated_at = models.DateTimeField(default=timezone.now, blank=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     class Meta:
         ordering = ['-updated_at']
         unique_together = ['user', 'portfolio_type']
+    
+    @property
+    def last_portfolio_history(self):
+        return self.portfolio_history.first()
+
+class PortfolioHistory(models.Model):
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolio_history')
+    cash = models.FloatField(default=None, null=True)
+    total_invested_value = models.FloatField(default=None, null=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True)
+
+    class Meta:
+        ordering = ['created_at']
 
 class Position(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position', default=None, null=True)

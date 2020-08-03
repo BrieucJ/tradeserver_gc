@@ -28,9 +28,7 @@ class Menu extends React.Component {
   toggle_drawer = () => {
     this.setState({drawer_open: !this.state.drawer_open})
   }
-  componentDidMount = () => {
-    console.log(this.props)
-  }
+
   drawer = () => {
     return(
       <SwipeableDrawer

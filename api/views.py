@@ -5,14 +5,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-
+from django.db.models.functions import TruncDay
+from django.db.models import Min, Max
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
-from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer
+from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer, PortfolioHistorySerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders, update_portfolios
-from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory
+from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory
 
 # class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
 #     serializer_class = StockSerializer
@@ -45,25 +46,32 @@ from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHi
 
 class Home(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
-    serializer_class = StockSerializer
-    queryset = Stock.objects.all()
+    serializer_class = PortfolioSerializer
+    queryset = Portfolio.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        last_price_date = PriceHistory.objects.first().price_date
-        if request.user.buy_order.filter(submited_at__isnull=True).first():
-            last_order_date = request.user.buy_order.filter(submited_at__isnull=True).first().created_at
+        user = request.user
+        #demo
+        p_demo = user.portfolio.filter(portfolio_type=False).first()
+        p_real = user.portfolio.filter(portfolio_type=True).first()
+
+        if p_demo != None:
+            portfolio_history_demo = p_demo.portfolio_history.all() #distinct('created_at__date').order_by()
+            current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True), many=True).data 
+            print(f'#### {p_demo.portfolio_history.all()} ####')
         else:
-            last_order_date = None
-        if request.user.buy_order.filter(submited_at__isnull=False).first():
-            last_submited_order_date = request.user.buy_order.filter(submited_at__isnull=False).first().created_at
+            current_pos_demo = []
+            portfolio_history_demo= []
+        
+        if p_real != None:
+            portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
+            current_pos_real = PositionSerializer(p_demo.position.filter(close_date__isnull=True), many=True).data
         else:
-            last_submited_order_date = None
-        if request.user.portfolio.first():
-            last_portfolio_date = request.user.portfolio.first().updated_at
-        else:
-            last_portfolio_date = None
-        return Response({'last_price_date': last_price_date, 'last_order_date': last_order_date, 'last_submited_order_date':last_submited_order_date, 'last_portfolio_date': last_portfolio_date})
+            current_pos_real = []
+            portfolio_history_real = []
+
+        return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'current_positions': current_pos_demo, 'p_history': PortfolioHistorySerializer(portfolio_history_demo, many=True).data},
+                        'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'current_positions': current_pos_real, 'p_history': PortfolioHistorySerializer(portfolio_history_real, many=True).data}})
 
 
 class CustomAuthToken(ObtainAuthToken):

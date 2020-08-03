@@ -69,10 +69,10 @@ class Portfolio extends React.Component {
     return (
       <Grid container direction="row" alignItems="center" justify="center" style={{padding:10}}>
         <Typography variant='h6' style={{paddingRight: 10}}>
-          Cash: {portfolio.cash != undefined ? portfolio.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
+          Cash: {portfolio.last_portfolio_history != undefined ? portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
         </Typography>
         <Typography variant='h6'>
-          Total invested value: {portfolio.total_invested_value != undefined ? portfolio.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
+          Total invested value: {portfolio.last_portfolio_history != undefined ? portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
         </Typography>
       </Grid>
     )

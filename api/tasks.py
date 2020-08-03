@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
-from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder
+from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder, PortfolioHistory
 from re import sub
 from decimal import Decimal
 import pandas as pd
@@ -29,12 +29,13 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
     
     #portfolio
     # print('creating portfolio')
-    user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], currency=portfolio['currency'], cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'],
-                                initial_balance=float(portfolio['total_invested_value'])+float(portfolio['cash']), created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
+    user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], currency=portfolio['currency'], created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
     user_portfolio.save()
+    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
+    portfolio_history.save()
 
     #positions
-    # print('creating current positions')
+    #print('creating current positions')
     #print(positions)
     for position in positions:
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
@@ -89,12 +90,11 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
     #portfolio
     # print('updating portfolio')
-    user_portfolio.cash=portfolio['cash']
-    user_portfolio.total_invested_value=portfolio['total_invested_value']
-    if user_portfolio.initial_balance == None:
-        user_portfolio.initial_balance = float(portfolio['total_invested_value'])+float(portfolio['cash'])
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
+
+    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
+    portfolio_history.save()
 
     #positions
     # print('updating positions')
@@ -191,6 +191,7 @@ def update_orders(user_id, portfolio_type):
     backtests = SMABacktest.objects.all()
     user = User.objects.get(id=user_id)
     portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
+    portfolio_history = portfolio.portfolio_history.first()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
     if portfolio:
@@ -229,14 +230,14 @@ def update_orders(user_id, portfolio_type):
 
         #INVESTMENTS
         print('PORTFOLIO INVESTMENTS')
-        if portfolio.cash != None and portfolio.total_invested_value != None:
-            cash = portfolio.cash
-            if cash + portfolio.total_invested_value > 10000:
-                max_allocation_per_stock = 0.05 * (cash + portfolio.total_invested_value)
-            elif cash + portfolio.total_invested_value > 100000:
-                max_allocation_per_stock = 0.01 * (cash + portfolio.total_invested_value)
+        if portfolio_history.cash != None and portfolio_history.total_invested_value != None:
+            cash = portfolio_history.cash
+            if cash + portfolio_history.total_invested_value > 10000:
+                max_allocation_per_stock = 0.05 * (cash + portfolio_history.total_invested_value)
+            elif cash + portfolio_history.total_invested_value > 100000:
+                max_allocation_per_stock = 0.01 * (cash + portfolio_history.total_invested_value)
             else:
-                max_allocation_per_stock = 0.1 * (cash + portfolio.total_invested_value)
+                max_allocation_per_stock = 0.1 * (cash + portfolio_history.total_invested_value)
 
             for b in backtests:
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))

@@ -123,7 +123,7 @@ class App extends React.Component {
                 {this.state.logged_in &&
                   <Fragment>
                     <Menu handleThemeChange={() => {this.handleThemeChange()}} handlePortfolioChange={() => {this.handlePortfolioChange()}} portfolio_type={this.state.portfolio_type}/>
-                    <Route exact path="/" render={(props) => <Home {...props} user={this.state.user} />}/>
+                    <Route exact path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
                     <Route exact path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
                     <Route exact path="/order" render={(props) => <Order {...props} portfolio_type={this.state.portfolio_type}/>} />
                     <Route exact path="/history" render={(props) => <History {...props} portfolio_type={this.state.portfolio_type}/>} />

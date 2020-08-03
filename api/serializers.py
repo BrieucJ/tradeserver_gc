@@ -1,5 +1,5 @@
 
-from .models import Profile, Portfolio, Position, Stock, SMABacktest, SMAPosition, PriceHistory, SMAModel, BuyOrder, SellOrder
+from .models import Profile, Portfolio, Position, Stock, SMABacktest, SMAPosition, PriceHistory, SMAModel, BuyOrder, SellOrder, PortfolioHistory
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -45,10 +45,16 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = '__all__'
 
+class PortfolioHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PortfolioHistory
+        fields = '__all__'
+
 class PortfolioSerializer(serializers.ModelSerializer):
+    last_portfolio_history = PortfolioHistorySerializer(read_only=True)
     class Meta:
         model = Portfolio
-        fields = '__all__'
+        fields = ['portfolio_type', 'currency', 'created_at', 'updated_at', 'last_portfolio_history']
 
 class BuyOrderSerializer(serializers.ModelSerializer):
     stock = StockSerializer()

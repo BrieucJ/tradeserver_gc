@@ -2,10 +2,14 @@ import React from 'react';
 import { Container, Grid, Button, Typography} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
+import Area_Chart from '../components/AreaChart'
+import Pie_Chart from '../components/PieChart'
 
 const styles = {
 
 }
+
+const data = [{name: 'Page A', uv: 400, pv: 2400, amt: 2400}, {name: 'Page B', uv: 600, pv: 2400, amt: 2400}];
 
 class Home extends React.Component {
   constructor(props) {
@@ -14,7 +18,9 @@ class Home extends React.Component {
       last_price_date: null,
       last_order_date: null,
       last_portfolio_date: null,
-      last_submited_order_date: null
+      last_submited_order_date: null,
+      p_demo: {},
+      p_real: {}
     };
   }
 
@@ -30,10 +36,8 @@ class Home extends React.Component {
         var response = JSON.parse(resp.response)
         console.log(response)
         this.setState({
-            last_price_date: response.last_price_date,
-            last_order_date: response.last_order_date,
-            last_portfolio_date: response.last_portfolio_date,
-            last_submited_order_date: response.last_submited_order_date
+          p_demo: response.p_demo,
+          p_real: response.p_real
         })
       }
     })
@@ -75,10 +79,64 @@ class Home extends React.Component {
     })
   }
 
+  pie_chart_data = () => {
+    var data = []
+    if (this.props.portfolio_type) {
+      if (this.state.p_real.current_positions !== undefined){
+        for (let i = 0; i < this.state.p_real.current_positions.length; i++) {
+          const value = this.state.p_real.current_positions[i].total_investment
+          const name = `${this.state.p_real.current_positions[i].stock.symbol} | ${this.state.p_real.current_positions[i].stock.name.substring(0,10)}`
+          const item = {'name': name, 'value': value}
+          data.push(item)
+        }
+      }
+    } else {
+      if (this.state.p_demo.current_positions !== undefined){
+        for (let i = 0; i < this.state.p_demo.current_positions.length; i++) {
+          const value = this.state.p_demo.current_positions[i].total_investment
+          const name = `${this.state.p_demo.current_positions[i].stock.symbol} | ${this.state.p_demo.current_positions[i].stock.name.substring(0,10)}`
+          const item = {'name': name, 'value': value}
+          data.push(item)
+        }
+      }
+    }
+    return data
+  }
+
+  area_chart_data = () => {
+    var data = []
+
+    if (this.props.portfolio_type) {
+      if (this.state.p_real.p_history !== undefined){
+        for (let i = 0; i < this.state.p_real.p_history.length; i++) {
+          const cash = this.state.p_real.p_history[i].cash
+          const name = new Date(this.state.p_real.p_history[i].created_at).toLocaleString({timeZoneName:'short'})
+          const item = {'name': name, 'cash': cash}
+          data.push(item)
+        }
+      }
+    } else {
+      if (this.state.p_demo.p_history !== undefined){
+        for (let i = 0; i < this.state.p_demo.p_history.length; i++) {
+          const cash = this.state.p_demo.p_history[i].cash
+          const name = new Date(this.state.p_demo.p_history[i].created_at).toLocaleString({timeZoneName:'short'})
+          const item = {'name': name, 'cash': cash}
+          data.push(item)
+        }
+      }
+    }
+    return data
+  }
+
+
   render() {
     const { classes, theme } = this.props;
     return (
       <Container>
+
+        <Area_Chart data={this.area_chart_data()} />
+        <Pie_Chart data={this.pie_chart_data()} />
+
         <Grid container direction="column" alignItems="center" justify="center">
           <Grid container item direction="row" alignItems="center" justify="center">
             <Typography variant='h6' >
