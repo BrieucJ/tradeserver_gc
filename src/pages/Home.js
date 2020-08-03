@@ -166,10 +166,10 @@ class Home extends React.Component {
 
   renderBuyOrders(){
     if(this.props.portfolio_type) {
-      var bos = this.state.p_real.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1).slice(0, 10)
+      var bos = this.state.p_real.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
       return(
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table" >
+      <TableContainer component={Paper} style={{ overflow: 'auto', height: '150px' }} >
+        <Table aria-label="simple table" style={{tableLayout: 'fixed'}} >
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -182,7 +182,7 @@ class Home extends React.Component {
               <TableRow key={bo.id}>
                 <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : bo.submited_at} </TableCell>
+                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -190,10 +190,10 @@ class Home extends React.Component {
         </TableContainer>
       )
     } else {
-      var bos = this.state.p_demo.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1).slice(0, 10)
+      var bos = this.state.p_demo.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
       return(
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table" >
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table aria-label="simple table" size="small" stickyHeader aria-label="sticky table" >
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -206,7 +206,7 @@ class Home extends React.Component {
               <TableRow key={bo.id}>
                 <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : bo.submited_at} </TableCell>
+                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -216,12 +216,12 @@ class Home extends React.Component {
     }
   }
 
-  renderPortfolio(){
+  renderSellOrders(){
     if(this.props.portfolio_type) {
-      var bos = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1).slice(0, 10)
+      var sos = this.state.p_real.pending_sell_orders
       return(
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table" >
+      <TableContainer component={Paper} style={{ overflow: 'auto', height: '150px' }} >
+        <Table aria-label="simple table" style={{tableLayout: 'fixed'}} >
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -230,10 +230,63 @@ class Home extends React.Component {
               </TableRow>
           </TableHead>
           <TableBody>
-            {bos.map((bo) => (
-              <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
-                <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+            {sos.map((so) => (
+              <TableRow key={so.id}>
+                <TableCell component="th" scope="row">{so.stock.name.substring(0,15)} </TableCell>
+                <TableCell align="right"> {'test'} </TableCell>
+                <TableCell align="right"> {'test'} </TableCell>
+              </TableRow>
+            ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    } else {
+      var sos = this.state.p_demo.pending_sell_orders
+      return(
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table aria-label="simple table" size="small" stickyHeader aria-label="sticky table" >
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">Amount </TableCell>
+              <TableCell align="right">Submited</TableCell>
+              </TableRow>
+          </TableHead>
+          <TableBody>
+            {sos.map((so) => (
+              <TableRow key={so.id}>
+                <TableCell component="th" scope="row">{so.stock.name.substring(0,15)} </TableCell>
+                <TableCell align="right"> {'test'} </TableCell>
+                <TableCell align="right"> {'test'} </TableCell>
+              </TableRow>
+            ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    }
+  }
+
+
+  renderPortfolio(){
+    if(this.props.portfolio_type) {
+      var pos = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
+      return(
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table aria-label="simple table" size="small" stickyHeader aria-label="sticky table" >
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell align="right">Amount </TableCell>
+              <TableCell align="right">Submited</TableCell>
+              </TableRow>
+          </TableHead>
+          <TableBody>
+            {pos.map((po) => (
+              <TableRow key={po.id}>
+                <TableCell component="th" scope="row">{po.stock.name.substring(0,15)} </TableCell>
+                <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> {'TEST'} </TableCell>
               </TableRow>
             ))}
@@ -242,10 +295,10 @@ class Home extends React.Component {
         </TableContainer>
       )
     } else {
-      var bos = this.state.p_demo.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1).slice(0, 10)
+      var pos = this.state.p_demo.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
       return(
-      <TableContainer component={Paper}>
-        <Table aria-label="simple table" >
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table aria-label="simple table" size="small" stickyHeader aria-label="sticky table" >
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -254,10 +307,10 @@ class Home extends React.Component {
               </TableRow>
           </TableHead>
           <TableBody>
-            {bos.map((bo) => (
-              <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
-                <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+            {pos.map((po) => (
+              <TableRow key={po.id}>
+                <TableCell component="th" scope="row">{po.stock.name.substring(0,15)} </TableCell>
+                <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> {'TEST'} </TableCell>
               </TableRow>
             ))}
@@ -275,48 +328,55 @@ class Home extends React.Component {
     } else {
       return (
         <Container>
-          <Grid container direction="row" spacing={2}>
+          <Grid container direction="row" spacing={1}>
 
             <Grid item  xs={12} sm={6} >
               <Paper style={{padding:5}}>
-              <Typography variant='h4'>
-                Summary
-              </Typography>
-              <Typography variant='body1'>
-                Portfolio type: {this.props.portfolio_type ? 'REAL' : 'DEMO'}
-              </Typography>
-              <Typography variant='body1'>
-                Creation date:  {this.props.portfolio_type ? 
-                  this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_real.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null 
-                : this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_demo.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null}
-              </Typography>
-              <Typography variant='body1'>
-                Last update: {this.props.portfolio_type ? 
-                  this.state.p_real.portfolio !== undefined ? new Date(this.state.p_real.portfolio.updated_at).toLocaleString({timeZoneName:'short'})  : null 
-                : this.state.p_real.portfolio !== undefined ? new Date(this.state.p_demo.portfolio.updated_at).toLocaleString({timeZoneName:'short'}) : null}
-              </Typography>
-              <Typography variant='body1'>
-                Total cash:  {this.props.portfolio_type ? 
-                  this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
-                  : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null }
-              </Typography>
-              <Typography variant='body1'>
-                Total investments: {this.props.portfolio_type ? 
-                  this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
-                  : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null }
-              </Typography>
-              <Typography variant='body1'>
-                Currency: {this.props.portfolio_type ? this.state.p_real.portfolio.currency : this.state.p_demo.portfolio.currency}
-              </Typography>
-              <Typography variant='body1' style={{paddingBottom:10}}>
-                Performance to date: {this.renderPerformance()}
-              </Typography>
+                <Typography variant='h5'>
+                  Summary
+                </Typography>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Portfolio type: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? 'REAL' : 'DEMO'} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Creation date: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? 
+                    this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_real.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null 
+                  : this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_demo.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Last update: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? 
+                    this.state.p_real.portfolio !== undefined ? new Date(this.state.p_real.portfolio.updated_at).toLocaleString({timeZoneName:'short'})  : null 
+                  : this.state.p_real.portfolio !== undefined ? new Date(this.state.p_demo.portfolio.updated_at).toLocaleString({timeZoneName:'short'}) : null} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Total cash: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? 
+                    this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
+                    : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null } </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Total investments: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? 
+                    this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
+                    : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null } </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Currency: </Typography>
+                  <Typography variant='body1'> {this.props.portfolio_type ? this.state.p_real.portfolio.currency : this.state.p_demo.portfolio.currency} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Performance to date: </Typography>
+                  <Typography variant='body1'> {this.renderPerformance()} </Typography>
+                </Grid>
               </Paper>
             </Grid>
 
             <Grid item container xs={12} sm={6}>
               <Paper style={{padding:5}}>
-              <Typography variant='h4'>
+              <Typography variant='h5'>
                 Buttons
               </Typography>
                 <Button variant="contained" color="primary" onClick={()=>{this.update_prices()}} style={{margin:5}}>
@@ -336,15 +396,22 @@ class Home extends React.Component {
 
             <Grid item xs={12} sm={6} >
               <Paper style={{padding:5}}>
-              <Typography variant='h4' style={{display: 'inline-block'}}> Portfolio <Typography variant='body1' style={{display: 'inline-block'}}> (top 10)</Typography> </Typography>
-              {this.renderPortfolio()}
+              <Typography variant='h5' style={{display: 'inline-block', padding:5}}> Portfolio </Typography>
+                {this.renderPortfolio()}
               </Paper>
             </Grid>
 
-            <Grid item xs={12} sm={6} >
+            <Grid item xs={12} sm={6}>
               <Paper style={{padding:5}}>
-              <Typography variant='h4' style={{display: 'inline-block'}}> Buy orders <Typography variant='body1' style={{display: 'inline-block'}}> (top 10)</Typography> </Typography>
+              <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Buy orders </Typography>
               {this.renderBuyOrders()}
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Paper style={{padding:5}}>
+              <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Sell orders </Typography>
+              {this.renderSellOrders()}
               </Paper>
             </Grid>
 

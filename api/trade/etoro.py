@@ -106,7 +106,6 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
-        # self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-account-balance')))
         self.wait.until(EC.presence_of_element_located((By.TAG_NAME, 'et-account-balance')))
 
         #PORTFOLIO
@@ -237,21 +236,19 @@ class API():
 
     def execute_buy_order(self, order):
         print('execute_buy_order')
+        # time.sleep(random.randint(1,2))
         self.browser.get(f'https://www.etoro.com/markets/{str(order.stock.symbol).lower()}')
 
         self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'trade-button')))
         trade_btn = self.browser.find_element_by_tag_name('trade-button')
-        print(trade_btn.get_attribute('innerHTML'))
-        # time.sleep(random.randint(5,10)) #dirty fix
-        # restricted = self.browser.execute_script("return head;")
-        # print(restricted)
+        time.sleep(5) #dirty fix
+
         trade_btn.click()
         try:
             self.browser.find_element_by_css_selector("div[id='open-position-view']")
         except NoSuchElementException as err:
             print(err)
         else:
-            print('ELSE')
             #SWITCH TO ORDER MODE IF PRESENT (to be investigated)
             toggle_btn = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='execution-trade-mode-drop-box']")
             if len(toggle_btn) !=0:
@@ -381,3 +378,4 @@ class API():
             else:
                 print('Error unknown order_type')
                 continue
+            self.browser.get(f'https://www.etoro.com/watchlists') 

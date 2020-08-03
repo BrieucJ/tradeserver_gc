@@ -241,7 +241,7 @@ class UpdateOrders(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        update_orders.delay(request.user.id)
+        update_orders.delay()
         return Response({'updating': True})
 
 class TransmitOrders(generics.RetrieveAPIView):
@@ -251,5 +251,5 @@ class TransmitOrders(generics.RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         print('Retrieve')
-        transmit_orders.delay(request.user.id)
+        transmit_orders.delay()
         return Response({'updating': True})

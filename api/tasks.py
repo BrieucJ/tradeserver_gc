@@ -186,8 +186,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
 
 @shared_task
-def update_orders(user_id):
-    print('update_orders')
+def update_orders_task(user_id):
+    print('update_orders_task')
     backtests = SMABacktest.objects.all()
     user = User.objects.get(id=user_id)
     portfolios = user.portfolio.all()
@@ -271,24 +271,6 @@ def update_orders(user_id):
                         else:
                             print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
 
-@shared_task
-def transmit_orders(user_id):
-    print('transmit_orders')
-    user = User.objects.get(id=user_id)
-    portfolios = user.portfolio.all()
-
-    for portfolio in portfolios:
-        if portfolio.portfolio_type:
-            mode = 'real'
-        else:
-            mode = 'demo'
-        sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
-        buy_orders = portfolio.buy_order.filter(submited_at__isnull=True)
-        orders = list(chain(sell_orders, buy_orders))
-        if len(orders) != 0:
-            for order in orders:
-                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-                api.transmit_orders(orders=[order])
 
 @shared_task
 def update_sma_positions():
@@ -371,16 +353,29 @@ def update_price_history():
     update_sma_positions.delay()
 
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
-def update_portfolios():
+def update_orders():
     users = User.objects.all()
     for user in users:
-        update_orders.delay(user.id)
+        update_orders_task.delay(user.id)
 
 @periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
-def update_portfolios():
+def transmit_orders():
     users = User.objects.all()
     for user in users:
-        transmit_orders.delay(user.id)
+        portfolios = user.portfolio.all()
+        for portfolio in portfolios:
+            if portfolio.portfolio_type:
+                mode = 'real'
+            else:
+                mode = 'demo'
+            sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
+            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment')
+            orders = list(chain(sell_orders, buy_orders))
+            if len(orders) != 0:
+                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+                api.transmit_orders(orders=orders)
+        update_portfolio.delay(user.id)
+
 
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolios", ignore_result=True)
 def update_portfolios():
