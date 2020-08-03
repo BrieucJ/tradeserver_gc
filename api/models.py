@@ -42,7 +42,7 @@ class Portfolio(models.Model):
     
     @property
     def last_portfolio_history(self):
-        return self.portfolio_history.first()
+        return self.portfolio_history.last()
 
 class PortfolioHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolio_history')

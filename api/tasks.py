@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from celery.task.schedules import crontab
 from django.core.exceptions import ValidationError
-from django.db.models import Sum
+from django.db.models import Sum, Max, Min
 from celery.decorators import periodic_task
 from celery import task, shared_task, current_task
 from .trade.etoro import API
@@ -186,16 +186,17 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
 
 @shared_task
-def update_orders(user_id, portfolio_type):
+def update_orders(user_id):
     print('update_orders')
     backtests = SMABacktest.objects.all()
     user = User.objects.get(id=user_id)
-    portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
-    portfolio_history = portfolio.portfolio_history.first()
+    portfolios = user.portfolio.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
-    if portfolio:
-        positions = portfolio.position.all()
+    for portfolio in portfolios:
+        portfolio_history = portfolio.portfolio_history.first()
+        positions = portfolio.position.filter(close_date__isnull=True)
+        print(f'{len(positions)} POSITIONS')
         for position in positions:
             stock = position.stock
             print(stock)
@@ -230,54 +231,57 @@ def update_orders(user_id, portfolio_type):
 
         #INVESTMENTS
         print('PORTFOLIO INVESTMENTS')
-        if portfolio_history.cash != None and portfolio_history.total_invested_value != None:
+        if portfolio_history.cash != None:
+            min_score = SMABacktest.objects.aggregate(Min('score'))
+            max_score = SMABacktest.objects.aggregate(Max('score'))
+            total_invested_value = portfolio_history.total_invested_value
             cash = portfolio_history.cash
+
             if cash + portfolio_history.total_invested_value > 10000:
-                max_allocation_per_stock = 0.05 * (cash + portfolio_history.total_invested_value)
+                max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
             elif cash + portfolio_history.total_invested_value > 100000:
-                max_allocation_per_stock = 0.01 * (cash + portfolio_history.total_invested_value)
+                max_allocation = 0.01 * (cash + portfolio_history.total_invested_value)
             else:
-                max_allocation_per_stock = 0.1 * (cash + portfolio_history.total_invested_value)
+                max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
 
             for b in backtests:
+                # print(b.score/max_score['score__max'])
+                sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
+                last_price = b.stock.price_history.filter(price_date=last_business_day).first()
+                in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))
+
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
-                
-                if available_cash < max_allocation_per_stock:
-                    break
-                else:
-                    sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
-                    last_price = b.stock.price_history.filter(price_date=last_business_day).first()
-                    in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
 
-                    if sma_position and last_price and in_portfolio == False and max_allocation_per_stock < available_cash and sma_position.buy:
-                        num_of_shares = int(max_allocation_per_stock/last_price.close)
-                        if num_of_shares > 0:
-                            stop_loss = last_price.close - b.model.stop_loss * last_price.close
-                            take_profit = last_price.close + b.model.take_profit * last_price.close
-                            total_cost = num_of_shares * last_price.close
-                            order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
-                            try:
-                                order.save()
-                            except IntegrityError as err:
-                                continue
-                            else:
-                                print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | max_allocation_per_stock: {max_allocation_per_stock} | available_cash: {available_cash}')
+                if sma_position and last_price and in_portfolio == False and sma_position.buy and available_cash > 0:
+                    stock_allocation = max_allocation * (b.score/max_score['score__max'])
+                    num_of_shares = int(stock_allocation/last_price.close)
+                    if num_of_shares > 0:
+                        stop_loss = last_price.close - b.model.stop_loss * last_price.close
+                        take_profit = last_price.close + b.model.take_profit * last_price.close
+                        total_cost = num_of_shares * last_price.close
+                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit)
+                        try:
+                            order.save()
+                        except IntegrityError as err:
+                            continue
+                        else:
+                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
 
 @shared_task
-def transmit_orders(user_id, portfolio_type):
+def transmit_orders(user_id):
     print('transmit_orders')
     user = User.objects.get(id=user_id)
-    portfolio = user.portfolio.filter(portfolio_type=portfolio_type).first()
-    if portfolio_type:
-        mode = 'real'
-    else:
-        mode = 'demo'
+    portfolios = user.portfolio.all()
 
-    if portfolio != None:
+    for portfolio in portfolios:
+        if portfolio.portfolio_type:
+            mode = 'real'
+        else:
+            mode = 'demo'
         sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
         buy_orders = portfolio.buy_order.filter(submited_at__isnull=True)
         orders = list(chain(sell_orders, buy_orders))
@@ -285,7 +289,6 @@ def transmit_orders(user_id, portfolio_type):
             for order in orders:
                 api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
                 api.transmit_orders(orders=[order])
-            update_portfolio.delay(user_id)
 
 @shared_task
 def update_sma_positions():
@@ -336,44 +339,50 @@ def update_portfolio(user_id):
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=45, hour='*/2')), name="update_price_history", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_price_history", ignore_result=True)
 def update_price_history():
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
-        print(s.symbol)
-        if s.price_history.first():
-            start_date = s.price_history.first().price_date
-        else:
-            start_date = datetime.datetime(2000, 1, 1)
-        end_date = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-        if start_date < end_date:
-            try:
-                df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
-            except RemoteDataError as err:
-                print(f'#### {s.symbol} - {err} ####')
-                continue
-            
-            for index, row in df.iterrows():
-                if len(row) > 0:
-                    try:
-                        p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=end_date)
-                        p.full_clean()
-                        p.save()
-                    except ValidationError as err:
-                        print(err)
-                        continue
+        try:
+            print(s.symbol)
+            if s.price_history.first():
+                start_date = s.price_history.first().price_date
+            else:
+                start_date = datetime.datetime(2000, 1, 1)
+            end_date = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
+            if start_date < end_date:
+                try:
+                    df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
+                except RemoteDataError as err:
+                    print(f'#### {s.symbol} - {err} ####')
+                    continue
+                
+                for index, row in df.iterrows():
+                    if len(row) > 0:
+                        try:
+                            p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=end_date)
+                            p.full_clean()
+                            p.save()
+                        except ValidationError as err:
+                            print(err)
+                            continue
+        except:
+            continue
     update_sma_positions.delay()
 
-@periodic_task(run_every=(crontab(minute=30, hour='*/2', day_of_week='1-5')), name="portfolio_rebalancing", ignore_result=True)
-def portfolio_rebalancing():
+@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
+def update_portfolios():
     users = User.objects.all()
     for user in users:
-        update_orders.delay(user.id, False)
-        update_orders.delay(user.id, True)
-        transmit_orders.delay(user.id, False)
-        transmit_orders.delay(user.id, True)
+        update_orders.delay(user.id)
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_portfolios", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
+def update_portfolios():
+    users = User.objects.all()
+    for user in users:
+        transmit_orders.delay(user.id)
+
+@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolios", ignore_result=True)
 def update_portfolios():
     users = User.objects.all()
     for user in users:
