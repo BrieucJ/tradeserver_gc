@@ -18,10 +18,10 @@ class Area_Chart extends React.Component {
   render() {
     const { classes, theme } = this.props;
     return (
-    <AreaChart width={600} height={400} data={this.props.data} >
+    <AreaChart width={400} height={200} data={this.props.data} >
         <CartesianGrid strokeDasharray="3 3"/>
-        <XAxis dataKey="name" />
-        <YAxis/>
+        <XAxis dataKey="name" fill={this.props.theme.palette.type === 'dark' ? this.props.theme.palette.common.white : this.props.theme.palette.common.black}/>
+        <YAxis fill={this.props.theme.palette.type === 'dark' ? this.props.theme.palette.common.white : this.props.theme.palette.common.black} />
         <Tooltip />
         <Area type='monotone' dataKey='cash' stackId='1' stroke={theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light} fill={theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light} />
     </AreaChart>

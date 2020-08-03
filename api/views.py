@@ -56,7 +56,7 @@ class Home(generics.RetrieveAPIView):
         p_real = user.portfolio.filter(portfolio_type=True).first()
 
         if p_demo != None:
-            portfolio_history_demo = p_demo.portfolio_history.all() #distinct('created_at__date').order_by()
+            portfolio_history_demo = p_demo.portfolio_history.distinct('created_at__date').order_by()
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True), many=True).data 
             print(f'#### {p_demo.portfolio_history.all()} ####')
         else:

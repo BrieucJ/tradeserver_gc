@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Button, Typography} from '@material-ui/core';
+import { Container, Grid, Button, Typography, CircularProgress, Paper} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -9,12 +9,11 @@ const styles = {
 
 }
 
-const data = [{name: 'Page A', uv: 400, pv: 2400, amt: 2400}, {name: 'Page B', uv: 600, pv: 2400, amt: 2400}];
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
+    this.state = {
+      loading:false,
       last_price_date: null,
       last_order_date: null,
       last_portfolio_date: null,
@@ -24,20 +23,24 @@ class Home extends React.Component {
     };
   }
 
+  componentWillMount = () => {
+    this.setState({loading:true})
+  }
+
   componentDidMount = () => {
     this.retrieveHome()
   }
 
   retrieveHome = () => {
     get('api/home/').then((resp) => {
-      console.log(resp)
       if (resp.status === 200){
         console.log(resp)
         var response = JSON.parse(resp.response)
         console.log(response)
         this.setState({
           p_demo: response.p_demo,
-          p_real: response.p_real
+          p_real: response.p_real,
+          loading: false
         })
       }
     })
@@ -128,51 +131,95 @@ class Home extends React.Component {
     return data
   }
 
+  renderPerformance(){
+    if(this.props.portfolio_type) {
+      if (this.state.p_real.p_history !== undefined){
+        var start_balance = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
+        var last_balance = this.state.p_real.p_history[this.state.p_real.p_history.length-1].cash + this.state.p_real.p_history[this.state.p_real.p_history.length-1].total_invested_value
+        console.log(start_balance)
+        console.log(last_balance)
+      } else {
+        return undefined
+      }
+    } else {
+      if (this.state.p_demo.p_history !== undefined){
+        var start_balance = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
+        var last_balance = this.state.p_demo.p_history[this.state.p_demo.p_history.length-1].cash + this.state.p_demo.p_history[this.state.p_demo.p_history.length-1].total_invested_value
+        return `${((last_balance/start_balance-1)*100).toFixed(2)}%`
+      } else {
+        return undefined
+      }
+
+    }
+  }
 
   render() {
     const { classes, theme } = this.props;
-    return (
-      <Container>
+    if (this.state.loading){
+      return(<Container><CircularProgress color='primary' /></Container>)
+    } else {
+      return (
+        <Container style={{flexGrow: 1}}>
+          <Grid   container direction="row">
+            <Grid item  xs={12} sm={6} >
+              <Paper>
+              <Typography variant='h4'>
+                Summary
+              </Typography>
+              <Typography variant='body1'>
+                Portfolio type: {this.props.portfolio_type ? 'REAL' : 'DEMO'}
+              </Typography>
+              <Typography variant='body1'>
+                Creation date: {this.props.portfolio_type ? this.state.p_real.p_history[0].created_at.split('T')[0] : this.state.p_demo.p_history[0].created_at.split('T')[0]}
+              </Typography>
+              <Typography variant='body1'>
+                Total cash: {this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : this.state.p_demo.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) }
+              </Typography>
+              <Typography variant='body1'>
+                Total investments: {this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) }
+              </Typography>
+              <Typography variant='body1'>
+                Currency: {this.props.portfolio_type ? this.state.p_real.portfolio.currency : this.state.p_demo.portfolio.currency}
+              </Typography>
+              <Typography variant='body1' style={{paddingBottom:10}}>
+                Performance to date: {this.renderPerformance()}
+              </Typography>
+                <Area_Chart data={this.area_chart_data()} />
+              </Paper>
 
-        <Area_Chart data={this.area_chart_data()} />
-        <Pie_Chart data={this.pie_chart_data()} />
-
-        <Grid container direction="column" alignItems="center" justify="center">
-          <Grid container item direction="row" alignItems="center" justify="center">
-            <Typography variant='h6' >
-              {this.state.last_price_date}
-            </Typography>
-            <Button variant="contained" color="primary" onClick={()=>{this.update_prices()}} style={{margin:5}}>
-              Update Prices
-            </Button>
-          </Grid>
-          <Grid container item direction="row" alignItems="center" justify="center">
-            <Typography variant='h6' >
-            {this.state.last_portfolio_date === null ? 'None' : new Date(this.state.last_portfolio_date).toISOString().split('T')[0]}
-            </Typography>
-            <Button variant="contained" color="primary" onClick={()=>{this.update_portfolio()}} style={{margin:5}}>
-              Update Portfolio
-            </Button>
-          </Grid>
-          <Grid container item direction="row" alignItems="center" justify="center">
-            <Typography variant='h6' >
-              {this.state.last_order_date === null ? 'None' : new Date(this.state.last_order_date).toISOString().split('T')[0]}
-            </Typography>
-            <Button variant="contained" color="primary" onClick={()=>{this.update_orders()}} style={{margin:5}}>
+            </Grid>
+            <Grid item container xs={12} sm={6}>
+              <Paper>
+              <Typography variant='h4'>
+                Portfolio
+              </Typography>
+              <Pie_Chart data={this.pie_chart_data()} />
+              </Paper>
+            </Grid>
+            <Grid item container xs={12} sm={6}>
+              <Paper>
+              <Typography variant='h4'>
+                Buttons
+              </Typography>
+                <Button variant="contained" color="primary" onClick={()=>{this.update_prices()}} style={{margin:5}}>
+                Update Prices
+                </Button>
+                <Button variant="contained" color="primary" onClick={()=>{this.update_portfolio()}} style={{margin:5}}>
+                Update Portfolio
+              </Button>
+              <Button variant="contained" color="primary" onClick={()=>{this.update_orders()}} style={{margin:5}}>
               Update Orders
             </Button>
-          </Grid>
-          <Grid container item direction="row" alignItems="center" justify="center">
-            <Typography variant='h6' >
-              {this.state.last_submited_order_date === null ? 'None' : new Date(this.state.last_submited_order_date).toISOString().split('T')[0]}
-            </Typography>
             <Button variant="contained" color="primary" onClick={()=>{this.transmit_orders()}} style={{margin:5}}>
               Transmit Orders
             </Button>
-          </Grid>
-        </Grid>
-      </Container>
-    ); 
+              </Paper>
+            </Grid>
+            
+            </Grid>
+        </Container>
+      ); 
+    }
   }
 }
 

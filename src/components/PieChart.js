@@ -14,18 +14,12 @@ class Pie_Chart extends React.Component {
         active_index: 0
     };
   }
-  
-  componentDidMount(){
-      console.log(this.props)
-  }
 
   onPieEnter = (data, index) => {
       this.setState({active_index: index})
   }
 
   renderActiveShape = (props) => {
-      console.log('renderActiveShape')
-      console.log(this.props)
     const RADIAN = Math.PI / 180;
     const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
     const sin = Math.sin(-RADIAN * midAngle);
@@ -74,7 +68,7 @@ class Pie_Chart extends React.Component {
     const { classes, theme } = this.props;
     const COLORS = ["#0d47a1", '#1565c0', '#1976d2', '#1e88e5', '#2196f3', '#42a5f5', '#64b5f6', '#90caf9', '#bbdefb']
         return (
-            <PieChart width={800} height={400} >
+            <PieChart width={600} height={300} style={{backgroundColor:'purple'}}>
                 <Pie 
                     dataKey='value'
                     activeIndex={this.state.active_index}
