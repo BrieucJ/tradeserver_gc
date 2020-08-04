@@ -306,7 +306,7 @@ def update_portfolio(user_id):
                 portfolio, positions = api.update_portfolio()
                 pending_orders = api.get_pending_order()
                 trade_history = api.update_trade_history()
-            except [TimeoutException, NoSuchElementException] as err:
+            except Exception as err:
                 print(err)
                 pass
             else:
@@ -323,7 +323,7 @@ def update_portfolio(user_id):
                 portfolio, positions = api.update_portfolio()
                 pending_orders = api.get_pending_order()
                 trade_history = api.update_trade_history()
-            except [TimeoutException, NoSuchElementException] as err:
+            except Exception as err:
                 pass
             else:
                 if real_portfolio == None:
@@ -387,7 +387,7 @@ def transmit_orders():
                 try:
                     api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
                     api.transmit_orders(orders=orders)
-                except [TimeoutException, NoSuchElementException] as err:
+                except Exception as err:
                     print(err)
                     pass
                 del api
