@@ -217,11 +217,11 @@ def update_orders_task(user_id):
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
         print(pending_buy_orders)
         for order in pending_buy_orders:
-            if order.submited_at != None and order.created_at.date() != datetime.date.today():
+            if order.submited_at != None and order.created_at.date() < last_business_day:
                 print('CANCEL')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
-            if order.submited_at == None and order.created_at.date() != datetime.date.today():
+            if order.submited_at == None and order.created_at.date() < last_business_day:
                 print('DELETE')
                 order.delete()
         
@@ -324,6 +324,7 @@ def update_portfolio(user_id):
                 pending_orders = api.get_pending_order()
                 trade_history = api.update_trade_history()
             except Exception as err:
+                print(err)
                 pass
             else:
                 if real_portfolio == None:
@@ -331,6 +332,7 @@ def update_portfolio(user_id):
                 else:
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             del api
+    return
 
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/6')), name="update_price_history", ignore_result=True)
@@ -381,8 +383,12 @@ def transmit_orders():
             else:
                 mode = 'demo'
             sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
-            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment')
-            orders = list(chain(sell_orders, buy_orders))
+            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment') 
+            canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False).order_by('-total_investment')
+            orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
+            print(f'Transmiting {len(sell_orders)} sell orders')
+            print(f'Transmiting {len(buy_orders)} buy orders')
+            print(f'Canceling {len(canceled_buy_orders)} buy orders')
             if len(orders) != 0:
                 try:
                     api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
