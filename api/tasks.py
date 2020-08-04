@@ -20,6 +20,7 @@ from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABackt
 from re import sub
 from decimal import Decimal
 import pandas as pd
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
 @shared_task
@@ -300,30 +301,39 @@ def update_portfolio(user_id):
         #demo portolio
         if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating demo portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
-            portfolio, positions = api.update_portfolio()
-            pending_orders = api.get_pending_order()
-            trade_history = api.update_trade_history()
-            if demo_portfolio == None:
-                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            try:
+                api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+                portfolio, positions = api.update_portfolio()
+                pending_orders = api.get_pending_order()
+                trade_history = api.update_trade_history()
+            except [TimeoutException, NoSuchElementException] as err:
+                print(err)
+                pass
             else:
-                save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+                if demo_portfolio == None:
+                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+                else:
+                    save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             del api
         #real portfolio
         if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating real portfolio')
-            api = API(user.profile.broker_username, user.profile.broker_password, mode='real')
-            portfolio, positions = api.update_portfolio()
-            pending_orders = api.get_pending_order()
-            trade_history = api.update_trade_history()
-            if real_portfolio == None:
-                create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            try:
+                api = API(user.profile.broker_username, user.profile.broker_password, mode='real')
+                portfolio, positions = api.update_portfolio()
+                pending_orders = api.get_pending_order()
+                trade_history = api.update_trade_history()
+            except [TimeoutException, NoSuchElementException] as err:
+                pass
             else:
-                save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+                if real_portfolio == None:
+                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+                else:
+                    save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             del api
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_price_history", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/6')), name="update_price_history", ignore_result=True)
 def update_price_history():
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
@@ -374,14 +384,11 @@ def transmit_orders():
             buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment')
             orders = list(chain(sell_orders, buy_orders))
             if len(orders) != 0:
-                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-                api.transmit_orders(orders=orders)
+                try:
+                    api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+                    api.transmit_orders(orders=orders)
+                except [TimeoutException, NoSuchElementException] as err:
+                    print(err)
+                    pass
                 del api
-        update_portfolio.delay(user.id)
-
-
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_portfolios", ignore_result=True)
-def update_portfolios():
-    users = User.objects.all()
-    for user in users:
         update_portfolio.delay(user.id)

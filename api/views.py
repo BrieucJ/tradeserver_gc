@@ -12,37 +12,8 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer, PortfolioHistorySerializer
 from .trade.etoro import API
-from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders, update_portfolios
+from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
 from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory
-
-# class StockViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-#     serializer_class = StockSerializer
-#     def get_queryset(self):
-#         queryset = Stock.objects.all().order_by('symbol')
-#         symbol = self.request.query_params.get('symbol', None)
-#         if symbol is not None:
-#             queryset = queryset.filter(symbol=symbol)
-#         return queryset
-
-# class PriceHistoryViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-#     serializer_class = PriceHistorySerializer
-#     def get_queryset(self):
-#         queryset = PriceHistory.objects.all()
-#         symbol = self.request.query_params.get('symbol', None)
-#         if symbol is not None:
-#             queryset = queryset.filter(stock__symbol=symbol)
-#             return queryset
-#         else:
-#             raise Http404('Missing required parameters')
-
-# class TradingModelViewSet(viewsets.ModelViewSet):
-#     serializer_class = TradingModelSerializer
-#     def get_queryset(self, request):
-#         queryset = TradingModel.objects.filter(user=request.user)
-#         return queryset
-    
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
 
 class Home(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
