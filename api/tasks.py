@@ -308,6 +308,7 @@ def update_portfolio(user_id):
                 create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             else:
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            del api
         #real portfolio
         if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating real portfolio')
@@ -319,6 +320,7 @@ def update_portfolio(user_id):
                 create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             else:
                 save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+            del api
 
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_price_history", ignore_result=True)
@@ -374,6 +376,7 @@ def transmit_orders():
             if len(orders) != 0:
                 api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
                 api.transmit_orders(orders=orders)
+                del api
         update_portfolio.delay(user.id)
 
 

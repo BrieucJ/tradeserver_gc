@@ -44,6 +44,7 @@ class API():
     def __del__(self):
         self.browser.close()
         self.browser.quit()
+        self.browser = None
     
     def login(self):
         print('login')
