@@ -21,6 +21,7 @@ from re import sub
 from decimal import Decimal
 import pandas as pd
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import gc
 
 
 @shared_task
@@ -289,6 +290,7 @@ def update_sma_positions():
                         print(f'BUY: {sma_engine.order["buy"]}')
                         s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=prices.first().price_date)
                         s.save()
+    gc.collect()
 
 @shared_task
 def update_portfolio(user_id):
@@ -332,7 +334,7 @@ def update_portfolio(user_id):
                 else:
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
             del api
-    return
+    gc.collect()
 
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/6')), name="update_price_history", ignore_result=True)
@@ -365,12 +367,14 @@ def update_price_history():
         except:
             continue
     update_sma_positions.delay()
+    gc.collect()
 
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
 def update_orders():
     users = User.objects.all()
     for user in users:
         update_orders_task.delay(user.id)
+    gc.collect()
 
 @periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
 def transmit_orders():
@@ -398,3 +402,4 @@ def transmit_orders():
                     pass
                 del api
         update_portfolio.delay(user.id)
+        gc.collect()
