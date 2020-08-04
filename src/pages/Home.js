@@ -174,15 +174,15 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
+              <TableCell align="right">Submited/canceled</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
             {bos.map((bo) => (
               <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
+                <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -198,15 +198,15 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
+              <TableCell align="right">Submited/canceled</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
             {bos.map((bo) => (
               <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -232,7 +232,7 @@ class Home extends React.Component {
           <TableBody>
             {sos.map((so) => (
               <TableRow key={so.id}>
-                <TableCell component="th" scope="row">{so.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {'test'} </TableCell>
                 <TableCell align="right"> {'test'} </TableCell>
               </TableRow>
@@ -256,7 +256,7 @@ class Home extends React.Component {
           <TableBody>
             {sos.map((so) => (
               <TableRow key={so.id}>
-                <TableCell component="th" scope="row">{so.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {'test'} </TableCell>
                 <TableCell align="right"> {'test'} </TableCell>
               </TableRow>
@@ -268,8 +268,46 @@ class Home extends React.Component {
     }
   }
 
+  holding_duration = (open_date) =>{
+    var today = new Date()
+    const milliseconds = Math.abs(new Date(open_date) - new Date());
+    var delta = Math.abs(new Date(open_date) - new Date()) / 1000;
+
+    // calculate (and subtract) whole days
+    var days = Math.floor(delta / 86400);
+    delta -= days * 86400;
+    
+    // calculate (and subtract) whole hours
+    var hours = Math.floor(delta / 3600) % 24;
+    delta -= hours * 3600;
+    
+    // calculate (and subtract) whole minutes
+    var minutes = Math.floor(delta / 60) % 60;
+    delta -= minutes * 60;
+    
+    if (days < 1){
+      return `${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day` 
+    } else {
+      return `${days}, ${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day(s)` 
+    }  
+
+  }
+
+  total_cash_investments = (portfolio) => {
+    var cash = portfolio.last_portfolio_history.cash
+    var inv = portfolio.last_portfolio_history.total_invested_value
+    var total_amount = cash + inv
+    return total_amount
+  }
 
   renderPortfolio(){
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    var today = yyyy + '-' + mm + '-' + dd;
+    const total_amount = this.state.p_demo.portfolio.last_portfolio_history.cash * this.state.p_real.portfolio.total_invested_value
+
     if(this.props.portfolio_type) {
       var pos = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
       return(
@@ -279,15 +317,23 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
+              <TableCell align="right">% </TableCell>
+              <TableCell align="right">P/L </TableCell>
+              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Position</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
             {pos.map((po) => (
               <TableRow key={po.id}>
-                <TableCell component="th" scope="row">{po.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {'TEST'} </TableCell>
+                <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
+                <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
+                {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
+                </TableCell>
+                <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
+                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === today ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === today ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -303,15 +349,23 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
+              <TableCell align="right">% </TableCell>
+              <TableCell align="right">P/L </TableCell>
+              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Position</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
             {pos.map((po) => (
               <TableRow key={po.id}>
-                <TableCell component="th" scope="row">{po.stock.name.substring(0,15)} </TableCell>
+                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {'TEST'} </TableCell>
+                <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
+                <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
+                  {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
+                </TableCell>
+                <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
+                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === today ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === today ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -324,7 +378,7 @@ class Home extends React.Component {
   render() {
     const { classes, theme } = this.props;
     if (this.state.loading){
-      return(<Container><CircularProgress color='primary' /></Container>)
+      return(<Container> <CircularProgress color='primary' /></Container>)
     } else {
       return (
         <Container>
@@ -394,7 +448,7 @@ class Home extends React.Component {
               </Paper>
             </Grid>
 
-            <Grid item xs={12} sm={6} >
+            <Grid item xs={12} sm={12} >
               <Paper style={{padding:5}}>
               <Typography variant='h5' style={{display: 'inline-block', padding:5}}> Portfolio </Typography>
                 {this.renderPortfolio()}

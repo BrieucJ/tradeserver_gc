@@ -369,14 +369,14 @@ def update_price_history():
     update_sma_positions.delay()
     gc.collect()
 
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_orders", ignore_result=True)
 def update_orders():
     users = User.objects.all()
     for user in users:
         update_orders_task.delay(user.id)
     gc.collect()
 
-@periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=30, hour='*/2')), name="transmit_orders", ignore_result=True)
 def transmit_orders():
     users = User.objects.all()
     for user in users:
