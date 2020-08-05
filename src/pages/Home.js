@@ -232,7 +232,7 @@ class Home extends React.Component {
       if (this.state.p_real.p_history.length !== 0){
         var start_balance_real = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
         var last_balance_real = this.total_cash() + this.total_investment() + this.total_pl()
-        return ((last_balance_real/start_balance_real-1)*100)
+        return last_balance_real/start_balance_real-1
       } else {
         return undefined
       }
@@ -240,7 +240,7 @@ class Home extends React.Component {
       if (this.state.p_demo.p_history.length !== 0){
         var start_balance_demo = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
         var last_balance_demo = this.total_cash() + this.total_investment() + this.total_pl()
-        return ((last_balance_demo/start_balance_demo-1)*100)
+        return last_balance_demo/start_balance_demo-1
       } else {
         return undefined
       }
@@ -264,7 +264,7 @@ class Home extends React.Component {
         var delta = Math.abs(new Date(this.state.p_demo.portfolio.created_at) - new Date()) / 1000;
         var num_of_days_demo = delta / 86400
         var perf_to_date_demo = this.performance_to_date()
-        var annualized_return_demo = (1+perf_to_date_demo)**(365/num_of_days_demo)-1
+        var annualized_return_demo = ((1+perf_to_date_demo)**(365/num_of_days_demo))-1
         return annualized_return_demo
       } else {
         return null
@@ -535,11 +535,11 @@ class Home extends React.Component {
   
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Return to date: </Typography>
-                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{this.performance_to_date().toFixed(2)}% </Typography>
+                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{(this.performance_to_date()*100).toFixed(2)}% </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Annualized return: </Typography>
-                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {this.annualized_performance().toFixed(2)}%</Typography>
+                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {(this.annualized_performance()*100).toFixed(2)}%</Typography>
                 </Grid>
               </Paper>
             </Grid>
