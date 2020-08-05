@@ -44,7 +44,6 @@ class Home extends React.Component {
   }
 
   updateGraph = () => {
-    console.log('updateGraph')
     if (this.graphRef.current !== null){
       if (this.state.g_height != this.graphRef.current.clientHeight) {
         this.setState({g_height: this.graphRef.current.clientHeight})
@@ -52,8 +51,6 @@ class Home extends React.Component {
       if (this.state.g_width != this.graphRef.current.clientWidth) {
         this.setState({g_width: this.graphRef.current.clientWidth})
       }
-      console.log(this.graphRef.current.clientHeight)
-      console.log(this.graphRef.current.clientWidth)
     }
   }
 
@@ -317,8 +314,8 @@ class Home extends React.Component {
             {sos_demo.map((so) => (
               <TableRow key={so.id}>
                 <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {'test'} </TableCell>
-                <TableCell align="right"> {'test'} </TableCell>
+                <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -330,11 +327,24 @@ class Home extends React.Component {
 
   renderPortfolio(){
     var date_time = new Date();
-    var dd = String(date_time.getDate()).padStart(2, '0');
-    var mm = String(date_time.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = date_time.getFullYear();
-    var today = yyyy + '-' + mm + '-' + dd-1;
-    
+    var day_num = date_time.getDay()
+
+    if (day_num === 0 || day_num == 6){
+      if (day_num === 0){
+        date_time.setDate(date_time.getDate() - 2);
+      }
+      if (day_num === 6){
+        date_time.setDate(date_time.getDate() - 1);
+      }
+    } else {
+      date_time.setDate(date_time.getDate() - 1);
+    }
+
+    var day = date_time.getDate()
+    var month = date_time.getMonth() + 1 //January is 0!
+    var year = date_time.getFullYear();
+    var last_business_day = year + '-' + month + '-' + day;
+
     if(this.props.portfolio_type) {
       var pos_real = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
       return(
@@ -360,7 +370,7 @@ class Home extends React.Component {
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
                 <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
-                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === today ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === today ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
+                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -392,7 +402,7 @@ class Home extends React.Component {
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
                 <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
-                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === today ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === today ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
+                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
             ))}
             </TableBody>
