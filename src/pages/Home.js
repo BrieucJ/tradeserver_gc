@@ -13,6 +13,8 @@ class Home extends React.Component {
     super(props);
     this.state = {
       loading:true,
+      g_height: 0 ,
+      g_width: 0 ,
       last_price_date: null,
       last_order_date: null,
       last_portfolio_date: null,
@@ -20,12 +22,39 @@ class Home extends React.Component {
       p_demo: {},
       p_real: {}
     };
+    this.graphRef = React.createRef();
   }
 
 
   componentDidMount = () => {
+    console.log(this.graphRef);
+    window.addEventListener("resize", this.updateGraph);
     this.setState({loading:true})
     this.retrieveHome()
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateGraph);
+  }
+ 
+  componentDidUpdate() {
+    if (this.state.g_height === 0){
+      this.updateGraph();
+    } 
+  }
+
+  updateGraph = () => {
+    console.log('updateGraph')
+    if (this.graphRef.current !== null){
+      if (this.state.g_height != this.graphRef.current.clientHeight) {
+        this.setState({g_height: this.graphRef.current.clientHeight})
+      }
+      if (this.state.g_width != this.graphRef.current.clientWidth) {
+        this.setState({g_width: this.graphRef.current.clientWidth})
+      }
+      console.log(this.graphRef.current.clientHeight)
+      console.log(this.graphRef.current.clientWidth)
+    }
   }
 
   retrieveHome = () => {
@@ -264,8 +293,8 @@ class Home extends React.Component {
             {sos_real.map((so) => (
               <TableRow key={so.id}>
                 <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {'test'} </TableCell>
-                <TableCell align="right"> {'test'} </TableCell>
+                <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
               </TableRow>
             ))}
             </TableBody>
@@ -304,7 +333,7 @@ class Home extends React.Component {
     var dd = String(date_time.getDate()).padStart(2, '0');
     var mm = String(date_time.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = date_time.getFullYear();
-    var today = yyyy + '-' + mm + '-' + dd;
+    var today = yyyy + '-' + mm + '-' + dd-1;
     
     if(this.props.portfolio_type) {
       var pos_real = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
@@ -430,10 +459,10 @@ class Home extends React.Component {
               </Paper>
             </Grid>
 
-            <Grid item container xs={12} sm={6} >
-              <Paper style={{padding:5, flexGrow: 1, height: '300px'}} >
+            <Grid item container xs={12} sm={6}  >
+              <Paper style={{padding:5, flexGrow: 1, height: '300px'}} ref={this.graphRef} >
                 <Typography variant='h5' style={{display: 'inline-block'}}> Cahs/Investment evolution </Typography>
-                <Area_Chart data={this.area_chart_data()}/>
+                <Area_Chart data={this.area_chart_data()} height={this.state.g_height} width={this.state.g_width}/>
               </Paper>
             </Grid>
             
@@ -457,8 +486,6 @@ class Home extends React.Component {
               {this.renderSellOrders()}
               </Paper>
             </Grid>
-
-
             
             </Grid>
         </Container>

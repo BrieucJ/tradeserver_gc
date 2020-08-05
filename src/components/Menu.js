@@ -1,5 +1,5 @@
 import React from 'react';
-import {AppBar, Toolbar, Link, Typography, IconButton, Hidden, SwipeableDrawer, Box, List, ListItem, ListItemText, Switch} from '@material-ui/core/';
+import {AppBar, Container, Toolbar, Link, Typography, IconButton, Hidden, SwipeableDrawer, Box, List, ListItem, ListItemText, Switch} from '@material-ui/core/';
 import {AccountCircle} from '@material-ui/icons';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -51,6 +51,7 @@ class Menu extends React.Component {
     const { classes, theme } = this.props;
     return (
         <AppBar position="static" style={{marginBottom:20}}>
+          <Container>
             <Toolbar style={{justifyContent: 'space-between'}}>
               <Hidden lgUp>
                 <IconButton edge="start" aria-label="menu" onClick={() => {this.toggle_drawer()}}>
@@ -120,6 +121,7 @@ class Menu extends React.Component {
                 </ListItem>
               </List>
             </SwipeableDrawer>
+            </Container>
         </AppBar>
     ); 
   }
