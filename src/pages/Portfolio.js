@@ -1,5 +1,5 @@
-import React, {Fragment} from 'react';
-import { Container, Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import React from 'react';
+import { Container, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 
@@ -61,25 +61,25 @@ class Portfolio extends React.Component {
   }
 
   renderPortfolio = () => {
+    var portfolio = {}
     if (this.props.portfolio_type) {
-      var portfolio = this.state.real_portfolio
+      portfolio = this.state.real_portfolio
     } else {
-      var portfolio = this.state.demo_portfolio
+      portfolio = this.state.demo_portfolio
     }
     return (
       <Grid container direction="row" alignItems="center" justify="center" style={{padding:10}}>
         <Typography variant='h6' style={{paddingRight: 10}}>
-          Cash: {portfolio.last_portfolio_history != undefined ? portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
+          Cash: {portfolio.last_portfolio_history !== undefined ? portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
         </Typography>
         <Typography variant='h6'>
-          Total invested value: {portfolio.last_portfolio_history != undefined ? portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
+          Total invested value: {portfolio.last_portfolio_history !== undefined ? portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
         </Typography>
       </Grid>
     )
   }
 
   render() {
-    const { classes, theme } = this.props;
     return (
       <Container>
         <Grid container direction="column" alignItems="center" justify="center">

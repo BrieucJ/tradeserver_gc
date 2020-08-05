@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Button, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
+import { Container, Grid, Table, TableBody, TableCell, TableSortLabel, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 
@@ -84,7 +84,6 @@ class Market extends React.Component {
   }
 
   render() {
-    const { classes, theme } = this.props;
     return (
       <Container>
       <Grid container direction="row" alignItems="center" justify="center">

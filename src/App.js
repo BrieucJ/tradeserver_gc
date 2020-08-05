@@ -5,7 +5,7 @@ import { ThemeProvider, responsiveFontSizes} from '@material-ui/core/styles';
 import {dark_theme, light_theme} from './utils/Theme';
 
 // PAGES
-import _404 from './pages/_404'
+import Unknown from './pages/Unknown'
 import Home from './pages/Home'
 import Portfolio from './pages/Portfolio'
 import Order from './pages/Order'
@@ -123,14 +123,17 @@ class App extends React.Component {
                 {this.state.logged_in &&
                   <Fragment>
                     <Menu handleThemeChange={() => {this.handleThemeChange()}} handlePortfolioChange={() => {this.handlePortfolioChange()}} portfolio_type={this.state.portfolio_type}/>
-                    <Route exact path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
-                    <Route exact path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
-                    <Route exact path="/order" render={(props) => <Order {...props} portfolio_type={this.state.portfolio_type}/>} />
-                    <Route exact path="/history" render={(props) => <History {...props} portfolio_type={this.state.portfolio_type}/>} />
-                    <Route exact path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
-                    <Route exact path="/model" render={(props) => <Model {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
-                    <Route exact path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} logout={() => {this.logout()}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />
-                    <Route exact path='/404' render={(props) => <_404 {...props} />} />
+                    <Switch>
+                      <Route exact={true} path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
+                      <Route path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
+                      <Route path="/order" render={(props) => <Order {...props} portfolio_type={this.state.portfolio_type}/>} />
+                      <Route path="/history" render={(props) => <History {...props} portfolio_type={this.state.portfolio_type}/>} />
+                      <Route path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
+                      <Route path="/model" render={(props) => <Model {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />
+                      <Route path="/profile" render={(props) => <Profile {...props} user={this.state.user} update_user={(params) => {this.update_user(params)}} logout={() => {this.logout()}} handleChange={(e) => {this.handleChange(e)}} errors={this.state.errors}/>} />
+                      <Route path="/404" render={(props) => <Unknown {...props} />} />
+                      <Redirect to="/404" />
+                    </Switch>
                   </Fragment>
                 }
               </Switch>

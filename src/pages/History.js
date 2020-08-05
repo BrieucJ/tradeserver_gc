@@ -1,5 +1,5 @@
-import React, {Fragment} from 'react';
-import { Container, Switch, Typography, Grid, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import React from 'react';
+import { Container, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 
@@ -62,7 +62,6 @@ class History extends React.Component {
 
 
   render() {
-    const { classes, theme } = this.props;
     return (
       <Container>
         <Grid  container direction="column" alignItems="center" justify="center">

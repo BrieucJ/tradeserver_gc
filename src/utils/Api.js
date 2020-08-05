@@ -33,10 +33,8 @@ export const destroy = (path, opts) => {
 }
 
 export const makeRequest = async (path, opts) => {
-  console.log('REQUEST')
   let token = localStorage.getItem('token')
   let url = API_URL + path
-  console.log(url)
   let method = opts.method || "GET"
   opts.headers = opts.headers || {}
 //   opts.headers["Locale"] = i18n.locale
@@ -46,8 +44,6 @@ export const makeRequest = async (path, opts) => {
   if (token !== null) {
     opts.headers["Authorization"] = `Token ${token}`
   }
-
-  console.log(opts.headers["Authorization"])
 
   return new Promise(function (resolve, reject) {
     var xhr = new XMLHttpRequest();
