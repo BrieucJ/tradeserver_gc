@@ -213,7 +213,7 @@ def update_orders_task(user_id):
                         print(f'SELL ORDER ERROR: {err}')
                         continue
         
-        #PENDING ORDERS REALLOCATION
+        #PENDING BUY ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
         print(pending_buy_orders)
@@ -226,11 +226,6 @@ def update_orders_task(user_id):
                 print('DELETE')
                 order.delete()
         
-        # for order in pending_sell_orders:
-        #     if order.created_at.date() <= (datetime.date.today() - timedelta(days=1)):
-        #         order.canceled_at = datetime.now()
-        #         order.save()
-
         #INVESTMENTS
         print('PORTFOLIO INVESTMENTS')
         if portfolio_history.cash != None:

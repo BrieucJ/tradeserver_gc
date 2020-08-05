@@ -163,24 +163,19 @@ class Home extends React.Component {
     var hours = Math.floor(delta / 3600) % 24;
     delta -= hours * 3600;
     
-    // // calculate (and subtract) whole minutes
-    // var minutes = Math.floor(delta / 60) % 60;
-    // delta -= minutes * 60;
-    
     if (days < 1){
       return `${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day` 
     } else {
-      return `${days}, ${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day(s)` 
-    }  
-
+      return `${days},${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 0})} day(s)` 
+    }
   }
 
   total_cash_investments = (portfolio) => {
     var cash = portfolio.last_portfolio_history.cash
     var inv = portfolio.last_portfolio_history.total_invested_value
-    var total_amount = cash + inv
-    return total_amount
+    return cash + inv
   }
+
 
   total_pl() {
     var pl = 0
@@ -200,24 +195,96 @@ class Home extends React.Component {
     return pl
   }
 
-  renderPerformance(){
+  total_cash = () => {
+    if(this.props.portfolio_type){
+      if (this.state.p_real.portfolio.created_at !== null){
+        return this.state.p_real.portfolio.last_portfolio_history.cash
+      } else{
+        return null
+      }
+    }else{
+      if (this.state.p_demo.portfolio.created_at !== null){
+        return this.state.p_demo.portfolio.last_portfolio_history.cash
+      } else{
+        return null
+      }
+    }
+  }
+
+  total_investment = () => {
+    if(this.props.portfolio_type){
+      if (this.state.p_real.portfolio.created_at !== null){
+        return this.state.p_real.portfolio.last_portfolio_history.total_invested_value
+      } else{
+        return null
+      }
+    } else {
+      if (this.state.p_demo.portfolio.created_at !== null){
+        return this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
+      } else{
+        return null
+      }
+    }
+  }
+
+  performance_to_date(){
     if(this.props.portfolio_type) {
       if (this.state.p_real.p_history.length !== 0){
         var start_balance_real = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
-        var last_balance_real = this.state.p_real.p_history[this.state.p_real.p_history.length-1].cash + this.state.p_real.p_history[this.state.p_real.p_history.length-1].total_invested_value + this.total_pl(this.props.portfolio_type)
-        return `${((last_balance_real/start_balance_real-1)*100).toFixed(2)}%`
+        var last_balance_real = this.total_cash() + this.total_investment() + this.total_pl()
+        return ((last_balance_real/start_balance_real-1)*100)
       } else {
         return undefined
       }
     } else {
       if (this.state.p_demo.p_history.length !== 0){
         var start_balance_demo = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
-        var last_balance_demo = this.state.p_demo.p_history[this.state.p_demo.p_history.length-1].cash + this.state.p_demo.p_history[this.state.p_demo.p_history.length-1].total_invested_value + this.total_pl(this.props.portfolio_type)
-        return `${((last_balance_demo/start_balance_demo-1)*100).toFixed(2)}%`
+        var last_balance_demo = this.total_cash() + this.total_investment() + this.total_pl()
+        return ((last_balance_demo/start_balance_demo-1)*100)
       } else {
         return undefined
       }
 
+    }
+  }
+
+  annualized_performance = () => {
+    if(this.props.portfolio_type) {
+      if (this.state.p_real.portfolio.created_at !== null){
+        var delta = Math.abs(new Date(this.state.p_real.portfolio.created_at) - new Date()) / 1000;
+        var num_of_days_real = delta / 86400
+        var perf_to_date_real = this.performance_to_date()
+        var annualized_return_real = (1+perf_to_date_real)**(365/num_of_days_real)-1
+        return annualized_return_real
+      } else {
+        return null
+      }
+    } else {
+      if (this.state.p_demo.portfolio.demo !== null){
+        var delta = Math.abs(new Date(this.state.p_demo.portfolio.created_at) - new Date()) / 1000;
+        var num_of_days_demo = delta / 86400
+        var perf_to_date_demo = this.performance_to_date()
+        var annualized_return_demo = (1+perf_to_date_demo)**(365/num_of_days_demo)-1
+        return annualized_return_demo
+      } else {
+        return null
+      }
+    }
+  }
+
+  initial_balance = () => {
+    if(this.props.portfolio_type) {
+      if (this.state.p_real.p_history.length !== 0){
+        return this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
+      } else {
+        return null
+      }
+    } else {
+      if (this.state.p_demo.p_history.length !== 0){
+        return this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
+      } else {
+        return null
+      }
     }
   }
 
@@ -343,7 +410,7 @@ class Home extends React.Component {
     var day = date_time.getDate()
     var month = date_time.getMonth() + 1 //January is 0!
     var year = date_time.getFullYear();
-    var last_business_day = year + '-' + month + '-' + day;
+    var last_business_day = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
 
     if(this.props.portfolio_type) {
       var pos_real = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
@@ -446,25 +513,33 @@ class Home extends React.Component {
                   <Typography variant='body1'> {this.props.portfolio_type ? this.state.p_real.portfolio.currency : this.state.p_demo.portfolio.currency} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
-                  <Typography variant='body1'> Total cash: </Typography>
-                  <Typography variant='body1'> {this.props.portfolio_type ? 
-                    this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
-                    : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null } </Typography>
+                  <Typography variant='body1'> Cash: </Typography>
+                  <Typography variant='body1'> {this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
-                  <Typography variant='body1'> Total investments: </Typography>
-                  <Typography variant='body1'> {this.props.portfolio_type ? 
-                    this.state.p_real.portfolio.created_at !== null ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null
-                    : this.state.p_demo.portfolio.created_at !== null ? this.state.p_demo.portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : null } </Typography>
+                  <Typography variant='body1'> Investments: </Typography>
+                  <Typography variant='body1'> {this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
-                  <Typography variant='body1'> Total P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}> {this.total_pl(this.props.portfolio_type).toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> Latent P&L: </Typography>
+                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.performance_to_date() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Total balance: </Typography>
+                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Initial balance: </Typography>
+                  <Typography variant='body1'> {(this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
                 </Grid>
   
                 <Grid container justify='space-between'>
-                  <Typography variant='body1'> Performance to date: </Typography>
-                  <Typography variant='body1' style={{color: this.renderPerformance() > 0 ? 'green' : 'red'}}> {this.renderPerformance()} </Typography>
+                  <Typography variant='body1'> Return to date: </Typography>
+                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{this.performance_to_date().toFixed(2)}% </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Annualized return: </Typography>
+                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {this.annualized_performance().toFixed(2)}%</Typography>
                 </Grid>
               </Paper>
             </Grid>
