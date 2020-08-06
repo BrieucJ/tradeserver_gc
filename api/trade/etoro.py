@@ -357,8 +357,8 @@ class API():
         print('cancel order')
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
-        empty_order_book = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='orders-table-empty-table-container']")
-        if len(empty_order_book):
+        empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
+        if len(empty_order_book) == 0:
             print('order book not empty')
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
             print('table found')
