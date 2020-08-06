@@ -246,7 +246,7 @@ def update_orders_task(user_id):
             max_score = SMABacktest.objects.aggregate(Max('score'))
             total_invested_value = portfolio_history.total_invested_value
             cash = portfolio_history.cash
-
+            print(cash)
             if cash + portfolio_history.total_invested_value > 10000:
                 max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
             elif cash + portfolio_history.total_invested_value > 100000:
@@ -259,8 +259,7 @@ def update_orders_task(user_id):
                 last_price = b.stock.price_history.filter(price_date=last_business_day).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
-                print(pending_buy_orders)
-                print(pending_buy_orders['total_investment__sum'])
+
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
                 else:
@@ -279,7 +278,7 @@ def update_orders_task(user_id):
                         except IntegrityError as err:
                             continue
                         else:
-                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | CASH: {cash} | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
+                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
 
 
 @shared_task

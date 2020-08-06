@@ -42,7 +42,7 @@ class Portfolio(models.Model):
     
     @property
     def last_portfolio_history(self):
-        return self.portfolio_history.last()
+        return self.portfolio_history.first()
 
 class PortfolioHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolio_history')
@@ -51,7 +51,7 @@ class PortfolioHistory(models.Model):
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['-created_at']
 
 class Position(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position', default=None, null=True)
