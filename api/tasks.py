@@ -156,7 +156,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 pos.save()
 
     #orders
-    # print('Updating order')
+    print('Updating order')
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
@@ -164,8 +164,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             stock = None
         
         pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
+        print('pending_order_stocks')
         print(pending_order_stocks)
         canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
+        print('canceled_orders')
         print(canceled_orders)
         for co in canceled_orders:
             if  not co.stock in pending_order_stocks:
@@ -393,9 +395,10 @@ def transmit_orders():
                 mode = 'real'
             else:
                 mode = 'demo'
+            print(mode)
             sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
             buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment') 
-            canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False).order_by('-total_investment')
+            canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
             orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
             print(f'Transmiting {len(sell_orders)} sell orders')
             print(f'Transmiting {len(buy_orders)} buy orders')
@@ -405,6 +408,7 @@ def transmit_orders():
                     api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
                     api.transmit_orders(orders=orders)
                 except Exception as err:
+                    print('ERROR')
                     print(err)
                     pass
                 del api
