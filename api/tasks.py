@@ -164,7 +164,9 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             stock = None
         
         pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
+        print(pending_order_stocks)
         canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
+        print(canceled_orders)
         for co in canceled_orders:
             if  not co.stock in pending_order_stocks:
                 print('Buy Order has been canceled')
@@ -224,7 +226,6 @@ def update_orders_task(user_id):
         #PENDING BUY ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
-        print(pending_buy_orders)
         for order in pending_buy_orders:
             if order.submited_at != None and order.created_at.date() < last_business_day:
                 if order.canceled_at == None:

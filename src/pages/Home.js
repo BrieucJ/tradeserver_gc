@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
+import { Button, Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -12,8 +12,8 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      sorting_col: 'name',
-      sorting_dir: 'desc',
+      sorting_col: 'total_investment',
+      sorting_dir: 'asc',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -171,7 +171,7 @@ class Home extends React.Component {
     }
   }
 
-  total_cash_investments = (portfolio) => {
+  total_balance = (portfolio) => {
     var cash = portfolio.last_portfolio_history.cash
     var inv = portfolio.last_portfolio_history.total_invested_value
     return cash + inv
@@ -290,7 +290,7 @@ class Home extends React.Component {
 
   renderBuyOrders(){
     if(this.props.portfolio_type) {
-      var bos_real = this.state.p_real.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
+      var bos_real = this.state.p_real.pending_buy_orders
       return(
       <TableContainer component={Paper} style={{ overflow: 'auto', height: '150px' }} >
         <Table aria-label="simple table" style={{tableLayout: 'fixed'}} >
@@ -314,7 +314,7 @@ class Home extends React.Component {
         </TableContainer>
       )
     } else {
-      var bos_demo = this.state.p_demo.pending_buy_orders.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
+      var bos_demo = this.state.p_demo.pending_buy_orders
       return(
         <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
           <Table size="small" stickyHeader aria-label="sticky table" >
@@ -424,10 +424,24 @@ class Home extends React.Component {
     }
   }
 
+  p_l_sorter = (col, order) => {
+    if (order === 'asc') {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+      } else {
+        this.state.p_demo.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+      }
+    } else {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+      } else {
+        this.state.p_demo.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+      }
+    }
+  }
+
   sorter = (col, order) => {
     console.log('sorter')
-    console.log(col)
-    console.log(order)
     switch (col) {
       case 'name':
         this.name_sorter(col, order)
@@ -437,6 +451,12 @@ class Home extends React.Component {
           break;
       case 'total_investment':
         this.number_sorter(col, order)
+        break;
+      case 'alloc_percentage':
+          this.number_sorter('total_investment', order)
+          break;
+      case 'P_L':
+        this.p_l_sorter(col, order)
         break;
       case 'open_date':
         this.number_sorter(col, order)
@@ -476,7 +496,7 @@ class Home extends React.Component {
     var month = date_time.getMonth() + 1 //January is 0!
     var year = date_time.getFullYear();
     var last_business_day = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
-
+    
     if(this.props.portfolio_type) {
       var pos_real = this.state.p_real.current_positions
       return(
@@ -493,8 +513,12 @@ class Home extends React.Component {
               <TableCell align="right">Amount 
                 <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
               </TableCell>
-              <TableCell align="right">% </TableCell>
-              <TableCell align="right">P/L </TableCell>
+              <TableCell align="right">% 
+                <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
+              <TableCell align="right">P/L
+                <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">Duration
                 <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
               </TableCell>
@@ -507,7 +531,7 @@ class Home extends React.Component {
                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
                 <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
+                <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
@@ -520,7 +544,6 @@ class Home extends React.Component {
         </TableContainer>
       )
     } else {
-      // 
       var pos_demo = this.state.p_demo.current_positions
       return(
         <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
@@ -536,8 +559,11 @@ class Home extends React.Component {
               <TableCell align="right">Amount 
                 <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
               </TableCell>
-              <TableCell align="right">% </TableCell>
+              <TableCell align="right">% 
+                <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">P/L 
+                <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
               </TableCell>
               <TableCell align="right">Duration
                 <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
@@ -551,7 +577,7 @@ class Home extends React.Component {
                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
                 <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
+                <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
@@ -572,6 +598,9 @@ class Home extends React.Component {
     } else {
       return (
         <Container>
+            <Button onClick={() => {this.transmit_orders()}} variant="contained" color="primary">
+              Transmit orders
+            </Button>
           <Grid container direction="row" spacing={1}>
 
             <Grid item  xs={12} sm={6} >
