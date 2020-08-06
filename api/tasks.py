@@ -168,7 +168,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             print('Buy Order has been canceled')
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
             co.save()
-            
+
     print('Updating order')
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
@@ -259,7 +259,7 @@ def update_orders_task(user_id):
                 sma_position = b.model.sma_position.filter(price_date=last_business_day).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
-                pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True).aggregate(Sum('total_investment'))
+                pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
 
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
