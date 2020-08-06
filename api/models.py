@@ -176,6 +176,7 @@ class BuyOrder(models.Model):
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
     canceled_at = models.DateTimeField(default=None, null=True)
+    terminated_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
         unique_together = ['user', 'stock', 'portfolio']

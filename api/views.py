@@ -29,7 +29,7 @@ class Home(generics.RetrieveAPIView):
         if p_demo != None:
             portfolio_history_demo = p_demo.portfolio_history.distinct('created_at__date').order_by()
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True), many=True).data 
-            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True), many=True).data 
             pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True), many=True).data
         else:
             pending_buy_orders_demo = [] 
@@ -38,7 +38,7 @@ class Home(generics.RetrieveAPIView):
             portfolio_history_demo= []
         
         if p_real != None:
-            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True), many=True).data 
             pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True), many=True).data
             portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True), many=True).data

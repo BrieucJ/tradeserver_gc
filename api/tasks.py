@@ -26,7 +26,7 @@ import gc
 
 @shared_task
 def create_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    # print('create_portfolio')
+    print('create_portfolio')
     user = User.objects.get(id=user_id)
     
     #portfolio
@@ -86,7 +86,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
 @shared_task
 def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    # print('save_portfolio')
+    print('save_portfolio')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
 
@@ -163,6 +163,14 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         else:
             stock = None
         
+        pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
+        canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
+        for co in canceled_orders:
+            if  not co.stock in pending_order_stocks:
+                print('Buy Order has been canceled')
+                co.terminated_at = datetime.datetime.now(tz=timezone.utc)
+                co.save()
+
         if pending_order['order_type'] == 1:
             #print('BUY ORDER')
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
@@ -204,7 +212,7 @@ def update_orders_task(user_id):
             print(stock)
             if stock:
                 sma_position = stock.sma_position.first()
-                if sma_position != None and sma_position.buy == False:
+                if sma_position != None and sma_position.buy == False and positions.sell_order.first() == None:
                     print(f'SELLING {stock} POSITION')
                     order = SellOrder(user=user, stock=position.stock, sma_position=sma_position, portfolio=portfolio, position=position)
                     try:
@@ -219,9 +227,10 @@ def update_orders_task(user_id):
         print(pending_buy_orders)
         for order in pending_buy_orders:
             if order.submited_at != None and order.created_at.date() < last_business_day:
-                print('CANCEL')
-                order.canceled_at = datetime.datetime.now(tz=timezone.utc)
-                order.save()
+                if order.canceled_at == None:
+                    print('CANCEL')
+                    order.canceled_at = datetime.datetime.now(tz=timezone.utc)
+                    order.save()
             if order.submited_at == None and order.created_at.date() < last_business_day:
                 print('DELETE')
                 order.delete()
@@ -366,6 +375,7 @@ def update_price_history():
 
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
 def update_orders():
+    print('update_orders')
     users = User.objects.all()
     for user in users:
         update_orders_task.delay(user.id)
@@ -373,6 +383,7 @@ def update_orders():
 
 @periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
 def transmit_orders():
+    print('transmit_orders')
     users = User.objects.all()
     for user in users:
         portfolios = user.portfolio.all()

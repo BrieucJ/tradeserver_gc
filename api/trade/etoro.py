@@ -358,19 +358,14 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
-        print('order table present')
         try:
             row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
         except:
-            print('Unknown position {order.stock.symbol}')
+            print(f'Unknown position {order.stock.symbol}')
         else:
-            print('row found')
             cancel_btn = row.find_element_by_css_selector("a[data-etoro-automation-id='orders-table-body-close-order-action']")
-            print('cancel btn found')
             cancel_btn.click()
-
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='close-order-container']")))
-            print('modal open')
             cancel_modal = self.browser.find_element_by_css_selector("div[class='close-order-container']")
             execute_btn = cancel_modal.find_element_by_css_selector("button[class^='close-order-button']") # ^ => partial class match
             execute_btn.click()
