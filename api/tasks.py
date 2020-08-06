@@ -396,14 +396,10 @@ def transmit_orders():
                 mode = 'real'
             else:
                 mode = 'demo'
-            print(mode)
             sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
             buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment') 
             canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
             orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
-            print(f'Transmiting {len(sell_orders)} sell orders')
-            print(f'Transmiting {len(buy_orders)} buy orders')
-            print(f'Canceling {len(canceled_buy_orders)} buy orders')
             if len(orders) != 0:
                 try:
                     api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)

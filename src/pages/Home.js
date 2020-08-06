@@ -598,11 +598,7 @@ class Home extends React.Component {
     } else {
       return (
         <Container>
-            <Button onClick={() => {this.transmit_orders()}} variant="contained" color="primary">
-              Transmit orders
-            </Button>
           <Grid container direction="row" spacing={1}>
-
             <Grid item  xs={12} sm={6} >
               <Paper style={{padding:5, flexGrow: 1, height: '300px'}}>
                 <Typography variant='h5'>
