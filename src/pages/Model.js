@@ -45,9 +45,9 @@ class Model extends React.Component {
 
   sorter = (col, order) => {
     if (order === 'asc') {
-        this.state.sma_backtests.sort(function(a, b) { return a[col] - b[col] } )
+        this.state.sma_backtests.sort(function(a, b) { return a[col] > b[col] ? 1 : -1 } )
       } else {
-        this.state.sma_backtests.sort(function(a, b) { return b[col] - a[col] } )
+        this.state.sma_backtests.sort(function(a, b) { return b[col] > a[col] ? 1 : -1 } )
       }
   }
 

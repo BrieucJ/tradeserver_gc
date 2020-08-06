@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from '@material-ui/core';
+import { Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -12,6 +12,8 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      sorting_col: 'name',
+      sorting_dir: 'desc',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -25,9 +27,7 @@ class Home extends React.Component {
     this.graphRef = React.createRef();
   }
 
-
   componentDidMount = () => {
-    console.log(this.graphRef);
     window.addEventListener("resize", this.updateGraph);
     this.setState({loading:true})
     this.retrieveHome()
@@ -45,10 +45,10 @@ class Home extends React.Component {
 
   updateGraph = () => {
     if (this.graphRef.current !== null){
-      if (this.state.g_height != this.graphRef.current.clientHeight) {
+      if (this.state.g_height !== this.graphRef.current.clientHeight) {
         this.setState({g_height: this.graphRef.current.clientHeight})
       }
-      if (this.state.g_width != this.graphRef.current.clientWidth) {
+      if (this.state.g_width !== this.graphRef.current.clientWidth) {
         this.setState({g_width: this.graphRef.current.clientWidth})
       }
     }
@@ -175,7 +175,6 @@ class Home extends React.Component {
     var inv = portfolio.last_portfolio_history.total_invested_value
     return cash + inv
   }
-
 
   total_pl() {
     var pl = 0
@@ -392,11 +391,76 @@ class Home extends React.Component {
     }
   }
 
+  name_sorter = (col, order) => {
+    if (order === 'asc') {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
+      } else {
+        this.state.p_demo.current_positions.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
+      }
+    } else {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
+      } else {
+        this.state.p_demo.current_positions.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
+      }
+    }
+  }
+
+  number_sorter = (col, order) => {
+    if (order === 'asc') {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a,b) => a[col] < b[col] ? 1 : -1)
+      } else {
+        this.state.p_demo.current_positions.sort((a,b) => a[col] < b[col] ? 1 : -1)
+      }
+    } else {
+      if (this.props.portfolio_type){
+        this.state.p_real.current_positions.sort((a,b) => a[col] > b[col] ? 1 : -1)
+      } else {
+        this.state.p_demo.current_positions.sort((a,b) => a[col] > b[col] ? 1 : -1)
+      }
+    }
+  }
+
+  sorter = (col, order) => {
+    console.log('sorter')
+    console.log(col)
+    console.log(order)
+    switch (col) {
+      case 'name':
+        this.name_sorter(col, order)
+        break;
+      case 'sector':
+          this.name_sorter(col, order)
+          break;
+      case 'total_investment':
+        this.number_sorter(col, order)
+        break;
+      case 'open_date':
+        this.number_sorter(col, order)
+          break;
+      default:
+        console.log('Unknown col');
+    }
+  }
+
+  handleSorting = (e) => {
+    console.log('handleSorting')
+    if (this.state.sorting_dir === 'asc') {
+      this.sorter(e.currentTarget.id, 'desc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'desc'})
+    } else {
+      this.sorter(e.currentTarget.id, 'asc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'asc'})
+    }
+  }
+
   renderPortfolio(){
     var date_time = new Date();
     var day_num = date_time.getDay()
 
-    if (day_num === 0 || day_num == 6){
+    if (day_num === 0 || day_num === 6){
       if (day_num === 0){
         date_time.setDate(date_time.getDate() - 2);
       }
@@ -413,24 +477,34 @@ class Home extends React.Component {
     var last_business_day = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
 
     if(this.props.portfolio_type) {
-      var pos_real = this.state.p_real.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
+      var pos_real = this.state.p_real.current_positions
       return(
         <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
           <Table size="small" stickyHeader aria-label="sticky table" >
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
+              <TableCell>Name
+                <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
+              <TableCell>Sector
+                <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
+              <TableCell align="right">Amount 
+                <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">% </TableCell>
               <TableCell align="right">P/L </TableCell>
-              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Duration
+                <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">Position</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
             {pos_real.map((po) => (
               <TableRow key={po.id}>
-                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
+                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
+                <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
@@ -445,17 +519,28 @@ class Home extends React.Component {
         </TableContainer>
       )
     } else {
-      var pos_demo = this.state.p_demo.current_positions.sort((a,b) => a.total_investment < b.total_investment ? 1 : -1)
+      // 
+      var pos_demo = this.state.p_demo.current_positions
       return(
         <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
           <Table size="small" stickyHeader aria-label="sticky table" >
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
+              <TableCell>Name
+                <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
+              <TableCell>Sector
+                <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
+              <TableCell align="right">Amount 
+                <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">% </TableCell>
-              <TableCell align="right">P/L </TableCell>
-              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">P/L 
+              </TableCell>
+              <TableCell align="right">Duration
+                <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
+              </TableCell>
               <TableCell align="right">Position</TableCell>
               </TableRow>
           </TableHead>
@@ -463,6 +548,7 @@ class Home extends React.Component {
             {pos_demo.map((po) => (
               <TableRow key={po.id}>
                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
+                <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> { ((po.total_investment / this.total_cash_investments(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
@@ -546,7 +632,7 @@ class Home extends React.Component {
 
             <Grid item container xs={12} sm={6}  >
               <Paper style={{padding:5, flexGrow: 1, height: '300px'}} ref={this.graphRef} >
-                <Typography variant='h5' style={{display: 'inline-block'}}> Cahs/Investment evolution </Typography>
+                <Typography variant='h5' style={{display: 'inline-block'}}> Cash/Investments evolution </Typography>
                 <Area_Chart data={this.area_chart_data()} height={this.state.g_height} width={this.state.g_width}/>
               </Paper>
             </Grid>
@@ -561,14 +647,14 @@ class Home extends React.Component {
             <Grid item xs={12} sm={6}>
               <Paper style={{padding:5}}>
               <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Buy orders </Typography>
-              {this.renderBuyOrders()}
+                {this.renderBuyOrders()}
               </Paper>
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <Paper style={{padding:5}}>
               <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Sell orders </Typography>
-              {this.renderSellOrders()}
+                {this.renderSellOrders()}
               </Paper>
             </Grid>
             
