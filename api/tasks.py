@@ -214,7 +214,6 @@ def update_orders_task(user_id):
         print(f'{len(positions)} POSITIONS')
         for position in positions:
             stock = position.stock
-            print(stock)
             if stock:
                 sma_position = stock.sma_position.first()
                 if sma_position != None and sma_position.buy == False and positions.sell_order.first() == None:
@@ -346,9 +345,9 @@ def update_portfolio(user_id):
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_price_history", ignore_result=True)
 def update_price_history():
+    print('update_price_history')
     stocks = Stock.objects.filter(valid=True) 
     for s in stocks:
-        print(s.symbol)
         try:
             if s.price_history.first():
                 start_date = s.price_history.first().price_date
