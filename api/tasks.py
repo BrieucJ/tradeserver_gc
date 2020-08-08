@@ -190,7 +190,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 bo.save()
         elif pending_order['order_type'] == 0:
             #print('SELL ORDER')
-            sell_order = user_portfolio.sell_order.filter(stock=stock, executed_at__isnull=True).first()
+            sell_order = user_portfolio.sell_order.filter(stock=stock, submited_at__isnull=True).first()
             if sell_order:
                 # print('updating know sell order')
                 if sell_order.submited_at == None:

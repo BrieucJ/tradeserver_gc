@@ -346,19 +346,14 @@ class API():
             row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
             print(row_ticker)
             if (row_ticker== order.stock.symbol):
-                print('selling')
+                print(f'Selling {row_ticker}')
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
                 close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-position-table']")
                 sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
                 sell_button.click()
-                print('Sold')
                 break
-
-         # row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='portfolio-overview-row-{order.stock.symbol}']")
-        # dropdown_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-overview-table-body-cell-cogeWhell']")
-        # dropdown_btn.click()
 
     def cancel_order(self, order):
         print('cancel order')
