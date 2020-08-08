@@ -298,6 +298,8 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
+              <TableCell align="right">Order price </TableCell>
+              <TableCell align="right">Current price </TableCell>
               <TableCell align="right">Submited/canceled</TableCell>
               </TableRow>
           </TableHead>
@@ -306,6 +308,8 @@ class Home extends React.Component {
               <TableRow key={bo.id}>
                 <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
               </TableRow>
             ))}
@@ -322,6 +326,8 @@ class Home extends React.Component {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell align="right">Amount </TableCell>
+              <TableCell align="right">Order price </TableCell>
+              <TableCell align="right">Current price </TableCell>
               <TableCell align="right">Submited/canceled</TableCell>
               </TableRow>
           </TableHead>
@@ -330,6 +336,8 @@ class Home extends React.Component {
               <TableRow key={bo.id}>
                 <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                 <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
               </TableRow>
             ))}

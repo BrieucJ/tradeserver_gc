@@ -125,6 +125,7 @@ class API():
         portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash_value, 'total_invested_value': total_invested_val, 'currency': currency}
         if len(empty_portfolio) == 0:
             #POSITIONS
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")))
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             positions = []

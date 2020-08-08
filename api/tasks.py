@@ -216,7 +216,7 @@ def update_orders_task(user_id):
             stock = position.stock
             if stock:
                 sma_position = stock.sma_position.first()
-                if sma_position != None and sma_position.buy == False and positions.sell_order.first() == None:
+                if sma_position != None and sma_position.buy == False and position.sell_order.first() == None:
                     print(f'SELLING {stock} POSITION')
                     order = SellOrder(user=user, stock=position.stock, sma_position=sma_position, portfolio=portfolio, position=position)
                     try:
