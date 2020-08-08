@@ -229,7 +229,7 @@ def update_orders_task(user_id):
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
         for order in pending_buy_orders:
-            if order.submited_at != None and order.created_at.date() < last_business_day:
+            if order.submited_at != None and order.price_date.date() < last_business_day:
                 if order.canceled_at == None:
                     print('CANCEL')
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)

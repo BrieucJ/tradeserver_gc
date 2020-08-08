@@ -339,20 +339,26 @@ class API():
 
     def execute_sell_order(self, order):
         print('execute_sell_order')
-        self.browser.get('https://www.etoro.com/portfolio')
-        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio')
-        row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='portfolio-overview-row-{order.stock.symbol}']")
-        dropdown_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-overview-table-body-cell-cogeWhell']")
-        dropdown_btn.click()
-        close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='drop-down-actions-option-instrument-close']")
-        close_btn.click()
-        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-all-positions-window']")))
-        close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-all-positions-window']")
-        check = close_modal.find_element_by_css_selector("label[data-etoro-automation-id='close-all-positions-selection-label']")
-        check.click()
-        self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='close-all-positions-closs-all-button']")))
-        sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-all-positions-closs-all-button']")
-        sell_button.click()
+        self.browser.get('https://www.etoro.com/portfolio/manual-trades')
+        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
+        rows= self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
+        for row in rows:
+            row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
+            print(row_ticker)
+            if (row_ticker== order.stock.symbol):
+                print('selling')
+                close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
+                close_btn.click()
+                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
+                close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-position-table']")
+                sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
+                sell_button.click()
+                print('Sold')
+                break
+
+         # row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='portfolio-overview-row-{order.stock.symbol}']")
+        # dropdown_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-overview-table-body-cell-cogeWhell']")
+        # dropdown_btn.click()
 
     def cancel_order(self, order):
         print('cancel order')
