@@ -229,7 +229,7 @@ def update_orders_task(user_id):
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True)
         for order in pending_buy_orders:
-            if order.submited_at != None and order.price_date.date() < last_business_day:
+            if order.submited_at != None and order.price_date < last_business_day:
                 if order.canceled_at == None:
                     print('CANCEL')
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
@@ -245,7 +245,7 @@ def update_orders_task(user_id):
             max_score = SMABacktest.objects.aggregate(Max('score'))
             total_invested_value = portfolio_history.total_invested_value
             cash = portfolio_history.cash
-            print(cash)
+            print(f'CASH {cash}')
             if cash + portfolio_history.total_invested_value > 10000:
                 max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
             elif cash + portfolio_history.total_invested_value > 100000:
