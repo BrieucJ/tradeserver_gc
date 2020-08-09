@@ -395,13 +395,8 @@ def transmit_orders():
             canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
             orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
             if len(orders) != 0:
-                try:
-                    api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-                    api.transmit_orders(orders=orders)
-                except Exception as err:
-                    print('ERROR')
-                    print(err)
-                    pass
+                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+                api.transmit_orders(orders=orders)
                 del api
         update_portfolio.delay(user.id)
         gc.collect()

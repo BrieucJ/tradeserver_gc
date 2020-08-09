@@ -605,128 +605,128 @@ class Home extends React.Component {
     }
   }
 
-  handle_open = (id) => {
-    if (id === this.state.open_id){
-      this.setState({open_id: null})
-    } else {
-      this.setState({open_id: id})
-    }
-  }
+  // handle_open = (id) => {
+  //   if (id === this.state.open_id){
+  //     this.setState({open_id: null})
+  //   } else {
+  //     this.setState({open_id: id})
+  //   }
+  // }
 
-  renderHistory(){
-    if(this.props.portfolio_type) {
-      var history_real = this.state.p_real.history
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name
-              </TableCell>
-              <TableCell>Sector
-              </TableCell>
-              <TableCell align="right">Open date 
-              </TableCell>
-              <TableCell align="right">Close date
-              </TableCell>
-              <TableCell align="right">Duration
-              </TableCell>
-              <TableCell align="right">Open rate 
-              </TableCell>
-              <TableCell align="right">Close rate
-              </TableCell>
-              <TableCell align="right">P/L</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {history_demo.map((hi) => (
-              <TableRow key={hi.id}>
-                <TableCell>
-                  <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-                    {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                  </IconButton>
-                </TableCell>
-                <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
-                <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
-                <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-                <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-                <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
-                <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-                <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
-                   {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
-                </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    } else {
-      var history_demo = this.state.p_demo.history
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name
-              </TableCell>
-              <TableCell>Sector
-              </TableCell>
-              <TableCell align="right">Open date 
-              </TableCell>
-              <TableCell align="right">Close date
-              </TableCell>
-              <TableCell align="right">Duration
-              </TableCell>
-              <TableCell align="right">Open rate 
-              </TableCell>
-              <TableCell align="right">Close rate
-              </TableCell>
-              <TableCell align="right">P/L</TableCell>
-              <TableCell></TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {history_demo.map((hi) => (
-              <React.Fragment key={hi.id}>
-              <TableRow>
-                <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
-                <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
-                <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-                <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-                <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
-                <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-                <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
-                   {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
-                </TableCell>
-                <TableCell>
-                  <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-                    {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-              <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                <Collapse in={this.state.open_id == hi.id} timeout="auto" unmountOnExit>
-                  <Box margin={1}>
-                    <Typography variant="h6" gutterBottom component="div">
-                      History
-                    </Typography>
+  // renderHistory(){
+  //   if(this.props.portfolio_type) {
+  //     var history_real = this.state.p_real.history
+  //     return(
+  //       <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+  //         <Table size="small" stickyHeader aria-label="sticky table" >
+  //         <TableHead>
+  //           <TableRow>
+  //             <TableCell>Name
+  //             </TableCell>
+  //             <TableCell>Sector
+  //             </TableCell>
+  //             <TableCell align="right">Open date 
+  //             </TableCell>
+  //             <TableCell align="right">Close date
+  //             </TableCell>
+  //             <TableCell align="right">Duration
+  //             </TableCell>
+  //             <TableCell align="right">Open rate 
+  //             </TableCell>
+  //             <TableCell align="right">Close rate
+  //             </TableCell>
+  //             <TableCell align="right">P/L</TableCell>
+  //             </TableRow>
+  //         </TableHead>
+  //         <TableBody>
+  //           {history_real.map((hi) => (
+  //             <TableRow key={hi.id}>
+  //               <TableCell>
+  //                 <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
+  //                   {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+  //                 </IconButton>
+  //               </TableCell>
+  //               <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
+  //               <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+  //               <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+  //               <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+  //               <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+  //               <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+  //               <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+  //               <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+  //                  {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
+  //               </TableCell>
+  //             </TableRow>
+  //           ))}
+  //           </TableBody>
+  //         </Table>
+  //       </TableContainer>
+  //     )
+  //   } else {
+  //     var history_demo = this.state.p_demo.history
+  //     return(
+  //       <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+  //         <Table size="small" stickyHeader aria-label="sticky table" >
+  //         <TableHead>
+  //           <TableRow>
+  //             <TableCell>Name
+  //             </TableCell>
+  //             <TableCell>Sector
+  //             </TableCell>
+  //             <TableCell align="right">Open date 
+  //             </TableCell>
+  //             <TableCell align="right">Close date
+  //             </TableCell>
+  //             <TableCell align="right">Duration
+  //             </TableCell>
+  //             <TableCell align="right">Open rate 
+  //             </TableCell>
+  //             <TableCell align="right">Close rate
+  //             </TableCell>
+  //             <TableCell align="right">P/L</TableCell>
+  //             <TableCell></TableCell>
+  //             </TableRow>
+  //         </TableHead>
+  //         <TableBody>
+  //           {history_demo.map((hi) => (
+  //             <React.Fragment key={hi.id}>
+  //             <TableRow>
+  //               <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
+  //               <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+  //               <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+  //               <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+  //               <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+  //               <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+  //               <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+  //               <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+  //                  {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
+  //               </TableCell>
+  //               <TableCell>
+  //                 <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
+  //                   {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+  //                 </IconButton>
+  //               </TableCell>
+  //             </TableRow>
+  //             <TableRow>
+  //             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+  //               <Collapse in={this.state.open_id == hi.id} timeout="auto" unmountOnExit>
+  //                 <Box margin={1}>
+  //                   <Typography variant="h6" gutterBottom component="div">
+  //                     History
+  //                   </Typography>
                     
-                  </Box>
-                </Collapse>
-              </TableCell>
-              </TableRow>
-            </React.Fragment>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    }
-  }
+  //                 </Box>
+  //               </Collapse>
+  //             </TableCell>
+  //             </TableRow>
+  //           </React.Fragment>
+  //           ))}
+  //           </TableBody>
+  //         </Table>
+  //       </TableContainer>
+  //     )
+  //   }
+  // }
 
   render() {
     if (this.state.loading){
