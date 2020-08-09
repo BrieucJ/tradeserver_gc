@@ -643,7 +643,7 @@ class Home extends React.Component {
               <TableRow key={hi.id}>
                 <TableCell>
                   <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-                    {this.state.open_id == hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                   </IconButton>
                 </TableCell>
                 <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
@@ -703,7 +703,7 @@ class Home extends React.Component {
                 </TableCell>
                 <TableCell>
                   <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-                    {this.state.open_id == hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                    {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                   </IconButton>
                 </TableCell>
               </TableRow>
