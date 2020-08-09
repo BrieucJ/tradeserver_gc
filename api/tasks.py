@@ -266,7 +266,7 @@ def update_orders_task(user_id):
                         stop_loss = last_price.close - b.model.stop_loss * last_price.close
                         take_profit = last_price.close + b.model.take_profit * last_price.close
                         total_cost = num_of_shares * last_price.close
-                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit, created_at=datetime.datetime.now(tz=timezone.utc),)
+                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit, created_at=datetime.datetime.now(tz=timezone.utc))
                         try:
                             order.save()
                         except IntegrityError as err:
