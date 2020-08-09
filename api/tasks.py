@@ -158,14 +158,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     #orders
     print('Canceled orders')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
-    print('pending_order_stocks')
-    print(pending_order_stocks)
     canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
-    print('canceled_orders')
-    print(canceled_orders)
     for co in canceled_orders:
         if  not co.stock in pending_order_stocks:
-            print('Buy Order has been canceled')
+            print(f'Buy Order has been canceled {co.stock}')
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
             co.save()
 
@@ -211,8 +207,7 @@ def update_orders_task(user_id):
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
-        print(portfolio.portfolio_type)
-        print(f'{len(positions)} POSITIONS')
+        print(f'Portfolio type: {portfolio.portfolio_type}')
         for position in positions:
             stock = position.stock
             if stock:

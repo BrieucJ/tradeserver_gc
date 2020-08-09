@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button, Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
+import { Container, Collapse, Box, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import IconButton from '@material-ui/core/IconButton';
+
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -12,6 +16,7 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      open_id: null,
       sorting_col: 'total_investment',
       sorting_dir: 'asc',
       loading:true,
@@ -155,8 +160,8 @@ class Home extends React.Component {
     return data
   }
 
-  holding_duration = (open_date) =>{
-    var delta = Math.abs(new Date(open_date) - new Date()) / 1000;
+  holding_duration = (open_date, close_date) => {
+    var delta = Math.abs(new Date(open_date) - new Date(close_date)) / 1000;
     // calculate (and subtract) whole days
     var days = Math.floor(delta / 86400);
     delta -= days * 86400;
@@ -537,13 +542,13 @@ class Home extends React.Component {
             {pos_real.map((po) => (
               <TableRow key={po.id}>
                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
-                <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
+                <TableCell component="th" scope="row">{po.stock.sector}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
-                <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
+                <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
                 <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
             ))}
@@ -583,15 +588,138 @@ class Home extends React.Component {
             {pos_demo.map((po) => (
               <TableRow key={po.id}>
                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
-                <TableCell component="th" scope="row">{po.stock.sector.substring(0,20)}  </TableCell>
+                <TableCell component="th" scope="row">{po.stock.sector}  </TableCell>
                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                 <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
                   {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
-                <TableCell align="right"> {this.holding_duration(po.open_date)} </TableCell>
+                <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
                 <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
               </TableRow>
+            ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    }
+  }
+
+  handle_open = (id) => {
+    if (id === this.state.open_id){
+      this.setState({open_id: null})
+    } else {
+      this.setState({open_id: id})
+    }
+  }
+
+  renderHistory(){
+    if(this.props.portfolio_type) {
+      var history_real = this.state.p_real.history
+      return(
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table size="small" stickyHeader aria-label="sticky table" >
+          <TableHead>
+            <TableRow>
+              <TableCell>Name
+              </TableCell>
+              <TableCell>Sector
+              </TableCell>
+              <TableCell align="right">Open date 
+              </TableCell>
+              <TableCell align="right">Close date
+              </TableCell>
+              <TableCell align="right">Duration
+              </TableCell>
+              <TableCell align="right">Open rate 
+              </TableCell>
+              <TableCell align="right">Close rate
+              </TableCell>
+              <TableCell align="right">P/L</TableCell>
+              </TableRow>
+          </TableHead>
+          <TableBody>
+            {history_demo.map((hi) => (
+              <TableRow key={hi.id}>
+                <TableCell>
+                  <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
+                    {this.state.open_id == hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                  </IconButton>
+                </TableCell>
+                <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
+                <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+                <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+                <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+                   {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
+                </TableCell>
+              </TableRow>
+            ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )
+    } else {
+      var history_demo = this.state.p_demo.history
+      return(
+        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
+          <Table size="small" stickyHeader aria-label="sticky table" >
+          <TableHead>
+            <TableRow>
+              <TableCell>Name
+              </TableCell>
+              <TableCell>Sector
+              </TableCell>
+              <TableCell align="right">Open date 
+              </TableCell>
+              <TableCell align="right">Close date
+              </TableCell>
+              <TableCell align="right">Duration
+              </TableCell>
+              <TableCell align="right">Open rate 
+              </TableCell>
+              <TableCell align="right">Close rate
+              </TableCell>
+              <TableCell align="right">P/L</TableCell>
+              <TableCell></TableCell>
+              </TableRow>
+          </TableHead>
+          <TableBody>
+            {history_demo.map((hi) => (
+              <React.Fragment key={hi.id}>
+              <TableRow>
+                <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
+                <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+                <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+                <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+                   {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
+                </TableCell>
+                <TableCell>
+                  <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
+                    {this.state.open_id == hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+              <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                <Collapse in={this.state.open_id == hi.id} timeout="auto" unmountOnExit>
+                  <Box margin={1}>
+                    <Typography variant="h6" gutterBottom component="div">
+                      History
+                    </Typography>
+                    
+                  </Box>
+                </Collapse>
+              </TableCell>
+              </TableRow>
+            </React.Fragment>
             ))}
             </TableBody>
           </Table>
@@ -689,6 +817,13 @@ class Home extends React.Component {
               <Paper style={{padding:5}}>
               <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Sell orders </Typography>
                 {this.renderSellOrders()}
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={12} >
+              <Paper style={{padding:5}}>
+              <Typography variant='h5' style={{display: 'inline-block', padding:5}}> History </Typography>
+                {this.renderHistory()}
               </Paper>
             </Grid>
             
