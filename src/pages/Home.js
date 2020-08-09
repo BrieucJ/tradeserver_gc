@@ -494,7 +494,10 @@ class Home extends React.Component {
     var date_time = new Date();
     var day_num = date_time.getDay()
 
-    if (day_num === 0 || day_num === 6){
+    if (day_num === 0 || day_num === 6 || day_num === 1){
+      if (day_num === 6){
+        date_time.setDate(date_time.getDate() - 3);
+      }
       if (day_num === 0){
         date_time.setDate(date_time.getDate() - 2);
       }
