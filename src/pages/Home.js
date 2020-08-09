@@ -761,24 +761,24 @@ class Home extends React.Component {
                   <Typography variant='body1'> {this.props.portfolio_type ? this.state.p_real.portfolio.currency : this.state.p_demo.portfolio.currency} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
+                  <Typography variant='body1'> Initial balance: </Typography>
+                  <Typography variant='body1'> {(this.initial_balance()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_cash().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_investment().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.performance_to_date() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.performance_to_date() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Total balance: </Typography>
-                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
-                </Grid>
-                <Grid container justify='space-between'>
-                  <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {(this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
                 </Grid>
   
                 <Grid container justify='space-between'>
@@ -817,13 +817,6 @@ class Home extends React.Component {
               <Paper style={{padding:5}}>
               <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Sell orders </Typography>
                 {this.renderSellOrders()}
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} sm={12} >
-              <Paper style={{padding:5}}>
-              <Typography variant='h5' style={{display: 'inline-block', padding:5}}> History </Typography>
-                {this.renderHistory()}
               </Paper>
             </Grid>
             

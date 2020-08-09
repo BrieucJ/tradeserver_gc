@@ -31,26 +31,22 @@ class Home(generics.RetrieveAPIView):
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data 
             pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True).order_by('-position__total_investment'), many=True).data
-            history_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=False).order_by('-close_date'), many=True).data 
         else:
             pending_buy_orders_demo = [] 
             pending_sell_orders_demo = []
             current_pos_demo = []
             portfolio_history_demo= []
-            history_demo = []
         
         if p_real != None:
             pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True).order_by('-position__total_investment'), many=True).data
             portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
-            history_real = PositionSerializer(p_real.position.filter(close_date__isnull=False).order_by('-close_date'), many=True).data 
         else:
             pending_buy_orders_real = [] 
             pending_sell_orders_real = []
             current_pos_real = []
             portfolio_history_real = []
-            history_real = []
 
         return Response({'p_demo': {
                             'portfolio': PortfolioSerializer(p_demo).data,
@@ -58,7 +54,6 @@ class Home(generics.RetrieveAPIView):
                             'p_history': PortfolioHistorySerializer(portfolio_history_demo, many=True).data,
                             'pending_buy_orders': pending_buy_orders_demo,
                             'pending_sell_orders': pending_sell_orders_demo,
-                            'history': history_demo
                              },
                         'p_real': {
                             'portfolio': PortfolioSerializer(p_real).data, 
@@ -66,7 +61,6 @@ class Home(generics.RetrieveAPIView):
                             'p_history': PortfolioHistorySerializer(portfolio_history_real, many=True).data,
                             'pending_buy_orders': pending_buy_orders_real,
                             'pending_sell_orders': pending_sell_orders_real,
-                            'history': history_real
                             }
                         }, status=status.HTTP_200_OK)
 
