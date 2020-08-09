@@ -380,21 +380,16 @@ class API():
         print('transmit orders')
         for order in orders:
             print(order.stock.name)
-            try:
-                #BUY/SELL SWITCH
-                if str(order.__class__.__name__) == 'BuyOrder':
-                    if order.canceled_at != None:
-                        self.cancel_order(order)
-                    else:
-                        self.execute_buy_order(order)
-                elif str(order.__class__.__name__) == 'SellOrder':
-                    self.execute_sell_order(order)
+            #BUY/SELL SWITCH
+            if str(order.__class__.__name__) == 'BuyOrder':
+                if order.canceled_at != None:
+                    self.cancel_order(order)
                 else:
-                    print('Error unknown order_type')
-                    continue
-                
-            except Exception as err:
-                print(err)
+                    self.execute_buy_order(order)
+            elif str(order.__class__.__name__) == 'SellOrder':
+                self.execute_sell_order(order)
             else:
-                self.browser.get(f'https://www.etoro.com/watchlists') 
+                print('Error unknown order_type')
+                continue
+            self.browser.get(f'https://www.etoro.com/watchlists') 
 
