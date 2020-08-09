@@ -228,6 +228,9 @@ def update_orders_task(user_id):
             if order.submited_at != None and order.price_date != None or order.price_date < last_business_day.date():
                 if order.canceled_at == None:
                     print('CANCEL')
+                    print(order.stock.name)
+                    print(order.price_date)
+                    print(last_business_day.date())
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                     order.save()
             if order.submited_at == None and order.price_date != None or order.price_date < last_business_day.date():
