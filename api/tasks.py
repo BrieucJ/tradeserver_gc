@@ -225,16 +225,19 @@ def update_orders_task(user_id):
         print('PENDING ORDERS REALLOCATION')
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
         for order in pending_buy_orders:
-            if order.submited_at != None and order.price_date != None or order.price_date < last_business_day.date():
-                if order.canceled_at == None:
+            if order.submited_at != None and order.canceled_at == None:
+                if  order.price_date < last_business_day.date() or order.price_date == None:
                     print('CANCEL')
                     print(order.stock.name)
                     print(order.price_date)
                     print(last_business_day.date())
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                     order.save()
-            if order.submited_at == None and order.price_date != None or order.price_date < last_business_day.date():
+            if order.submited_at == None and order.price_date < last_business_day.date():
                 print('DELETE')
+                print(order.stock.name)
+                print(order.price_date)
+                print(last_business_day.date())
                 order.delete()
         
         #INVESTMENTS
