@@ -172,7 +172,7 @@ class BuyOrder(models.Model):
     total_investment = models.FloatField(default=None, null=True)
     stop_loss = models.FloatField(default=None, null=True)
     take_profit = models.FloatField(default=None, null=True)
-    created_at = models.DateTimeField(default=timezone.now, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
     submited_at = models.DateTimeField(default=None, null=True)
     executed_at = models.DateTimeField(default=None, null=True)
     canceled_at = models.DateTimeField(default=None, null=True)
