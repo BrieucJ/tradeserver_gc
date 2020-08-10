@@ -238,14 +238,13 @@ class API():
 
     def execute_buy_order(self, order):
         print('execute_buy_order')
-        # time.sleep(random.randint(1,2))
         self.browser.get(f'https://www.etoro.com/markets/{str(order.stock.symbol).lower()}')
 
         self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'trade-button')))
         trade_btn = self.browser.find_element_by_tag_name('trade-button')
         time.sleep(5) #dirty fix
-
         trade_btn.click()
+        
         try:
             self.browser.find_element_by_css_selector("div[id='open-position-view']")
         except NoSuchElementException as err:
