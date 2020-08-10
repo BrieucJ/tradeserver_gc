@@ -179,5 +179,5 @@ class BuyOrder(models.Model):
     terminated_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
-        unique_together = ['user', 'stock', 'portfolio']
+        unique_together = ['user', 'stock', 'portfolio', ]
         ordering = ['-created_at']
