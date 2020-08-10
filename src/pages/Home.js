@@ -507,12 +507,12 @@ class Home extends React.Component {
     } else {
       date_time.setDate(date_time.getDate() - 1);
     }
-
+    console.log(day_num)
     var day = date_time.getDate()
     var month = date_time.getMonth() + 1 //January is 0!
     var year = date_time.getFullYear();
     var last_business_day = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
-    
+    console.log(last_business_day)
     if(this.props.portfolio_type) {
       var pos_real = this.state.p_real.current_positions
       return(
