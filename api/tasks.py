@@ -204,7 +204,7 @@ def update_orders_task(user_id):
     portfolios = user.portfolio.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
     print(last_business_day)
-    
+
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
@@ -257,6 +257,7 @@ def update_orders_task(user_id):
                 max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
 
             for b in backtests:
+                print(b)
                 sma_position = b.model.sma_position.filter(price_date=last_business_day.date()).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
                 in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
