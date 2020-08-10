@@ -203,7 +203,8 @@ def update_orders_task(user_id):
     user = User.objects.get(id=user_id)
     portfolios = user.portfolio.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-
+    print(last_business_day)
+    
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
@@ -265,6 +266,7 @@ def update_orders_task(user_id):
                     available_cash = cash
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
+                
                 if sma_position and last_price and in_portfolio == False and sma_position.buy and available_cash > 0:
                     stock_allocation = max_allocation * (b.score/max_score['score__max'])
                     num_of_shares = int(stock_allocation/last_price.close)

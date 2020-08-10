@@ -244,7 +244,7 @@ class API():
         trade_btn = self.browser.find_element_by_tag_name('trade-button')
         time.sleep(5) #dirty fix
         trade_btn.click()
-        
+
         try:
             self.browser.find_element_by_css_selector("div[id='open-position-view']")
         except NoSuchElementException as err:
@@ -331,10 +331,14 @@ class API():
             take_profit_input.send_keys(Keys.ENTER)
 
             #PLACE ORDER
-            self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
-            place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
-            place_order_btn.click()
-            print('ORDER SUBMITTED')
+            try:
+                self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
+            except TimeoutError as err:
+                print(err)
+            else:
+                place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
+                place_order_btn.click()
+                print('ORDER SUBMITTED')
 
     def execute_sell_order(self, order):
         print('execute_sell_order')
