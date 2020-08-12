@@ -351,18 +351,22 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         rows = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
         for row in rows:
-            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
-            row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
-            row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
-            if (row_ticker == order.stock.symbol and len(row_pending_sell) == 0):
-                print(f'Selling {row_ticker}')
-                close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
-                close_btn.click()
-                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
-                close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-position-table']")
-                sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
-                sell_button.click()
-                break
+            try:
+                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
+            except:
+                print('ERROR')
+            else:
+                row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
+                row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
+                if (row_ticker == order.stock.symbol and len(row_pending_sell) == 0):
+                    print(f'Selling {row_ticker}')
+                    close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
+                    close_btn.click()
+                    self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
+                    close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-position-table']")
+                    sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
+                    sell_button.click()
+                    break
 
     def cancel_order(self, order):
         print('cancel order')
@@ -371,6 +375,7 @@ class API():
         empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
         if len(empty_order_book) == 0:
             try:
+                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
                 row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
             except:
                 print(f'Unknown position {order.stock.symbol}')
