@@ -765,15 +765,15 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {(this.initial_balance()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {this.total_cash().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {this.total_investment().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
