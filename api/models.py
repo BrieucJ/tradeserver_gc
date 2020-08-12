@@ -73,7 +73,7 @@ class Position(models.Model):
     
     class Meta:
         ordering = ['-open_date']
-        constraints = [models.UniqueConstraint(fields=['stock'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
+        constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
 
 class PriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
@@ -179,5 +179,5 @@ class BuyOrder(models.Model):
     terminated_at = models.DateTimeField(default=None, null=True)
     
     class Meta:
-        unique_together = ['user', 'stock', 'portfolio', ]
         ordering = ['-created_at']
+

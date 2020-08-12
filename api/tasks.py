@@ -16,6 +16,7 @@ from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
+from .serializers import BuyOrderCreateSerializer
 from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder, PortfolioHistory
 from re import sub
 from decimal import Decimal
@@ -229,7 +230,7 @@ def update_orders_task(user_id):
         pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
         for order in pending_buy_orders:
             if order.submited_at != None and order.canceled_at == None:
-                if  order.price_date < last_business_day.date() or order.price_date == None:
+                if  order.price_date == None or order.price_date < last_business_day.date():
                     print('CANCEL')
                     print(order.stock.name)
                     print(order.price_date)
@@ -259,31 +260,29 @@ def update_orders_task(user_id):
                 max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
 
             for b in backtests:
-                print(b)
                 sma_position = b.model.sma_position.filter(price_date=last_business_day.date()).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
-                in_portfolio = portfolio.position.filter(stock=b.stock, close_date__isnull=True).count() != 0
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
 
                 if pending_buy_orders['total_investment__sum'] == None:
                     available_cash = cash
                 else:
                     available_cash = cash - pending_buy_orders['total_investment__sum']
-                
-                if sma_position and last_price and in_portfolio == False and sma_position.buy and available_cash > 0:
+
+                if sma_position and last_price and sma_position.buy and available_cash > 0:
                     stock_allocation = max_allocation * (b.score/max_score['score__max'])
                     num_of_shares = int(stock_allocation/last_price.close)
                     if num_of_shares > 0:
                         stop_loss = last_price.close - b.model.stop_loss * last_price.close
                         take_profit = last_price.close + b.model.take_profit * last_price.close
-                        total_cost = num_of_shares * last_price.close
-                        order = BuyOrder(user=user, stock=b.stock, sma_position=sma_position, portfolio=portfolio, price_date=sma_position.price_date, num_of_shares=num_of_shares, order_rate=last_price.close, current_rate=last_price.close, total_investment=total_cost, stop_loss=stop_loss, take_profit=take_profit, created_at=datetime.datetime.now(tz=timezone.utc))
-                        try:
-                            order.save()
-                        except IntegrityError as err:
-                            continue
-                        else:
+                        total_investment = num_of_shares * last_price.close
+                        serializer = BuyOrderCreateSerializer(data={'user':user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
+                        if serializer.is_valid():
+                            serializer.save()
                             print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
+                        else:
+                            print('SERIALIZER ERROR')
+                            print(serializer.errors)
 
 
 @shared_task

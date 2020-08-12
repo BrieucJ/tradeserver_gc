@@ -2,7 +2,7 @@
 from .models import Profile, Portfolio, Position, Stock, SMABacktest, SMAPosition, PriceHistory, SMAModel, BuyOrder, SellOrder, PortfolioHistory
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueValidator, ValidationError
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -56,12 +56,27 @@ class PortfolioSerializer(serializers.ModelSerializer):
         model = Portfolio
         fields = ['portfolio_type', 'currency', 'created_at', 'updated_at', 'last_portfolio_history']
 
-class BuyOrderSerializer(serializers.ModelSerializer):
+class BuyOrderReadSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
     sma_position = SMAPositionSerializer()
     class Meta:
         model = BuyOrder
         fields = '__all__'
+
+class BuyOrderCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BuyOrder
+        fields = '__all__'
+    
+    def validate(self, data):
+        pos = data['portfolio'].position.filter(stock=data['stock'], close_date__isnull=True).first()
+        bo = data['portfolio'].buy_order.filter(stock=data['stock'], executed_at__isnull=True).first()
+        if pos:
+            raise ValidationError('Order is already in portfolio')
+        elif bo:
+            raise ValidationError('Order is already in pending buy orders')
+        else:
+            return data
 
 class SellOrderSerializer(serializers.ModelSerializer):
     stock = StockSerializer()

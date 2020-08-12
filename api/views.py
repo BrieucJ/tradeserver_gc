@@ -10,7 +10,7 @@ from django.db.models import Min, Max
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
-from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderSerializer, SellOrderSerializer, PortfolioHistorySerializer
+from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
 from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory
@@ -29,7 +29,7 @@ class Home(generics.RetrieveAPIView):
         if p_demo != None:
             portfolio_history_demo = p_demo.portfolio_history.distinct('created_at__date').order_by()
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data 
-            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
+            pending_buy_orders_demo = BuyOrderReadSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True).order_by('-position__total_investment'), many=True).data
         else:
             pending_buy_orders_demo = [] 
@@ -38,7 +38,7 @@ class Home(generics.RetrieveAPIView):
             portfolio_history_demo= []
         
         if p_real != None:
-            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
+            pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True).order_by('-position__total_investment'), many=True).data
             portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
@@ -129,7 +129,7 @@ class RetrieveOrder(generics.RetrieveAPIView):
             pending_buy_orders_demo = []
             pending_sell_orders_demo = []
         else:
-            pending_buy_orders_demo = BuyOrderSerializer(p_demo.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_buy_orders_demo = BuyOrderReadSerializer(p_demo.buy_order.filter(executed_at__isnull=True), many=True).data 
             pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True), many=True).data
         
         #real
@@ -138,7 +138,7 @@ class RetrieveOrder(generics.RetrieveAPIView):
             pending_buy_orders_real = []
             pending_sell_orders_real = []
         else:
-            pending_buy_orders_real = BuyOrderSerializer(p_real.buy_order.filter(executed_at__isnull=True), many=True).data 
+            pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True), many=True).data 
             pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True), many=True).data
 
         return Response({'p_demo': {'pending_buy_orders': pending_buy_orders_demo,  'pending_sell_orders': pending_sell_orders_demo}, 'p_real': {'pending_buy_orders': pending_buy_orders_real,  'pending_sell_orders': pending_sell_orders_real}}, status=status.HTTP_200_OK)
