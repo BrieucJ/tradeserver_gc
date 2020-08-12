@@ -368,6 +368,7 @@ class API():
                     close_btn.click()
                     self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
                     close_modal = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='close-position-table']")
+                    self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='close-position-close-button']")))
                     sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
                     sell_button.click()
                     break
