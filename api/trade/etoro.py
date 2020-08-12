@@ -352,7 +352,7 @@ class API():
         rows = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
         for row in rows:
             try:
-                self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
+                self.wait.until(EC.staleness_of((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
             except:
                 print('ERROR')
             else:
