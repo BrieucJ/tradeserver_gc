@@ -349,11 +349,12 @@ class API():
         print('execute_sell_order')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
-        rows= self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
+        rows = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
         for row in rows:
+            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
             row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
             print(row_ticker)
-            if (row_ticker== order.stock.symbol):
+            if (row_ticker == order.stock.symbol):
                 print(f'Selling {row_ticker}')
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()
