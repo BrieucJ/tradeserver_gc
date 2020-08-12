@@ -281,7 +281,7 @@ def update_orders_task(user_id):
                             serializer.save()
                             print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
                         else:
-                            print('SERIALIZER ERROR')
+                            print(f'SERIALIZER ERROR {b.stock}')
                             print(serializer.errors)
 
 
