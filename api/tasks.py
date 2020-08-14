@@ -361,7 +361,7 @@ def update_price_history():
                 try:
                     df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
                 except RemoteDataError as err:
-                    # print(f'#### {s.symbol} - {err} ####')
+                    print(f'#### {s.symbol} - {err} ####')
                     continue
                 
                 for index, row in df.iterrows():
