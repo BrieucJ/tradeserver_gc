@@ -353,11 +353,11 @@ class API():
         for row in rows:
             try:
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")))
+                row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
+                row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
             except:
                 print('ERROR')
             else:
-                row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
-                row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
                 if (row_ticker == order.stock.symbol and len(row_pending_sell) == 0):
                     print(f'Selling {row_ticker}')
                     close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
