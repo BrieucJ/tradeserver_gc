@@ -292,7 +292,6 @@ def update_sma_positions():
         backtests = stock.backtest.all()
         for b in backtests:
             for price in prices:
-                print(SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=price.price_date).first())
                 if SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=price.price_date).first() == None:
                     sma_engine = SMAEngine(prices, b.model, date=prices.first().price_date, backtest=False)
                     if 'buy' in sma_engine.order.keys():
