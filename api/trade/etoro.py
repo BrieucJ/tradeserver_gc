@@ -358,10 +358,6 @@ class API():
             else:
                 row_ticker = row.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
                 row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
-                print(row_ticker)
-                print(order.stock.symbol)
-                print(row_ticker == order.stock.symbol)
-                print(len(row_pending_sell))
                 if (row_ticker == order.stock.symbol and len(row_pending_sell) == 0):
                     print(f'Selling {row_ticker}')
                     close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")

@@ -1,6 +1,7 @@
 
 from rest_framework import viewsets, mixins, generics, permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+import datetime
 # from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -13,7 +14,7 @@ from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
-from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory
+from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory, Position
 
 class Home(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -165,6 +166,26 @@ class RetrieveHistory(generics.RetrieveAPIView):
             history_real = PositionSerializer(p_real.position.filter(close_date__isnull=False), many=True).data 
 
         return Response({'p_demo': {'history': history_demo }, 'p_real': {'history': history_real }}, status=status.HTTP_200_OK)
+
+class RetrieveHistoryDetails(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PortfolioSerializer
+    queryset = Portfolio.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        pos_id = request.GET['id']
+        pos = Position.objects.get(id=pos_id)
+        buy_order = pos.buy_order.first()
+        sell_order = pos.sell_order.first()
+        print(pos)
+        print(buy_order)
+        print(sell_order)
+        if pos.close_date == None:
+            sma_positions = pos.stock.sma_position.filter(price_date__range=[pos.open_date.date(), datetime.datetime.today().date()])
+        else:
+            sma_positions = pos.stock.sma_position.filter(price_date__range=[pos.open_date.date(), pos.close_date.date()])
+
+        return Response({'details': {'price_history': 'test', 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data }}, status=status.HTTP_200_OK)
 
 class RetrieveMarket(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)

@@ -39,12 +39,6 @@ class SMABacktestSerializer(serializers.ModelSerializer):
         model = SMABacktest
         fields = '__all__'
 
-class PositionSerializer(serializers.ModelSerializer):
-    stock = StockSerializer()
-    class Meta:
-        model = Position
-        fields = '__all__'
-
 class PortfolioHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PortfolioHistory
@@ -81,10 +75,22 @@ class BuyOrderCreateSerializer(serializers.ModelSerializer):
 class SellOrderSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
     sma_position = SMAPositionSerializer()
-    position = PositionSerializer()
     class Meta:
         model = SellOrder
         fields = '__all__'
+
+class PositionSerializer(serializers.ModelSerializer):
+    stock = StockSerializer()
+    buy_order = serializers.CharField(source='position.buy_order', default=None, allow_blank=True, allow_null=True)
+    sell_order = serializers.CharField(source='position.sell_order', default=None, allow_blank=True, allow_null=True)
+    sma_position = serializers.CharField(source='position.buy_order.sma_position', default=None, allow_blank=True, allow_null=True)
+    model = serializers.CharField(source='position.buy_order.sma_position.model', default=None, allow_blank=True, allow_null=True)
+    backtest = serializers.CharField(source='position.buy_order.sma_position.backtest', default=None, allow_blank=True, allow_null=True)
+
+    class Meta:
+        model = Position
+        fields = ['id', 'stock', 'portfolio', 'open_date', 'open_rate', 'num_of_shares', 'total_investment', 'stop_loss_rate', 'take_profit_rate',
+                   'current_rate', 'updated_at', 'created_at', 'close_rate', 'close_date', 'buy_order', 'sell_order', 'sma_position', 'model', 'backtest']
 
 class UserSerializer(serializers.ModelSerializer):
     broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True, allow_null=True)

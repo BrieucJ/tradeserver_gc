@@ -25,9 +25,6 @@ class Stock(models.Model):
     @property
     def last_price(self):
         return self.price_history.first()
-    
-    def last_sma_position(self):
-        return self.sma_position.first()
 
 class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio')
@@ -52,44 +49,6 @@ class PortfolioHistory(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-
-class Position(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position', default=None, null=True)
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='position')
-
-    open_date = models.DateTimeField(default=None, null=True)
-    open_rate = models.FloatField(default=0)
-    num_of_shares = models.IntegerField(default=0)
-    total_investment = models.FloatField(default=0)
-    stop_loss_rate = models.FloatField(default=0)
-    take_profit_rate = models.FloatField(default=0)
-    
-    current_rate = models.FloatField(default=0)
-    updated_at = models.DateTimeField(default=None, null=True)
-    created_at = models.DateTimeField(default=timezone.now, blank=True)
-
-    close_rate = models.FloatField(default=0)
-    close_date = models.DateTimeField(default=None, null=True)
-    
-    class Meta:
-        ordering = ['-open_date']
-        constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
-
-class PriceHistory(models.Model):
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
-    price_date = models.DateField(default=None)
-    open = models.FloatField(default=0)
-    high = models.FloatField(default=0)
-    low = models.FloatField(default=0)
-    close = models.FloatField(default=0)
-    volume = models.BigIntegerField(default=0)
-    created_at = models.DateField(default=date.today)
-    class Meta:
-        ordering = ['-price_date']
-        unique_together = ['stock', 'price_date']
-        
-    def __str__(self):
-        return f'{self.stock} - {self.price_date}'
 
 class SMAModel(models.Model):
     low_sma = models.IntegerField(default=10)
@@ -146,6 +105,44 @@ class SMAPosition(models.Model):
     def __str__(self):
         return f'{self.model}_{self.stock}_{self.buy}'
 
+class Position(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='position', default=None, null=True)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='position')
+
+    open_date = models.DateTimeField(default=None, null=True)
+    open_rate = models.FloatField(default=0)
+    num_of_shares = models.IntegerField(default=0)
+    total_investment = models.FloatField(default=0)
+    stop_loss_rate = models.FloatField(default=0)
+    take_profit_rate = models.FloatField(default=0)
+    
+    current_rate = models.FloatField(default=0)
+    updated_at = models.DateTimeField(default=None, null=True)
+    created_at = models.DateTimeField(default=timezone.now, blank=True)
+
+    close_rate = models.FloatField(default=0)
+    close_date = models.DateTimeField(default=None, null=True)
+    
+    class Meta:
+        ordering = ['-open_date']
+        constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
+
+class PriceHistory(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
+    price_date = models.DateField(default=None)
+    open = models.FloatField(default=0)
+    high = models.FloatField(default=0)
+    low = models.FloatField(default=0)
+    close = models.FloatField(default=0)
+    volume = models.BigIntegerField(default=0)
+    created_at = models.DateField(default=date.today)
+    class Meta:
+        ordering = ['-price_date']
+        unique_together = ['stock', 'price_date']
+        
+    def __str__(self):
+        return f'{self.stock} - {self.price_date}'
+
 class SellOrder(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sell_order')
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='sell_order')
@@ -165,6 +162,7 @@ class BuyOrder(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='buy_order')
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='buy_order')
     sma_position = models.ForeignKey(SMAPosition, on_delete=models.CASCADE, related_name='buy_order', default=None, null=True)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name='buy_order', default=None, null=True)
     price_date = models.DateField(default=None, null=True)
     num_of_shares = models.IntegerField(default=None)
     order_rate = models.FloatField(default=None, null=True)

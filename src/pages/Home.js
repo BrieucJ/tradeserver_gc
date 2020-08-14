@@ -1,12 +1,9 @@
 import React from 'react';
-import { Container, Collapse, Box, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import IconButton from '@material-ui/core/IconButton';
-
+import { Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
+import PortfolioTable from '../components/PortfolioTable'
 
 const styles = {
 
@@ -16,7 +13,6 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open_id: null,
       sorting_col: 'total_investment',
       sorting_dir: 'asc',
       loading:true,
@@ -74,42 +70,6 @@ class Home extends React.Component {
     })
   }
 
-  update_prices = async () => {
-    get('api/update_price_history/').then((resp) => {
-      if (resp.status === 200){
-        var response = JSON.parse(resp.response)
-        console.log(response)
-      }
-    })
-  }
-
-  update_orders = async () => {
-    get('api/update_orders/').then((resp) => {
-      if (resp.status === 200){
-        var response = JSON.parse(resp.response)
-        console.log(response)
-      }
-    })
-  }
-
-  transmit_orders = async () => {
-    get('api/transmit_orders/').then((resp) => {
-      if (resp.status === 200){
-        var response = JSON.parse(resp.response)
-        console.log(response)
-      }
-    })
-  }
-
-  update_portfolio = async () => {
-    get('api/update_portfolio/').then((resp) => {
-      if (resp.status === 200){
-        var response = JSON.parse(resp.response)
-        console.log(response)
-      }
-    })
-  }
-
   pie_chart_data = () => {
     var data = []
     if (this.props.portfolio_type) {
@@ -160,27 +120,8 @@ class Home extends React.Component {
     return data
   }
 
-  holding_duration = (open_date, close_date) => {
-    var delta = Math.abs(new Date(open_date) - new Date(close_date)) / 1000;
-    // calculate (and subtract) whole days
-    var days = Math.floor(delta / 86400);
-    delta -= days * 86400;
-    // calculate (and subtract) whole hours
-    var hours = Math.floor(delta / 3600) % 24;
-    delta -= hours * 3600;
-    
-    if (days < 1){
-      return `${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day` 
-    } else {
-      return `${days},${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 0})} day(s)` 
-    }
-  }
 
-  total_balance = (portfolio) => {
-    var cash = portfolio.last_portfolio_history.cash
-    var inv = portfolio.last_portfolio_history.total_invested_value
-    return cash + inv
-  }
+
 
   total_pl() {
     var pl = 0
@@ -370,7 +311,7 @@ class Home extends React.Component {
             {sos_real.map((so) => (
               <TableRow key={so.id}>
                 <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                {/* <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell> */}
                 <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
               </TableRow>
             ))}
@@ -394,7 +335,7 @@ class Home extends React.Component {
             {sos_demo.map((so) => (
               <TableRow key={so.id}>
                 <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                {/* <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell> */}
                 <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
               </TableRow>
             ))}
@@ -490,246 +431,28 @@ class Home extends React.Component {
     }
   }
 
-  renderPortfolio(){
-    var date_time = new Date();
-    var day_num = date_time.getDay()
-
-    if (day_num === 0 || day_num === 6 || day_num === 1){
-      if (day_num === 1){
-        date_time.setDate(date_time.getDate() - 3);
-      }
-      if (day_num === 0){
-        date_time.setDate(date_time.getDate() - 2);
-      }
-      if (day_num === 6){
-        date_time.setDate(date_time.getDate() - 1);
-      }
+  handleOpen = async (id) => {
+    if (id === this.state.open_id){
+      this.setState({open_id: null})
     } else {
-      date_time.setDate(date_time.getDate() - 1);
-    }
-
-    var day = date_time.getDate()
-    var month = date_time.getMonth() + 1 //January is 0!
-    var year = date_time.getFullYear();
-    var last_business_day = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
-
-    if(this.props.portfolio_type) {
-      var pos_real = this.state.p_real.current_positions
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name
-                <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell>Sector
-                <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Amount 
-                <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">% 
-                <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">P/L
-                <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Duration
-                <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Position</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {pos_real.map((po) => (
-              <TableRow key={po.id}>
-                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
-                <TableCell component="th" scope="row">{po.stock.sector}  </TableCell>
-                <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_real.portfolio)) * 100).toFixed(2)}% </TableCell>
-                <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
-                  {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
-                </TableCell>
-                <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
-                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    } else {
-      var pos_demo = this.state.p_demo.current_positions
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name
-                <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell>Sector
-                <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Amount 
-                <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">% 
-                <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">P/L 
-                <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Duration
-                <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
-              </TableCell>
-              <TableCell align="right">Position</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {pos_demo.map((po) => (
-              <TableRow key={po.id}>
-                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)} </TableCell>
-                <TableCell component="th" scope="row">{po.stock.sector}  </TableCell>
-                <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> { ((po.total_investment / this.total_balance(this.state.p_demo.portfolio)) * 100).toFixed(2)}% </TableCell>
-                <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
-                  {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })} | {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
-                </TableCell>
-                <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
-                <TableCell align="right" style={{color: po.stock.last_sma_position.buy ? 'green' : 'red'}}> {po.stock.last_sma_position.buy ? 'BUY' : 'SELL'} | <Typography style={{color: po.stock.last_sma_position.price_date === last_business_day ? 'green' : 'red', display: 'inline-block'}} variant='body2'> {po.stock.last_sma_position.price_date === last_business_day ? '✓' : po.stock.last_sma_position.price_date} </Typography> </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
+      this.setState({open_id: id})
+      this.retrieve_history_details(id)
     }
   }
 
-  // handle_open = (id) => {
-  //   if (id === this.state.open_id){
-  //     this.setState({open_id: null})
-  //   } else {
-  //     this.setState({open_id: id})
-  //   }
-  // }
-
-  // renderHistory(){
-  //   if(this.props.portfolio_type) {
-  //     var history_real = this.state.p_real.history
-  //     return(
-  //       <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-  //         <Table size="small" stickyHeader aria-label="sticky table" >
-  //         <TableHead>
-  //           <TableRow>
-  //             <TableCell>Name
-  //             </TableCell>
-  //             <TableCell>Sector
-  //             </TableCell>
-  //             <TableCell align="right">Open date 
-  //             </TableCell>
-  //             <TableCell align="right">Close date
-  //             </TableCell>
-  //             <TableCell align="right">Duration
-  //             </TableCell>
-  //             <TableCell align="right">Open rate 
-  //             </TableCell>
-  //             <TableCell align="right">Close rate
-  //             </TableCell>
-  //             <TableCell align="right">P/L</TableCell>
-  //             </TableRow>
-  //         </TableHead>
-  //         <TableBody>
-  //           {history_real.map((hi) => (
-  //             <TableRow key={hi.id}>
-  //               <TableCell>
-  //                 <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-  //                   {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-  //                 </IconButton>
-  //               </TableCell>
-  //               <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
-  //               <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
-  //               <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-  //               <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-  //               <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
-  //               <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-  //               <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-  //               <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
-  //                  {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
-  //               </TableCell>
-  //             </TableRow>
-  //           ))}
-  //           </TableBody>
-  //         </Table>
-  //       </TableContainer>
-  //     )
-  //   } else {
-  //     var history_demo = this.state.p_demo.history
-  //     return(
-  //       <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-  //         <Table size="small" stickyHeader aria-label="sticky table" >
-  //         <TableHead>
-  //           <TableRow>
-  //             <TableCell>Name
-  //             </TableCell>
-  //             <TableCell>Sector
-  //             </TableCell>
-  //             <TableCell align="right">Open date 
-  //             </TableCell>
-  //             <TableCell align="right">Close date
-  //             </TableCell>
-  //             <TableCell align="right">Duration
-  //             </TableCell>
-  //             <TableCell align="right">Open rate 
-  //             </TableCell>
-  //             <TableCell align="right">Close rate
-  //             </TableCell>
-  //             <TableCell align="right">P/L</TableCell>
-  //             <TableCell></TableCell>
-  //             </TableRow>
-  //         </TableHead>
-  //         <TableBody>
-  //           {history_demo.map((hi) => (
-  //             <React.Fragment key={hi.id}>
-  //             <TableRow>
-  //               <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
-  //               <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
-  //               <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-  //               <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
-  //               <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
-  //               <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-  //               <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
-  //               <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
-  //                  {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
-  //               </TableCell>
-  //               <TableCell>
-  //                 <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-  //                   {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-  //                 </IconButton>
-  //               </TableCell>
-  //             </TableRow>
-  //             <TableRow>
-  //             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-  //               <Collapse in={this.state.open_id == hi.id} timeout="auto" unmountOnExit>
-  //                 <Box margin={1}>
-  //                   <Typography variant="h6" gutterBottom component="div">
-  //                     History
-  //                   </Typography>
-                    
-  //                 </Box>
-  //               </Collapse>
-  //             </TableCell>
-  //             </TableRow>
-  //           </React.Fragment>
-  //           ))}
-  //           </TableBody>
-  //         </Table>
-  //       </TableContainer>
-  //     )
-  //   }
-  // }
+  retrieve_history_details = async (id) => {
+    console.log('retrieve_history_details')
+    get('api/retrieve_history_details/?id='+id).then((resp) => {
+      if (resp.status === 200){
+        var response = JSON.parse(resp.response)
+        console.log(response)
+        // this.setState({
+        //     history_demo: response.p_demo.history,
+        //     history_real: response.p_real.history,
+        // })
+      }
+    })
+  }
 
   render() {
     if (this.state.loading){
@@ -801,13 +524,14 @@ class Home extends React.Component {
                 <Area_Chart data={this.area_chart_data()} height={this.state.g_height} width={this.state.g_width}/>
               </Paper>
             </Grid>
-            
-            <Grid item xs={12} sm={12} >
-              <Paper style={{padding:5}}>
-              <Typography variant='h5' style={{display: 'inline-block', padding:5}}> Portfolio </Typography>
-                {this.renderPortfolio()}
-              </Paper>
-            </Grid>
+
+            <PortfolioTable 
+              portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
+              sorting_col={this.state.sorting_col} sorting_dir={this.state.sorting_dir}
+              handleSorting={(e)=> {this.handleSorting(e)}}
+              handleOpen={(id) => {this.handleOpen(id)}}
+              open_id={this.state.open_id}
+            />
 
             <Grid item xs={12} sm={6}>
               <Paper style={{padding:5}}>

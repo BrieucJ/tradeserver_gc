@@ -60,7 +60,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
         pos.save()
 
     #orders
-    print('creating orders')
+    # print('creating orders')
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
@@ -116,6 +116,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             new_pos.save()
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
             if buy_order:
+                buy_order.position = new_pos
                 buy_order.executed_at = position['open_date']
                 if buy_order.submited_at == None:
                     buy_order.submited_at = position['open_date']
@@ -139,18 +140,12 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 current_position.close_rate = th['close_rate']
                 current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
                 current_position.save()
+                #sell order
                 sell_order = current_position.sell_order.first()
-                if sell_order:
-                    #print('position sell order update')
-                    sell_order.executed_at = th['close_date']
-                    if sell_order.submited_at == None:
+                sell_order.executed_at = th['close_date']
+                if sell_order.submited_at == None:
                         sell_order.submited_at = th['close_date']
-                    sell_order.save()
-                buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
-                if buy_order:
-                    buy_order.executed_at = th['close_date']
-                    buy_order.submited_at = th['submited_at']
-                    buy_order.save()
+                sell_order.save()
             else:
                 print('unknown position')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
@@ -182,11 +177,11 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.submited_at = pending_order['submited_at']
                 buy_order.save()
             else:
-                print('##############')
+                print('###### UNKNOWN BUY ORDER ########')
                 print(pending_order)
-                # bo = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
-                #     total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
-                # bo.save()
+                bo = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
+                    total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
+                bo.save()
         elif pending_order['order_type'] == 0:
             #print('SELL ORDER')
             sell_order = user_portfolio.sell_order.filter(stock=stock, submited_at__isnull=True).first()
@@ -206,24 +201,26 @@ def update_orders_task(user_id):
     user = User.objects.get(id=user_id)
     portfolios = user.portfolio.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-    print(last_business_day)
 
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
         print(f'Portfolio type: {portfolio.portfolio_type}')
         for position in positions:
-            stock = position.stock
-            if stock:
-                sma_position = stock.sma_position.first()
-                if sma_position != None and sma_position.buy == False and position.sell_order.first() == None:
-                    print(f'SELLING {stock} POSITION')
-                    order = SellOrder(user=user, stock=position.stock, sma_position=sma_position, portfolio=portfolio, position=position)
-                    try:
+            bo = position.buy_order.first()
+            if bo == None:
+                if not position.sell_order.first():
+                    print('NO BUY ORDER')
+                    order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
+                    order.save()
+            else:
+                sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day).first()
+                if sma_position == None or sma_position.buy == False:
+                    print('SMA POS NONE OR SMA POS SELL')
+                    if not position.sell_order.first():
+                        print(f'SELLING {stock} POSITION')
+                        order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                         order.save()
-                    except IntegrityError as err:
-                        print(f'SELL ORDER ERROR: {err}')
-                        continue
         
         #PENDING BUY ORDERS REALLOCATION
         print('PENDING ORDERS REALLOCATION')
@@ -288,20 +285,23 @@ def update_orders_task(user_id):
 @shared_task
 def update_sma_positions():
     print('update_sma_positions')
-    stocks = Stock.objects.all()
+    stocks = Stock.objects.filter(valid=True)
     for stock in stocks:
-        prices = stock.price_history.all()
         last_sma_position = stock.sma_position.first()
+        prices = stock.price_history.all()[:1000]
         backtests = stock.backtest.all()
-        if last_sma_position == None or prices.first().price_date > last_sma_position.price_date:
-            for b in backtests:
-                if not SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=prices.first().price_date).first():
+        for b in backtests:
+            for price in prices:
+                print(SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=price.price_date).first())
+                if SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=price.price_date).first() == None:
                     sma_engine = SMAEngine(prices, b.model, date=prices.first().price_date, backtest=False)
                     if 'buy' in sma_engine.order.keys():
                         print(f'BUY: {sma_engine.order["buy"]}')
-                        s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=prices.first().price_date)
+                        s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=price.price_date)
                         s.save()
-    gc.collect()
+                    else:
+                        print(sma_engine.order["error"])
+gc.collect()
 
 @shared_task
 def update_portfolio(user_id):
@@ -356,12 +356,13 @@ def update_price_history():
                 start_date = s.price_history.first().price_date
             else:
                 start_date = datetime.datetime(2000, 1, 1)
+            
             end_date = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
             if start_date < end_date:
                 try:
                     df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
                 except RemoteDataError as err:
-                    print(f'#### {s.symbol} - {err} ####')
+                    # print(f'#### {s.symbol} - {err} ####')
                     continue
                 
                 for index, row in df.iterrows():

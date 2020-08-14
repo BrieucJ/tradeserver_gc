@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/retrieve_portfolio/', views.RetrievePortfolio.as_view(), name='retrieve_portfolio'),
     path('api/retrieve_order/', views.RetrieveOrder.as_view(), name='retrieve_order'),
     path('api/retrieve_history/', views.RetrieveHistory.as_view(), name='retrieve_history'),
+    path('api/retrieve_history_details/', views.RetrieveHistoryDetails.as_view(), name='retrieve_history_details'),
     path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
     path('api/retrieve_model/', views.RetrieveModel.as_view(), name='retrieve_model'),
     path('api/update_price_history/', views.UpdatePriceHistory.as_view(), name='update_price_history'),
