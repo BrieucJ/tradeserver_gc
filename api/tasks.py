@@ -207,6 +207,7 @@ def update_orders_task(user_id):
         positions = portfolio.position.filter(close_date__isnull=True)
         print(f'Portfolio type: {portfolio.portfolio_type}')
         for position in positions:
+            print(position)
             bo = position.buy_order.first()
             if bo == None:
                 if not position.sell_order.first():
