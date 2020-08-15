@@ -54,6 +54,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
 class BuyOrderReadSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
     sma_position = SMAPositionSerializer()
+    backtes = SMABacktestSerializer()
     class Meta:
         model = BuyOrder
         fields = '__all__'
