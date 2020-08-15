@@ -205,21 +205,25 @@ def update_orders_task(user_id):
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
+        print(len(positions))
         print(f'Portfolio type: {portfolio.portfolio_type}')
         for position in positions:
-            print(position)
+            print(position.stock.name)
             bo = position.buy_order.first()
+            print(bo)
             if bo == None:
+                print('NO BUY ORDER')
                 if not position.sell_order.first():
-                    print('NO BUY ORDER')
+                    print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
                     order.save()
             else:
                 sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day).first()
+                print(sma_position)
                 if sma_position == None or sma_position.buy == False:
                     print('SMA POS NONE OR SMA POS SELL')
                     if not position.sell_order.first():
-                        print(f'SELLING {position.stock} POSITION')
+                        print(f'CREATING SELL ORDER {position.stock}')
                         order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                         order.save()
         
