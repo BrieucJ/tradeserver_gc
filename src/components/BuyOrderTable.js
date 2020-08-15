@@ -40,9 +40,7 @@ class BuyOrderTable extends React.Component {
                         <TableRow key={bo.id}>
                             <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
                             <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
-                            <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}>
-                                {bo.sma_position === null ? 'None' : <Typography> {bo.sma_position.model.low_sma} | <Typography> {bo.sma_position.model.high_sma} </Typography> </Typography>} 
-                            </TableCell>
+                            <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
                             <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>

@@ -13,7 +13,9 @@ class PortfolioTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-        active_index: 0
+        active_index: 0,
+        sorting_col: 'total_investment',
+        sorting_dir: 'asc',
     };
   } 
 
@@ -36,6 +38,79 @@ class PortfolioTable extends React.Component {
       return `${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day` 
     } else {
       return `${days},${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 0})} day(s)` 
+    }
+  }
+
+  name_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.current_positions.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
+    } else {
+        this.props.portfolio.current_positions.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
+    }
+  }
+
+  number_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.current_positions.sort((a,b) => a[col] < b[col] ? 1 : -1)
+    } else {
+        this.props.portfolio.current_positions.sort((a,b) => a[col] > b[col] ? 1 : -1)
+    }
+  }
+
+  p_l_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+    } else {
+        this.props.portfolio.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+    }
+  }
+
+  sorter = (col, order) => {
+    console.log('sorter')
+    switch (col) {
+        case 'symbol':
+            this.name_sorter(col, order)
+        break;
+        case 'name':
+            this.name_sorter(col, order)
+            break;
+        case 'sector':
+            this.name_sorter(col, order)
+            break;
+        case 'total_investment':
+            this.number_sorter(col, order)
+            break;
+        case 'alloc_percentage':
+            this.number_sorter('total_investment', order)
+            break;
+        case 'P_L':
+            this.p_l_sorter(col, order)
+            break;
+        case 'open_date':
+            this.number_sorter(col, order)
+            break;
+        default:
+            console.log('Unknown col');
+    }
+  }
+
+  handleSorting = (e) => {
+    console.log('handleSorting')
+    if (this.state.sorting_dir === 'asc') {
+      this.sorter(e.currentTarget.id, 'desc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'desc'})
+    } else {
+      this.sorter(e.currentTarget.id, 'asc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'asc'})
+    }
+  }
+
+  handleOpen = async (id) => {
+    if (id === this.state.open_id){
+      this.setState({open_id: null})
+    } else {
+      this.setState({open_id: id})
+      this.props.retrieve_history_details(id)
     }
   }
 
@@ -72,28 +147,28 @@ class PortfolioTable extends React.Component {
                     <TableHead>
                         <TableRow>
                         <TableCell>Ticker
-                            <TableSortLabel active={this.props.sorting_col==='symbol'} direction={this.props.sorting_dir} id='symbol' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='symbol'} direction={this.state.sorting_dir} id='symbol' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell>Name
-                            <TableSortLabel active={this.props.sorting_col==='name'} direction={this.props.sorting_dir} id='name' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell>Sector
-                            <TableSortLabel active={this.props.sorting_col==='sector'} direction={this.props.sorting_dir} id='sector' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">Amount 
-                            <TableSortLabel active={this.props.sorting_col==='total_investment'} direction={this.props.sorting_dir} id='total_investment' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">% 
-                            <TableSortLabel active={this.props.sorting_col==='alloc_percentage'} direction={this.props.sorting_dir} id='alloc_percentage' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">P/L $
-                            <TableSortLabel active={this.props.sorting_col==='P_L'} direction={this.props.sorting_dir} id='P_L' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">P/L %
-                            <TableSortLabel active={this.props.sorting_col==='P_L'} direction={this.props.sorting_dir} id='P_L' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">Duration
-                            <TableSortLabel active={this.props.sorting_col==='open_date'} direction={this.props.sorting_dir} id='open_date' onClick={e => {this.props.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell> Details</TableCell>
                         </TableRow>
@@ -115,14 +190,14 @@ class PortfolioTable extends React.Component {
                                 </TableCell>
                                 <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
                                 <TableCell>
-                                <IconButton aria-label="expand row" size="small" onClick={() => this.props.handleOpen(po.id)}>
-                                    {this.props.open_id === po.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                <IconButton aria-label="expand row" size="small" onClick={() => this.handleOpen(po.id)}>
+                                    {this.state.open_id === po.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                                 </IconButton>
                                 </TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
-                                    <Collapse in={this.props.open_id == po.id} timeout="auto" unmountOnExit>
+                                    <Collapse in={this.state.open_id == po.id} timeout="auto" unmountOnExit>
                                         <Box margin={1} style={{backgroundColor:'red'}}>
                                             <Typography >
                                                 Model: {po.model === null ? 'None' : po.model}

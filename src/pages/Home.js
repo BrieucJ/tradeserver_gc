@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
 import PortfolioTable from '../components/PortfolioTable'
 import BuyOrderTable from '../components/BuyOrderTable'
+import SellOrderTable from '../components/SellOrderTable'
 
 const styles = {
 
@@ -14,8 +15,6 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      sorting_col: 'total_investment',
-      sorting_dir: 'asc',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -120,9 +119,6 @@ class Home extends React.Component {
     }
     return data
   }
-
-
-
 
   total_pl() {
     var pl = 0
@@ -287,100 +283,6 @@ class Home extends React.Component {
     }
   }
 
-  name_sorter = (col, order) => {
-    if (order === 'asc') {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
-      } else {
-        this.state.p_demo.current_positions.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
-      }
-    } else {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
-      } else {
-        this.state.p_demo.current_positions.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
-      }
-    }
-  }
-
-  number_sorter = (col, order) => {
-    if (order === 'asc') {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a,b) => a[col] < b[col] ? 1 : -1)
-      } else {
-        this.state.p_demo.current_positions.sort((a,b) => a[col] < b[col] ? 1 : -1)
-      }
-    } else {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a,b) => a[col] > b[col] ? 1 : -1)
-      } else {
-        this.state.p_demo.current_positions.sort((a,b) => a[col] > b[col] ? 1 : -1)
-      }
-    }
-  }
-
-  p_l_sorter = (col, order) => {
-    if (order === 'asc') {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
-      } else {
-        this.state.p_demo.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
-      }
-    } else {
-      if (this.props.portfolio_type){
-        this.state.p_real.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
-      } else {
-        this.state.p_demo.current_positions.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
-      }
-    }
-  }
-
-  sorter = (col, order) => {
-    console.log('sorter')
-    switch (col) {
-      case 'name':
-        this.name_sorter(col, order)
-        break;
-      case 'sector':
-          this.name_sorter(col, order)
-          break;
-      case 'total_investment':
-        this.number_sorter(col, order)
-        break;
-      case 'alloc_percentage':
-          this.number_sorter('total_investment', order)
-          break;
-      case 'P_L':
-        this.p_l_sorter(col, order)
-        break;
-      case 'open_date':
-        this.number_sorter(col, order)
-          break;
-      default:
-        console.log('Unknown col');
-    }
-  }
-
-  handleSorting = (e) => {
-    console.log('handleSorting')
-    if (this.state.sorting_dir === 'asc') {
-      this.sorter(e.currentTarget.id, 'desc')
-      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'desc'})
-    } else {
-      this.sorter(e.currentTarget.id, 'asc')
-      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'asc'})
-    }
-  }
-
-  handleOpen = async (id) => {
-    if (id === this.state.open_id){
-      this.setState({open_id: null})
-    } else {
-      this.setState({open_id: id})
-      this.retrieve_history_details(id)
-    }
-  }
-
   retrieve_history_details = async (id) => {
     console.log('retrieve_history_details')
     get('api/retrieve_history_details/?id='+id).then((resp) => {
@@ -397,7 +299,12 @@ class Home extends React.Component {
 
   render() {
     if (this.state.loading){
-      return(<Container> <CircularProgress color='primary' /></Container>)
+      return(<Grid container
+        spacing={0}
+        direction="column"
+        alignItems="center"
+        justify="center"
+        style={{ minHeight: '100vh' }}> <CircularProgress color='primary' /></Grid>)
     } else {
       return (
         <Container>
@@ -468,23 +375,16 @@ class Home extends React.Component {
 
             <PortfolioTable 
               portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
-              sorting_col={this.state.sorting_col}
-              sorting_dir={this.state.sorting_dir}
-              handleSorting={(e)=> {this.handleSorting(e)}}
-              handleOpen={(id) => {this.handleOpen(id)}}
-              open_id={this.state.open_id}
+              retrieve_history_details={(id) => {this.retrieve_history_details(id)}}
             />
 
             <BuyOrderTable 
               portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
             /> 
-
-            <Grid item xs={12} sm={6}>
-              <Paper style={{padding:5}}>
-              <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Sell orders </Typography>
-                {this.renderSellOrders()}
-              </Paper>
-            </Grid>
+            
+            <SellOrderTable 
+              portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
+            /> 
             
             </Grid>
         </Container>
