@@ -235,66 +235,6 @@ class Home extends React.Component {
     }
   }
 
-  renderBuyOrders(){
-    if(this.props.portfolio_type) {
-      var bos_real = this.state.p_real.pending_buy_orders
-      return(
-      <TableContainer component={Paper} style={{ overflow: 'auto', height: '150px' }} >
-        <Table aria-label="simple table" style={{tableLayout: 'fixed'}} >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Order price </TableCell>
-              <TableCell align="right">Current price </TableCell>
-              <TableCell align="right">Submited/canceled</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {bos_real.map((bo) => (
-              <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    } else {
-      var bos_demo = this.state.p_demo.pending_buy_orders
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Order price </TableCell>
-              <TableCell align="right">Current price </TableCell>
-              <TableCell align="right">Submited/canceled</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {bos_demo.map((bo) => (
-              <TableRow key={bo.id}>
-                <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
-                <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                <TableCell align="right" style={{color: bo.canceled_at !== null && 'red'}} > {bo.submited_at === null ? 'Not sent' : bo.canceled_at !== null ? new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'}) : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    }
-  }
-
   renderSellOrders(){
     if(this.props.portfolio_type) {
       var sos_real = this.state.p_real.pending_sell_orders
