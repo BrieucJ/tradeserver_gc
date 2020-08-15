@@ -14,7 +14,13 @@ class PriceHistorySerializer(serializers.ModelSerializer):
         model = PriceHistory
         fields = '__all__'
 
+class SMAModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SMAModel
+        fields = '__all__'
+
 class SMAPositionSerializer(serializers.ModelSerializer):
+    model = SMAModelSerializer()
     class Meta:
         model = SMAPosition
         fields = '__all__'
@@ -25,11 +31,6 @@ class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = ['symbol', 'name', 'sector', 'industry', 'last_price', 'last_sma_position']
-
-class SMAModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SMAModel
-        fields = '__all__'
 
 class SMABacktestSerializer(serializers.ModelSerializer):
     stock = StockSerializer()

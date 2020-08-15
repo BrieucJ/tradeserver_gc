@@ -4,6 +4,7 @@ import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
 import PortfolioTable from '../components/PortfolioTable'
+import BuyOrderTable from '../components/BuyOrderTable'
 
 const styles = {
 
@@ -527,18 +528,16 @@ class Home extends React.Component {
 
             <PortfolioTable 
               portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
-              sorting_col={this.state.sorting_col} sorting_dir={this.state.sorting_dir}
+              sorting_col={this.state.sorting_col}
+              sorting_dir={this.state.sorting_dir}
               handleSorting={(e)=> {this.handleSorting(e)}}
               handleOpen={(id) => {this.handleOpen(id)}}
               open_id={this.state.open_id}
             />
 
-            <Grid item xs={12} sm={6}>
-              <Paper style={{padding:5}}>
-              <Typography variant='h5' style={{display: 'inline-block', padding: 5}}> Buy orders </Typography>
-                {this.renderBuyOrders()}
-              </Paper>
-            </Grid>
+            <BuyOrderTable 
+              portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
+            /> 
 
             <Grid item xs={12} sm={6}>
               <Paper style={{padding:5}}>
