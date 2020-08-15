@@ -242,7 +242,7 @@ class API():
 
         if len(pending_buy_order) != 0:
             print('ORDER ALREADY IN ORDER BOOK')
-            return
+            pass
         else:
             try:
                 self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'trade-button')))
@@ -342,6 +342,7 @@ class API():
                     try:
                         self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
                     except TimeoutException as err:
+                        print(TimeoutException)
                         print(err)
                     else:
                         place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
