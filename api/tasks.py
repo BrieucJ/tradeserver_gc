@@ -218,7 +218,7 @@ def update_orders_task(user_id):
                 if sma_position == None or sma_position.buy == False:
                     print('SMA POS NONE OR SMA POS SELL')
                     if not position.sell_order.first():
-                        print(f'SELLING {stock} POSITION')
+                        print(f'SELLING {position.stock} POSITION')
                         order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                         order.save()
         
