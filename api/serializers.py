@@ -82,7 +82,7 @@ class SellOrderSerializer(serializers.ModelSerializer):
 
 class PositionSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
-    buy_order = serializers.CharField(source='position.buy_order', default=None, allow_blank=True, allow_null=True)
+    buy_order = BuyOrderReadSerializer(many=True)
     sell_order = serializers.CharField(source='position.sell_order', default=None, allow_blank=True, allow_null=True)
     sma_position = serializers.CharField(source='position.buy_order.sma_position', default=None, allow_blank=True, allow_null=True)
     model = serializers.CharField(source='position.buy_order.sma_position.model', default=None, allow_blank=True, allow_null=True)
