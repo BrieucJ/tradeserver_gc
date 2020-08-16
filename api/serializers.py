@@ -101,10 +101,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'username', 'password', 'broker_username', 'broker_password']
-        extra_kwargs = {'password': {'write_only': True} }
+        extra_kwargs = {'password': {'write_only': True},  'broker_password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = User.objects.create(username=validated_data['username'], email= validated_data['email'])
+        user = User.objects.create(username=validated_data['username'], email=validated_data['email'])
         user.set_password(validated_data['password'])
         profile = Profile.objects.create(user=user)
         profile.save()
