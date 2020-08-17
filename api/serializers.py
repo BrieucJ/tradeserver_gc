@@ -85,8 +85,8 @@ class PositionSerializer(serializers.ModelSerializer):
     buy_order = BuyOrderReadSerializer(many=True)
     sell_order = SellOrderSerializer(many=True)
     sma_position = SMAPositionSerializer()
-    model = serializers.CharField(source='buy_order.sma_position.model', default=None, allow_blank=True, allow_null=True)
-    backtest = serializers.CharField(source='buy_order.sma_position.backtest', default=None, allow_blank=True, allow_null=True)
+    model = serializers.CharField(source='sma_position.model', default=None, allow_blank=True, allow_null=True)
+    backtest = serializers.CharField(source='sma_position.backtest', default=None, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Position
