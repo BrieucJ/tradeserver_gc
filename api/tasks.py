@@ -176,7 +176,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
                 if not pos.sell_order.first():
-                    print(f'CREATING SELL ORDER {position.stock}')
+                    print(f'CREATING SELL ORDER {pos.stock}')
                     order = SellOrder(user=user, stock=pos.stock, portfolio=user_portfolio, position=pos)
                     order.save()
 
