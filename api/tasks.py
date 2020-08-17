@@ -47,6 +47,20 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
             stock = None
         pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], total_investment=position['total_investment'], current_rate=position['current_rate'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
         pos.save()
+        buy_order = user_portfolio.buy_order.filter(stock=pos.stock, executed_at__isnull=True).first()
+        if buy_order:
+            print('existing buy order')
+            buy_order.position = pos
+            buy_order.executed_at = position['open_date']
+            if buy_order.submited_at == None:
+                buy_order.submited_at = position['open_date']
+            buy_order.save()
+        else:
+            print('BUY ORDER unknow')
+            if pos.sell_order.first() == None:
+                print(f'CREATING SELL ORDER {pos.stock}')
+                order = SellOrder(user=user, stock=pos.stock, portfolio=user_portfolio, position=pos)
+                order.save()
 
     #trade history
     # print('creating old positions')
@@ -127,9 +141,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.save()
             else:
                 print('BUY ORDER unknow')
-                print(f'CREATING SELL ORDER {new_pos.stock}')
-                order = SellOrder(user=user, stock=new_pos.stock, portfolio=user_portfolio, position=new_pos)
-                order.save()
+                if new_pos.sell_order.first() == None:
+                    print(f'CREATING SELL ORDER {new_pos.stock}')
+                    order = SellOrder(user=user, stock=new_pos.stock, portfolio=user_portfolio, position=new_pos)
+                    order.save()
 
 
     #trade history
