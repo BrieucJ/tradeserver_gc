@@ -323,6 +323,7 @@ def update_sma_positions():
     print('update_sma_positions')
     stocks = Stock.objects.filter(valid=True)
     for stock in stocks:
+        print(stock)
         last_sma_position = stock.sma_position.first()
         prices = stock.price_history.all()[:1000]
         backtests = stock.backtest.all()
