@@ -85,13 +85,13 @@ class PositionSerializer(serializers.ModelSerializer):
     buy_order = BuyOrderReadSerializer(many=True)
     sell_order = SellOrderSerializer(many=True)
     sma_position = SMAPositionSerializer(many=True)
-    model = serializers.CharField(source='sma_position.model', default=None, allow_blank=True, allow_null=True)
-    backtest = serializers.CharField(source='sma_position.backtest', default=None, allow_blank=True, allow_null=True)
+    # model = serializers.CharField(source='sma_position.model', default=None, allow_blank=True, allow_null=True)
+    # backtest = serializers.CharField(source='sma_position.backtest', default=None, allow_blank=True, allow_null=True)
 
     class Meta:
         model = Position
         fields = ['id', 'stock', 'portfolio', 'open_date', 'open_rate', 'num_of_shares', 'total_investment', 'stop_loss_rate', 'take_profit_rate',
-                   'current_rate', 'updated_at', 'created_at', 'close_rate', 'close_date', 'buy_order', 'sell_order', 'sma_position', 'model', 'backtest']
+                   'current_rate', 'updated_at', 'created_at', 'close_rate', 'close_date', 'buy_order', 'sell_order', 'sma_position']
 
 class UserSerializer(serializers.ModelSerializer):
     broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True, allow_null=True)
