@@ -128,7 +128,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             pos.updated_at = datetime.datetime.now(tz=timezone.utc)
             pos.save()
         else:
-            print(f'creating new {position}')
+            print(f'creating new position {position}')
             new_pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
             new_pos.save()
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
@@ -323,7 +323,6 @@ def update_sma_positions():
     print('update_sma_positions')
     stocks = Stock.objects.filter(valid=True)
     for stock in stocks:
-        print(stock)
         last_sma_position = stock.sma_position.first()
         prices = stock.price_history.all()[:1000]
         backtests = stock.backtest.all()
