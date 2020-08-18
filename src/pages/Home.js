@@ -295,7 +295,7 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.performance_to_date() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Total balance: </Typography>
