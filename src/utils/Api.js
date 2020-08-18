@@ -35,6 +35,7 @@ export const destroy = (path, opts) => {
 export const makeRequest = async (path, opts) => {
   let token = localStorage.getItem('token')
   let url = API_URL + path
+  console.log(url)
   let method = opts.method || "GET"
   opts.headers = opts.headers || {}
 //   opts.headers["Locale"] = i18n.locale

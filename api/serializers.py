@@ -19,8 +19,15 @@ class SMAModelSerializer(serializers.ModelSerializer):
         model = SMAModel
         fields = '__all__'
 
+class SMABacktestSerializer(serializers.ModelSerializer):
+    model = SMAModelSerializer()
+    class Meta:
+        model = SMABacktest
+        fields = '__all__'
+
 class SMAPositionSerializer(serializers.ModelSerializer):
     model = SMAModelSerializer()
+    sma_backtest = SMABacktestSerializer()
     class Meta:
         model = SMAPosition
         fields = '__all__'
@@ -31,14 +38,6 @@ class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
         fields = ['symbol', 'name', 'sector', 'industry', 'last_price', 'last_sma_position']
-
-class SMABacktestSerializer(serializers.ModelSerializer):
-    stock = StockSerializer()
-    model = SMAModelSerializer()
-    sma_position = SMAPositionSerializer(many=True, read_only=True)
-    class Meta:
-        model = SMABacktest
-        fields = '__all__'
 
 class PortfolioHistorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,14 +83,11 @@ class PositionSerializer(serializers.ModelSerializer):
     stock = StockSerializer()
     buy_order = BuyOrderReadSerializer(many=True)
     sell_order = SellOrderSerializer(many=True)
-    # sma_position = SMAPositionSerializer(many=True)
-    # model = serializers.CharField(source='sma_position.model', default=None, allow_blank=True, allow_null=True)
-    # backtest = serializers.CharField(source='sma_position.backtest', default=None, allow_blank=True, allow_null=True) 'model', 'backtest'
 
     class Meta:
         model = Position
         fields = ['id', 'stock', 'portfolio', 'open_date', 'open_rate', 'num_of_shares', 'total_investment', 'stop_loss_rate', 'take_profit_rate',
-                   'current_rate', 'updated_at', 'created_at', 'close_rate', 'close_date', 'buy_order', 'sell_order', 'sma_position']
+                   'current_rate', 'updated_at', 'created_at', 'close_rate', 'close_date', 'buy_order', 'sell_order']
 
 class UserSerializer(serializers.ModelSerializer):
     broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True, allow_null=True)

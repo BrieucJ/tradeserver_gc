@@ -198,18 +198,18 @@ class PortfolioTable extends React.Component {
                             <TableRow>
                                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
                                     <Collapse in={this.state.open_id == po.id} timeout="auto" unmountOnExit>
-                                        <Box margin={1} style={{backgroundColor:'red'}}>
+                                        <Box margin={1}>
                                             <Typography >
-                                                Model: {po.model === null ? 'None' : po.model}
+                                                Model: {po.buy_order.length === 0 ? 'None' : <Typography component="span" style={{display: 'inline-block'}}> {po.buy_order[0].sma_position.model.low_sma} | <Typography component="span" style={{display: 'inline-block'}}> {po.buy_order[0].sma_position.model.high_sma} </Typography> </Typography>}
                                             </Typography>
                                             <Typography >
-                                                Buy order: {po.buy_order === null ? 'None' : po.buy_order}
+                                                Buy order: {po.buy_order === null ? 'None' : 'oui'}
                                             </Typography>
                                             <Typography >
-                                                Sell order: {po.sell_order === null ? 'None' : po.sell_order}
+                                                Sell order: {po.sell_order === null ? 'None' : 'oui'}
                                             </Typography>
                                             <Typography >
-                                                SMA position: {po.sma_position === null ? 'None' : po.sma_position}
+                                                SMA position: {po.sma_position === null ? 'None' : 'oui'}
                                             </Typography>
                                         </Box>
                                     </Collapse>

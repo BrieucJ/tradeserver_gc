@@ -65,7 +65,6 @@ class Home(generics.RetrieveAPIView):
                             }
                         }, status=status.HTTP_200_OK)
 
-
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data, context={'request': request})
@@ -173,6 +172,7 @@ class RetrieveHistoryDetails(generics.RetrieveAPIView):
     queryset = Portfolio.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
+        print(request)
         pos_id = request.GET['id']
         pos = Position.objects.get(id=pos_id)
         buy_order = pos.buy_order.first()

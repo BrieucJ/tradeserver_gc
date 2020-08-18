@@ -29,7 +29,6 @@ class Home extends React.Component {
   }
 
   componentDidMount = () => {
-    // this.update_portfolio()
     window.addEventListener("resize", this.updateGraph);
     this.setState({loading:true})
     this.retrieveHome()
@@ -228,58 +227,6 @@ class Home extends React.Component {
       } else {
         return null
       }
-    }
-  }
-
-  renderSellOrders(){
-    if(this.props.portfolio_type) {
-      var sos_real = this.state.p_real.pending_sell_orders
-      return(
-      <TableContainer component={Paper} style={{ overflow: 'auto', height: '150px' }} >
-        <Table aria-label="simple table" style={{tableLayout: 'fixed'}} >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {sos_real.map((so) => (
-              <TableRow key={so.id}>
-                <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                {/* <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell> */}
-                <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
-    } else {
-      var sos_demo = this.state.p_demo.pending_sell_orders
-      return(
-        <TableContainer component={Paper} style={{ overflow: 'auto', height: '300px' }} >
-          <Table size="small" stickyHeader aria-label="sticky table" >
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell align="right">Amount </TableCell>
-              <TableCell align="right">Submited</TableCell>
-              </TableRow>
-          </TableHead>
-          <TableBody>
-            {sos_demo.map((so) => (
-              <TableRow key={so.id}>
-                <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
-                {/* <TableCell align="right"> {so.position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell> */}
-                <TableCell align="right" > {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'}) } </TableCell>
-              </TableRow>
-            ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )
     }
   }
 
