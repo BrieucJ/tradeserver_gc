@@ -375,11 +375,6 @@ class API():
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
             try:
                 row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
-                print(row)
-            except:
-                print(f'Unknown position {order.stock.symbol}')
-                pass
-            else:
                 print('canceling')
                 cancel_btn = row.find_element_by_css_selector("a[data-etoro-automation-id='orders-table-body-close-order-action']")
                 cancel_btn.click()
@@ -388,6 +383,10 @@ class API():
                 execute_btn = cancel_modal.find_element_by_css_selector("button[class^='close-order-button']") # ^ => partial class match
                 execute_btn.click()
                 print('canceled')
+            except:
+                print(f'Unknown position {order.stock.symbol}')
+                pass
+
 
     def transmit_orders(self, orders):
         print('transmit orders')
