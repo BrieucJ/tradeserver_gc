@@ -165,12 +165,12 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 current_position.close_rate = th['close_rate']
                 current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
                 current_position.save()
-                #sell order
-                sell_order = current_position.sell_order.first()
-                sell_order.executed_at = th['close_date']
-                if sell_order.submited_at == None:
-                        sell_order.submited_at = th['close_date']
-                sell_order.save()
+                # #sell order
+                # sell_order = current_position.sell_order.first()
+                # sell_order.executed_at = th['close_date']
+                # if sell_order.submited_at == None:
+                #     sell_order.submited_at = th['close_date']
+                # sell_order.save()
             else:
                 print('unknown position')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
