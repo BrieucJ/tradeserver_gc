@@ -316,6 +316,7 @@ def update_orders_task(user_id):
                         else:
                             print(f'SERIALIZER ERROR {b.stock}')
                             print(serializer.errors)
+    gc.collect()
 
 
 @shared_task
