@@ -322,22 +322,26 @@ def update_orders_task(user_id):
 @shared_task
 def update_sma_positions():
     print('update_sma_positions')
-    stocks = Stock.objects.filter(valid=True)
-    for stock in stocks:
-        last_sma_position = stock.sma_position.first()
-        prices = stock.price_history.all()[:1000]
-        backtests = stock.backtest.all()
-        for b in backtests:
-            for price in prices:
-                if SMAPosition.objects.filter(stock=stock, sma_backtest=b, model=b.model, price_date=price.price_date).first() == None:
-                    sma_engine = SMAEngine(prices, b.model, date=prices.first().price_date, backtest=False)
-                    if 'buy' in sma_engine.order.keys():
-                        print(f'BUY: {sma_engine.order["buy"]}')
-                        s = SMAPosition(stock=stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=price.price_date)
-                        s.save()
-                    else:
-                        print(sma_engine.order["error"])
-gc.collect()
+    backtests = SMABacktest.objects.all()
+    for b in backtests:
+        print(f'#### {b} ####')
+        sma_position = b.sma_position.first()
+        sma_position_date = sma_position.price_date
+        last_price_date = sma_position.stock.price_history.first().price_date
+        print(sma_position_date)
+        print(last_price_date)
+        delta = last_price_date - sma_position_date
+        days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
+        for d in days:
+            if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
+                sma_engine = SMAEngine(sma_position.stock.price_history.all(), b.model, date=d, backtest=False)
+                if 'buy' in sma_engine.order.keys():
+                    print(f'BUY: {sma_engine.order["buy"]}')
+                    s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=d)
+                    s.save()
+                else:
+                    print(sma_engine.order["error"])
+    gc.collect()
 
 @shared_task
 def update_portfolio(user_id):

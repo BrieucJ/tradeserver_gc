@@ -355,7 +355,7 @@ class API():
         else:
             row = ticker_element.find_element_by_xpath(".//ancestor::div[contains(@data-etoro-automation-id, 'portfolio-manual-trades-row')]")
             row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
-            if len(row_pending_sell) == 0:
+            if row_pending_sell == None:
                 print(f'Selling {ticker_element.text}')
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()
