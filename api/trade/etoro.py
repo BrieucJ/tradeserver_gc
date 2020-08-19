@@ -370,14 +370,17 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
         empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
+        print(len(empty_order_book))
         if len(empty_order_book) == 0:
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
             try:
                 row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
+                print(row)
             except:
                 print(f'Unknown position {order.stock.symbol}')
                 pass
             else:
+                print('canceling')
                 cancel_btn = row.find_element_by_css_selector("a[data-etoro-automation-id='orders-table-body-close-order-action']")
                 cancel_btn.click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='close-order-container']")))
