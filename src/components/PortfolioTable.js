@@ -1,5 +1,5 @@
 import React from 'react';
-import { Collapse, Box, Container, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel} from '@material-ui/core';
+import { Collapse, Box, Divider, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel} from '@material-ui/core';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import IconButton from '@material-ui/core/IconButton';
@@ -196,22 +196,56 @@ class PortfolioTable extends React.Component {
                                 </TableCell>
                             </TableRow>
                             <TableRow>
-                                <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
+                                <TableCell style={{ padding: 0 }} colSpan={9}>
                                     <Collapse in={this.state.open_id == po.id} timeout="auto" unmountOnExit>
-                                        <Box margin={1}>
-                                            <Typography >
-                                                Model: {po.buy_order.length === 0 ? 'None' : <Typography component="span" style={{display: 'inline-block'}}> {po.buy_order[0].sma_position.model.low_sma} | <Typography component="span" style={{display: 'inline-block'}}> {po.buy_order[0].sma_position.model.high_sma} </Typography> </Typography>}
-                                            </Typography>
-                                            <Typography >
-                                                Buy order: {po.buy_order === null ? 'None' : 'oui'}
-                                            </Typography>
-                                            <Typography >
-                                                Sell order: {po.sell_order === null ? 'None' : 'oui'}
-                                            </Typography>
-                                            <Typography >
-                                                SMA position: {po.sma_position === null ? 'None' : 'oui'}
-                                            </Typography>
-                                        </Box>
+                                      <Grid container direction="row"> 
+                                        <Grid item xs={4} sm={4} >
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Model:</Typography>
+                                            <Typography variant='body2'>{po.sma_position === null ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {po.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {po.sma_position.model.high_sma} </Typography> </Typography>} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Date:</Typography>
+                                            <Typography variant='body2'>{po.sma_position === null ? 'None' : po.sma_position.price_date} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Position:</Typography>
+                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.buy ? 'BUY' : 'SELL'} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Score:</Typography>
+                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.score.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Precision:</Typography>
+                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.precision.toFixed(2)} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>CAGR:</Typography>
+                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.model_cagr.toFixed(2)} </Typography>
+                                          </Grid>
+                                        </Grid>
+
+                                        <Grid item xs={4} sm={4} style={{paddingRight: 15, paddingLeft: 15}}>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Order rate:</Typography>
+                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.buy_order[0].order_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Open rate:</Typography>
+                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.open_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
+                                          </Grid>
+                                          <Grid container justify='space-between'>
+                                            <Typography variant='body2'>Current rate:</Typography>
+                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.current_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
+                                          </Grid>
+                                        </Grid>
+
+                                        <Grid item xs={4} sm={4}>
+                                          <Typography variant='body2'>TEST:</Typography>
+
+                                        </Grid>
+                                      </Grid>
                                     </Collapse>
                                 </TableCell>
                             </TableRow>

@@ -127,6 +127,10 @@ class Position(models.Model):
         ordering = ['-open_date']
         constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
 
+    @property
+    def sma_position(self):
+        return SMAPosition.objects.filter(stock=self.stock, model=self.buy_order.first().sma_position.model).first()
+
 class PriceHistory(models.Model):
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='price_history')
     price_date = models.DateField(default=None)
