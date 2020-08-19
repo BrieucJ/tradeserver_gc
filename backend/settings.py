@@ -19,7 +19,7 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRODUCTION = os.environ['PRODUCTION'] == 'True'
-print(f'PRODUCTION: {PRODUCTION}')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 

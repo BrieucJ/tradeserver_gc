@@ -371,8 +371,8 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
         empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
         if len(empty_order_book) == 0:
-            try:
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
+            try:
                 row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
             except:
                 print(f'Unknown position {order.stock.symbol}')
