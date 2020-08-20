@@ -173,6 +173,16 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                     print(f'CREATING SELL ORDER {pos.stock}')
                     order = SellOrder(user=user, stock=pos.stock, portfolio=user_portfolio, position=pos)
                     order.save()
+        else:
+            print('OLD POSITION')
+            print(old_position)
+            sell_order = old_position.sell_order.first()
+            if sell_order:
+                # print('updating know sell order')
+                if sell_order.submited_at == None:
+                    sell_order.submited_at = th['close_date']
+                    sell_order.executed_at = th['close_date']
+                    sell_order.save()
 
 
     #orders
