@@ -176,9 +176,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         else:
             print('OLD POSITION')
             sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None).first()
+            print(sell_order)
             if sell_order:
                 # print('updating know sell order')
-                if sell_order.submited_at == None:
+                if sell_order.executed_at == None:
                     sell_order.submited_at = th['close_date']
                     sell_order.executed_at = th['close_date']
                     sell_order.save()
