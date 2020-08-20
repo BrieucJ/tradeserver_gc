@@ -348,7 +348,7 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         try:
-            ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{'MSCI'}')]")
+            ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{order.stock.symbol}')]")
             print(ticker_element.text)
         except:
             print(f'error {order.stock.symbol}')
