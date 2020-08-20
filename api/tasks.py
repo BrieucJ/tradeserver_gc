@@ -176,7 +176,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         else:
             print('OLD POSITION')
             print(old_position)
-            sell_order = old_position.sell_order.first()
+            sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None)
             print(sell_order)
             if sell_order:
                 # print('updating know sell order')
