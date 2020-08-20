@@ -175,8 +175,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                     order.save()
         else:
             print('OLD POSITION')
-            print(old_position)
-            sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None)
+            print(old_position.stock)
+            sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None).first()
             print(sell_order)
             if sell_order:
                 # print('updating know sell order')
@@ -333,8 +333,6 @@ def update_sma_positions():
         sma_position = b.sma_position.first()
         sma_position_date = sma_position.price_date
         last_price_date = sma_position.stock.price_history.first().price_date
-        print(sma_position_date)
-        print(last_price_date)
         delta = last_price_date - sma_position_date
         days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
         for d in days:
