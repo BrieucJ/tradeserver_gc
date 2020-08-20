@@ -28,6 +28,7 @@ class SellOrderTable extends React.Component {
                             <TableCell>Ticker</TableCell>
                             <TableCell>Name</TableCell>
                             <TableCell>Model</TableCell>
+                            <TableCell align="right">Price date</TableCell>
                             <TableCell align="right">Submited</TableCell>
                         </TableRow>
                     </TableHead>
@@ -37,6 +38,7 @@ class SellOrderTable extends React.Component {
                             <TableCell component="th" scope="row">{so.stock.symbol} </TableCell>
                             <TableCell component="th" scope="row">{so.stock.name.substring(0,20)} </TableCell>
                             <TableCell component="th" scope="row" style={{color: so.sma_position === null && 'red'}}> {so.sma_position === null ? 'None' : <Typography style={{display: 'inline-block'}} component='span' > {so.sma_position.model.low_sma} | <Typography component='span' style={{display: 'inline-block'}}> {so.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
+                            <TableCell component="th" scope="row">{so.sma_position === null ? 'None' : so.sma_position.price_date} </TableCell>
                             <TableCell align="right"> {so.submited_at === null ? 'Not sent' : new Date(so.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
                         </TableRow>
                         ))}

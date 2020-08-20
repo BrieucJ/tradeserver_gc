@@ -28,6 +28,7 @@ class BuyOrderTable extends React.Component {
                             <TableCell>Ticker</TableCell>
                             <TableCell>Name</TableCell>
                             <TableCell>Model</TableCell>
+                            <TableCell>Price date</TableCell>
                             <TableCell align="right">Amount </TableCell>
                             <TableCell align="right">Order price </TableCell>
                             <TableCell align="right">Current price </TableCell>
@@ -40,6 +41,7 @@ class BuyOrderTable extends React.Component {
                         <TableRow key={bo.id}>
                             <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
                             <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
+                            <TableCell component="th" scope="row">{bo.price_date} </TableCell>
                             <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
                             <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>

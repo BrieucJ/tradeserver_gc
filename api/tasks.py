@@ -269,16 +269,10 @@ def update_orders_task(user_id):
             if order.submited_at != None and order.canceled_at == None:
                 if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
                     print('CANCEL')
-                    print(order.stock.name)
-                    print(order.price_date)
-                    print(last_business_day.date())
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                     order.save()
             if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
                 print('DELETE')
-                print(order.stock.name)
-                print(order.price_date)
-                print(last_business_day.date())
                 order.delete()
         
         #INVESTMENTS
@@ -388,7 +382,7 @@ def update_portfolio(user_id):
     gc.collect()
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_price_history", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/3')), name="update_price_history", ignore_result=True)
 def update_price_history():
     print('update_price_history')
     stocks = Stock.objects.filter(valid=True) 

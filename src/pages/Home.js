@@ -283,23 +283,23 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {minimumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Total balance: </Typography>
-                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {minimumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
                 </Grid>
   
                 <Grid container justify='space-between'>
