@@ -347,15 +347,16 @@ class API():
         print('execute_sell_order')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
-        #ticker_list = self.browser.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']")
         try:
-            ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{order.stock.symbol}')]")
+            ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{'MSCI'}')]")
+            print(ticker_element.text)
         except:
             print(f'error {order.stock.symbol}')
         else:
             row = ticker_element.find_element_by_xpath(".//ancestor::div[contains(@data-etoro-automation-id, 'portfolio-manual-trades-row')]")
             row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
-            if row_pending_sell == None:
+            print(row_pending_sell)
+            if len(row_pending_sell) == 0:
                 print(f'Selling {ticker_element.text}')
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()

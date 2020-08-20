@@ -202,27 +202,27 @@ class PortfolioTable extends React.Component {
                                         <Grid item xs={4} sm={4} >
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>Model:</Typography>
-                                            <Typography variant='body2'>{po.sma_position === null ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {po.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {po.sma_position.model.high_sma} </Typography> </Typography>} </Typography>
+                                            <Typography variant='body2'>{po.sma_position === undefined ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {po.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {po.sma_position.model.high_sma} </Typography> </Typography>} </Typography>
                                           </Grid>
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>Date:</Typography>
-                                            <Typography variant='body2'>{po.sma_position === null ? 'None' : po.sma_position.price_date} </Typography>
+                                            <Typography variant='body2'>{po.sma_position === undefined ? 'None' : po.sma_position.price_date} </Typography>
                                           </Grid>
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>Position:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.buy ? 'BUY' : 'SELL'} </Typography>
+                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.buy ? 'BUY' : 'SELL'} </Typography>
                                           </Grid>
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>Score:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.score.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.score.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                                           </Grid>
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>Precision:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.precision.toFixed(2)} </Typography>
+                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.precision.toFixed(2)} </Typography>
                                           </Grid>
                                           <Grid container justify='space-between'>
                                             <Typography variant='body2'>CAGR:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === null ? 'None' : po.sma_position.sma_backtest.model_cagr.toFixed(2)} </Typography>
+                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.model_cagr.toFixed(2)} </Typography>
                                           </Grid>
                                         </Grid>
 
