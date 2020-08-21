@@ -106,7 +106,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
 
     #portfolio
-    print('updating portfolio')
+    print('saving portfolio')
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
 
@@ -114,7 +114,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     portfolio_history.save()
 
     #positions
-    print('updating positions')
+    print('saving positions')
     for position in positions:
         print(position)
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
@@ -139,16 +139,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 if buy_order.submited_at == None:
                     buy_order.submited_at = position['open_date']
                 buy_order.save()
-            else:
-                print('BUY ORDER unknow')
-                if new_pos.sell_order.first() == None:
-                    print(f'CREATING SELL ORDER {new_pos.stock}')
-                    order = SellOrder(user=user, stock=new_pos.stock, portfolio=user_portfolio, position=new_pos)
-                    order.save()
 
 
     #trade history
-    # print('Updating old positions')
+    print('saving old positions')
     for th in trade_history:
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
@@ -157,10 +151,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
         old_position = user_portfolio.position.filter(stock=stock, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate']).first()
         if not old_position:
-            #print('position is not in old positions')
+            print('position is not in old positions')
             current_position = user_portfolio.position.filter(stock=stock, close_date__isnull=True).first()
             if current_position:
-                #print('position is in portfolio')
+                print('position is in portfolio')
                 current_position.close_date = th['close_date']
                 current_position.close_rate = th['close_rate']
                 current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
@@ -169,10 +163,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 print('unknown position')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
-                if not pos.sell_order.first():
-                    print(f'CREATING SELL ORDER {pos.stock}')
-                    order = SellOrder(user=user, stock=pos.stock, portfolio=user_portfolio, position=pos)
-                    order.save()
         else:
             print('OLD POSITION')
             sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None).first()
@@ -253,8 +243,10 @@ def update_orders_task(user_id):
                     order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
                     order.save()
             else:
-                sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day).first()
+                sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
                 print(sma_position)
+                print(last_business_day.date())
+                print(sma_position.price_date)
                 if sma_position == None or sma_position.buy == False:
                     print('SMA POS NONE OR SMA POS SELL')
                     if not position.sell_order.first():
