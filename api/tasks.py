@@ -255,11 +255,15 @@ def update_orders_task(user_id):
         for order in pending_buy_orders:
             if order.submited_at != None and order.canceled_at == None:
                 if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
-                    print('CANCEL')
+                    print(f'CANCEL ORDER TOO OLD {order.stock}')
+                    order.canceled_at = datetime.datetime.now(tz=timezone.utc)
+                    order.save()
+                if order.current_price / order.order_price > 1.05:
+                    print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                     order.save()
             if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
-                print('DELETE')
+                print(f'DELETE {order.stock}')
                 order.delete()
         
         #INVESTMENTS
