@@ -140,7 +140,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                     buy_order.submited_at = position['open_date']
                 buy_order.save()
 
-
     #trade history
     print('saving old positions')
     for th in trade_history:
@@ -164,17 +163,13 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
         else:
-            print('OLD POSITION')
-            sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at=None).first()
+            sell_order = SellOrder.objects.filter(stock=stock, portfolio=user_portfolio, executed_at__isnull=True).first()
             print(sell_order)
             if sell_order:
-                # print('updating know sell order')
                 if sell_order.executed_at == None:
                     sell_order.submited_at = th['close_date']
                     sell_order.executed_at = th['close_date']
                     sell_order.save()
-
-
     #orders
     print('Canceled orders')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
@@ -235,10 +230,10 @@ def update_orders_task(user_id):
         for position in positions:
             print(position.stock.name)
             bo = position.buy_order.first()
-            print(bo)
-            if bo == None:
-                print('NO BUY ORDER')
-                if not position.sell_order.first():
+            pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
+            if bo == None and pending_bo == None:
+                print('NO BUY ORDER or penging buy order')
+                if position.sell_order.first() == None:
                     print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
                     order.save()
