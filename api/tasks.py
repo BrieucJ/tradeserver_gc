@@ -239,9 +239,6 @@ def update_orders_task(user_id):
                     order.save()
             else:
                 sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
-                print(sma_position)
-                print(last_business_day.date())
-                print(sma_position.price_date)
                 if sma_position == None or sma_position.buy == False:
                     print('SMA POS NONE OR SMA POS SELL')
                     if not position.sell_order.first():

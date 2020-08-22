@@ -153,8 +153,7 @@ class History extends React.Component {
           </TableHead>
           <TableBody>
             {history_demo.map((hi) => (
-              <React.Fragment key={hi.id}>
-              <TableRow>
+              <TableRow hover key={hi.id} onClick={() => {this.props.history.push('/position/?id='+hi.id)}} >
                 <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
                 <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
                 <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
@@ -165,25 +164,7 @@ class History extends React.Component {
                 <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
                    {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
-                <TableCell>
-                  <IconButton aria-label="expand row" size="small" onClick={() => this.handle_open(hi.id)}>
-                    {this.state.open_id === hi.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                  </IconButton>
-                </TableCell>
               </TableRow>
-              <TableRow>
-              <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                <Collapse in={this.state.open_id === hi.id} timeout="auto" unmountOnExit>
-                  <Box margin={1}>
-                    <Typography variant="h6" gutterBottom component="div">
-                      History
-                    </Typography>
-                    
-                  </Box>
-                </Collapse>
-              </TableCell>
-              </TableRow>
-            </React.Fragment>
             ))}
             </TableBody>
           </Table>

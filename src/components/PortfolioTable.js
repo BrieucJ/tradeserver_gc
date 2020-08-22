@@ -1,8 +1,5 @@
 import React from 'react';
-import { Collapse, Box, Divider, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel} from '@material-ui/core';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import IconButton from '@material-ui/core/IconButton';
+import { Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = {
@@ -95,7 +92,6 @@ class PortfolioTable extends React.Component {
   }
 
   handleSorting = (e) => {
-    console.log('handleSorting')
     if (this.state.sorting_dir === 'asc') {
       this.sorter(e.currentTarget.id, 'desc')
       this.setState({sorting_col: e.currentTarget.id, sorting_dir:'desc'})
@@ -170,13 +166,11 @@ class PortfolioTable extends React.Component {
                         <TableCell align="right">Duration
                             <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
-                        <TableCell> Details</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {portfolio.current_positions.map((po) => (
-                        <React.Fragment key={po.id}>
-                            <TableRow >
+                            <TableRow hover key={po.id} onClick={() => {this.props.history.push('/position/?id='+po.id)}}>
                                 <TableCell component="th" scope="row">{po.stock.symbol.substring(0,20)}  </TableCell>
                                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
                                 <TableCell scope="row">{po.stock.sector}  </TableCell>
@@ -189,67 +183,7 @@ class PortfolioTable extends React.Component {
                                     {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                                 </TableCell>
                                 <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
-                                <TableCell>
-                                <IconButton aria-label="expand row" size="small" onClick={() => this.handleOpen(po.id)}>
-                                    {this.state.open_id === po.id ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                                </IconButton>
-                                </TableCell>
                             </TableRow>
-                            <TableRow>
-                                <TableCell style={{ padding: 0 }} colSpan={9}>
-                                    <Collapse in={this.state.open_id == po.id} timeout="auto" unmountOnExit>
-                                      <Grid container direction="row"> 
-                                        <Grid item xs={4} sm={4} >
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Model:</Typography>
-                                            <Typography variant='body2'>{po.sma_position === undefined ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {po.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {po.sma_position.model.high_sma} </Typography> </Typography>} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Date:</Typography>
-                                            <Typography variant='body2'>{po.sma_position === undefined ? 'None' : po.sma_position.price_date} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Position:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.buy ? 'BUY' : 'SELL'} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Score:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.score.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Precision:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.precision.toFixed(2)} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>CAGR:</Typography>
-                                            <Typography variant='body2'> {po.sma_position === undefined ? 'None' : po.sma_position.sma_backtest.model_cagr.toFixed(2)} </Typography>
-                                          </Grid>
-                                        </Grid>
-
-                                        <Grid item xs={4} sm={4} style={{paddingRight: 15, paddingLeft: 15}}>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Order rate:</Typography>
-                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.buy_order[0].order_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Open rate:</Typography>
-                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.open_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
-                                          </Grid>
-                                          <Grid container justify='space-between'>
-                                            <Typography variant='body2'>Current rate:</Typography>
-                                            <Typography variant='body2'> {po.buy_order.length === 0 ? 'None' : po.current_rate.toLocaleString(undefined, {maximumFractionDigits: 1 })} </Typography>
-                                          </Grid>
-                                        </Grid>
-
-                                        <Grid item xs={4} sm={4}>
-                                          <Typography variant='body2'>TEST:</Typography>
-
-                                        </Grid>
-                                      </Grid>
-                                    </Collapse>
-                                </TableCell>
-                            </TableRow>
-                        </React.Fragment>
                         ))}
                         </TableBody>
                 </Table>

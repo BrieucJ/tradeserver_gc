@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Typography, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel} from '@material-ui/core';
+import { Container, Grid, Typography, CircularProgress, Paper} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -230,20 +230,6 @@ class Home extends React.Component {
     }
   }
 
-  retrieve_history_details = async (id) => {
-    console.log('retrieve_history_details')
-    get('api/retrieve_history_details/?id='+id).then((resp) => {
-      if (resp.status === 200){
-        var response = JSON.parse(resp.response)
-        console.log(response)
-        // this.setState({
-        //     history_demo: response.p_demo.history,
-        //     history_real: response.p_real.history,
-        // })
-      }
-    })
-  }
-
   render() {
     if (this.state.loading){
       return(<Grid container
@@ -321,6 +307,7 @@ class Home extends React.Component {
             </Grid>
 
             <PortfolioTable 
+              {...this.props}
               portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
               retrieve_history_details={(id) => {this.retrieve_history_details(id)}}
             />

@@ -3,6 +3,7 @@ from rest_framework import viewsets, mixins, generics, permissions, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 import datetime
 # from rest_framework.decorators import api_view, authentication_classes
+import pandas as pd
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -11,7 +12,7 @@ from django.db.models import Min, Max
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
-from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer
+from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer, PriceHistorySerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
 from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory, Position
@@ -64,6 +65,49 @@ class Home(generics.RetrieveAPIView):
                             'pending_sell_orders': pending_sell_orders_real,
                             }
                         }, status=status.HTTP_200_OK)
+
+class PositionDetails(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = PositionSerializer
+    queryset = Position.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        print('retrieve PositionDetails')
+        user = request.user
+        pos_id = request.GET['id']
+        pos = Position.objects.get(id=pos_id)
+        delta_days = 40
+
+        #price_history
+        close_prices = [item.close for item in pos.stock.price_history.all()]
+        dates = [item.price_date for item in pos.stock.price_history.all()]        
+        df = pd.DataFrame({'date': dates, 'close': close_prices})
+        df = df.iloc[::-1] #old to new order
+        if pos.buy_order.first() == None:
+            df['low_sma'] = df['close']
+            df['high_sma'] = df['close']
+        else:
+            df['low_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.low_sma).mean()
+            df['high_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.high_sma).mean()
+        df.dropna(inplace=True)
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+
+        start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
+        print(df.index.size)
+        if pos.close_date == None:
+            df = df[start_date : datetime.datetime.today().date()]
+        else:
+            if (pos.close_date + datetime.timedelta(days=delta_days)).date() > datetime.datetime.today().date():
+                df = df[start_date : datetime.datetime.today().date()]
+            else:
+                df = df[start_date : (pos.close_date + datetime.timedelta(days=delta_days)).date()]
+
+        print(df)
+        print(df.index.size)
+        df['date'] = df.index
+
+        return Response({'position': PositionSerializer(pos).data, 'price_df': df}, status=status.HTTP_200_OK)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -165,27 +209,6 @@ class RetrieveHistory(generics.RetrieveAPIView):
             history_real = PositionSerializer(p_real.position.filter(close_date__isnull=False), many=True).data 
 
         return Response({'p_demo': {'history': history_demo }, 'p_real': {'history': history_real }}, status=status.HTTP_200_OK)
-
-class RetrieveHistoryDetails(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = PortfolioSerializer
-    queryset = Portfolio.objects.all()
-
-    def retrieve(self, request, *args, **kwargs):
-        print(request)
-        pos_id = request.GET['id']
-        pos = Position.objects.get(id=pos_id)
-        buy_order = pos.buy_order.first()
-        sell_order = pos.sell_order.first()
-        print(pos)
-        print(buy_order)
-        print(sell_order)
-        if pos.close_date == None:
-            sma_positions = pos.stock.sma_position.filter(price_date__range=[pos.open_date.date(), datetime.datetime.today().date()])
-        else:
-            sma_positions = pos.stock.sma_position.filter(price_date__range=[pos.open_date.date(), pos.close_date.date()])
-
-        return Response({'details': {'price_history': 'test', 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data }}, status=status.HTTP_200_OK)
 
 class RetrieveMarket(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
