@@ -36,14 +36,24 @@ class Model extends React.Component {
           <TableCell align="right" >{parseFloat(sma_backtest.model_cagr*100).toFixed(2)+"%"}</TableCell>
           <TableCell align="right" >{parseFloat(sma_backtest.precision*100).toFixed(2)+"%"}</TableCell>
           <TableCell align="right" >{Math.round(sma_backtest.score)}</TableCell>
-          <TableCell align="right" >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].price_date}</TableCell>
-          <TableCell align="right" style={{color: sma_backtest.sma_position.length === 0 ? 'black' : sma_backtest.sma_position[0].buy ? 'green' : 'red'}} >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].buy ? 'BUY' : 'SELL'}</TableCell>
+          {sma_backtest.sma_position === undefined ?
+          <React.Fragment>
+            <TableCell align="right" style={{color: 'red'}} >None</TableCell>
+            <TableCell align="right" style={{color: 'red'}} >None</TableCell>
+          </React.Fragment>
+            :
+            <React.Fragment>
+            <TableCell align="right" >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].price_date}</TableCell>
+            <TableCell align="right" style={{color: sma_backtest.sma_position.length === 0 ? 'black' : sma_backtest.sma_position[0].buy ? 'green' : 'red'}} >{sma_backtest.sma_position.length === 0 ? 'None' : sma_backtest.sma_position[0].buy ? 'BUY' : 'SELL'}</TableCell>
+            </React.Fragment>
+          }
         </TableRow>
       ))
     )
   }
 
   sorter = (col, order) => {
+
     if (order === 'asc') {
         this.state.sma_backtests.sort(function(a, b) { return a[col] > b[col] ? 1 : -1 } )
       } else {

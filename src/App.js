@@ -8,6 +8,7 @@ import {dark_theme, light_theme} from './utils/Theme';
 import Unknown from './pages/Unknown'
 import Home from './pages/Home'
 import Portfolio from './pages/Portfolio'
+import BuyOrder from './pages/BuyOrder'
 import Position from './pages/Position'
 import Order from './pages/Order'
 import Market from './pages/Market'
@@ -128,6 +129,7 @@ class App extends React.Component {
                       <Route exact={true} path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
                       <Route path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/position" render={(props) => <Position {...props} portfolio_type={this.state.portfolio_type}/>} />
+                      <Route path="/buy_order" render={(props) => <BuyOrder {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/order" render={(props) => <Order {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/history" render={(props) => <History {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/market" render={(props) => <Market {...props} user={this.state.user} getCurrentUser={() => {this.getCurrentUser()}}/> } />

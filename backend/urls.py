@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/retrieve_order/', views.RetrieveOrder.as_view(), name='retrieve_order'),
     path('api/retrieve_history/', views.RetrieveHistory.as_view(), name='retrieve_history'),
     path('api/position_details/', views.PositionDetails.as_view(), name='position_details'),
+    path('api/buy_order_details/', views.BuyOrderDetails.as_view(), name='buy_order_details'),
     path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
     path('api/retrieve_model/', views.RetrieveModel.as_view(), name='retrieve_model'),
     path('api/update_price_history/', views.UpdatePriceHistory.as_view(), name='update_price_history'),

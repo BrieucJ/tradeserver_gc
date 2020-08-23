@@ -313,6 +313,7 @@ class Home extends React.Component {
             />
 
             <BuyOrderTable 
+              {...this.props}
               portfolio={this.props.portfolio_type ? this.state.p_real : this.state.p_demo}
             /> 
             

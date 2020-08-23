@@ -14,6 +14,11 @@ class BuyOrderTable extends React.Component {
     };
   } 
 
+  componentDidMount(){
+      console.log('BuyOrderTable')
+      console.log(this.props)
+  }
+
 
   render() {
     const { classes, theme, portfolio} = this.props;
@@ -27,8 +32,8 @@ class BuyOrderTable extends React.Component {
                         <TableRow>
                             <TableCell>Ticker</TableCell>
                             <TableCell>Name</TableCell>
-                            <TableCell>Model</TableCell>
                             <TableCell>Price date</TableCell>
+                            <TableCell>Model</TableCell>
                             <TableCell align="right">Amount </TableCell>
                             <TableCell align="right">Order price </TableCell>
                             <TableCell align="right">Current price </TableCell>
@@ -38,7 +43,7 @@ class BuyOrderTable extends React.Component {
                     </TableHead>
                     <TableBody>
                         {portfolio.pending_buy_orders.map((bo) => (
-                        <TableRow key={bo.id}>
+                        <TableRow key={bo.id} hover onClick={() => {this.props.history.push('/buy_order/?id='+bo.id)}}>
                             <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
                             <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                             <TableCell component="th" scope="row">{bo.price_date} </TableCell>
@@ -48,7 +53,6 @@ class BuyOrderTable extends React.Component {
                             <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
                             <TableCell align="right"> {bo.canceled_at === null ? '-' : new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'})} </TableCell>
-
                         </TableRow>
                         ))}
                         </TableBody>

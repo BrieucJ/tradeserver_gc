@@ -279,6 +279,7 @@ def update_orders_task(user_id):
                 max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
 
             for b in backtests:
+                print(len(b.model.sma_position.filter(price_date=last_business_day.date())))
                 sma_position = b.model.sma_position.filter(price_date=last_business_day.date()).first()
                 last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
                 pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))

@@ -15,7 +15,7 @@ from .permissions import IsAuthenticatedOrWriteOnly
 from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer, PriceHistorySerializer
 from .trade.etoro import API
 from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
-from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory, Position
+from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory, Position, BuyOrder
 
 class Home(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -77,6 +77,7 @@ class PositionDetails(generics.RetrieveAPIView):
         pos_id = request.GET['id']
         pos = Position.objects.get(id=pos_id)
         delta_days = 40
+        start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
 
         #price_history
         close_prices = [item.close for item in pos.stock.price_history.all()]
@@ -93,8 +94,6 @@ class PositionDetails(generics.RetrieveAPIView):
         df['date'] = pd.to_datetime(df['date'])
         df.set_index('date', inplace=True)
 
-        start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
-        print(df.index.size)
         if pos.close_date == None:
             df = df[start_date : datetime.datetime.today().date()]
         else:
@@ -103,11 +102,49 @@ class PositionDetails(generics.RetrieveAPIView):
             else:
                 df = df[start_date : (pos.close_date + datetime.timedelta(days=delta_days)).date()]
 
-        print(df)
-        print(df.index.size)
         df['date'] = df.index
 
-        return Response({'position': PositionSerializer(pos).data, 'price_df': df}, status=status.HTTP_200_OK)
+        #sma_positions
+        if pos.buy_order.first() == None:
+            sma_positions = []
+        else:
+            if pos.close_date == None:
+                sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
+            else:
+                if (pos.close_date + datetime.timedelta(days=delta_days)).date() > datetime.datetime.today().date():
+                    sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
+                else:
+                    sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, (pos.close_date + datetime.timedelta(days=delta_days)).date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
+
+        return Response({'position': PositionSerializer(pos).data, 'price_df': df, 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data}, status=status.HTTP_200_OK)
+
+class BuyOrderDetails(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = BuyOrderReadSerializer
+    queryset = BuyOrder.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        print('retrieve BuyOrderDetails')
+        user = request.user
+        pos_id = request.GET['id']
+        bo = BuyOrder.objects.get(id=pos_id)
+        delta_days = 40
+        start_date = (bo.created_at - datetime.timedelta(days=delta_days)).date()
+
+        #price_history
+        close_prices = [item.close for item in bo.stock.price_history.all()]
+        dates = [item.price_date for item in bo.stock.price_history.all()]        
+        df = pd.DataFrame({'date': dates, 'close': close_prices})
+        df = df.iloc[::-1] #old to new order
+        df['low_sma'] = df['close'].rolling(bo.sma_position.model.low_sma).mean()
+        df['high_sma'] = df['close'].rolling(bo.sma_position.model.high_sma).mean()
+        df.dropna(inplace=True)
+        df['date'] = pd.to_datetime(df['date'])
+        df.set_index('date', inplace=True)
+        df = df[start_date : datetime.datetime.today().date()]
+        df['date'] = df.index
+
+        return Response({'buy_order': BuyOrderReadSerializer(bo).data, 'price_df': df}, status=status.HTTP_200_OK)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
