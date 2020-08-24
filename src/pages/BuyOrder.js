@@ -120,6 +120,130 @@ class Position extends React.Component {
                     <Typography variant='h6'>
                     </Typography>
                 </Grid>
+                <Grid item container xs={12} sm={12} direction="row" justify="center" spacing={1}>
+                  <Grid item container xs={12} sm={4} >
+                        <Paper style={{flexGrow: 1, padding:5}}>
+                            <Grid item container direction="row" alignItems="center" justify="center">
+                                <Typography variant='body1' style={{fontWeight:'bold'}}>
+                                    Buy order
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  price_date
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.sma_position.price_date}
+                              </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  created_at
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.created_at === null ? 'None' : new Date(this.state.order.created_at).toLocaleString({formatMatcher:'basic'})}
+                              </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  submited_at
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.submited_at === null ? 'None' : new Date(this.state.order.submited_at).toLocaleString({formatMatcher:'basic'})}
+                              </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  executed_at
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.executed_at === null ? 'None' : new Date(this.state.order.executed_at).toLocaleString({formatMatcher:'basic'})}
+                              </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  canceled_at
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.canceled_at === null ? 'None' : new Date(this.state.order.canceled_at).toLocaleString({formatMatcher:'basic'})}
+                              </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                              <Typography variant='body2'>
+                                  terminated_at
+                              </Typography>
+                              <Typography variant='body2'>
+                                  {this.state.order.terminated_at === null ? 'None' : new Date(this.state.order.terminated_at).toLocaleString({formatMatcher:'basic'})}
+                              </Typography>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+                    <Grid item container xs={12} sm={4} >
+                        <Paper style={{flexGrow: 1, padding:5}}>
+                            <Grid item container direction="row" alignItems="center" justify="center">
+                                <Typography variant='body1' style={{fontWeight:'bold'}}>
+                                    Model
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    price_date
+                                </Typography>
+                                <Typography variant='body2'>  
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.price_date}
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    SMAs
+                                </Typography>
+                                <Typography variant='body2'>
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.model.low_sma} | {this.state.order.sma_position !== undefined && this.state.order.sma_position.model.high_sma} 
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    low_sma value
+                                </Typography>
+                                <Typography variant='body2'>  
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.low_sma}
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    high_sma value
+                                </Typography>
+                                <Typography variant='body2'>  
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.high_sma}
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    cagr
+                                </Typography>
+                                <Typography variant='body2'>
+                                    {this.state.order.sma_position !== undefined && (this.state.order.sma_position.sma_backtest.model_cagr*100).toFixed(1)}%
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    precision
+                                </Typography>
+                                <Typography variant='body2'>
+                                    {this.state.order.sma_position !== undefined && (this.state.order.sma_position.sma_backtest.precision*100).toFixed(1)}%
+                                </Typography>
+                            </Grid>
+                            <Grid item container direction="row" alignItems="center" justify="space-between">
+                                <Typography variant='body2'>
+                                    score
+                                </Typography>
+                                <Typography variant='body2'>
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.sma_backtest.score.toFixed(2)}
+                                </Typography>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+                </Grid>
                 <Grid item container xs={12} sm={12} >
                     <Paper style={{flexGrow: 1, height: '600px'}} ref={this.graphRef} >
                         <PriceChart 

@@ -320,7 +320,9 @@ def update_investments(portfolio_id):
             sma_position = b.sma_position.filter(price_date=last_business_day.date()).first()
             last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
-
+            print(sma_position)
+            print(last_price)
+            print(pending_buy_orders)
             if pending_buy_orders['total_investment__sum'] == None:
                 available_cash = cash
             else:
@@ -387,7 +389,7 @@ def update_sma_positions():
             if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
                 sma_engine = SMAEngine(b.stock.price_history.all(), b.model, date=d, backtest=False)
                 if 'buy' in sma_engine.order.keys():
-                    print(f'BUY: {sma_engine.order["buy"]}')
+                    print(f'BUY: {sma_engine.order["buy"]} - {sma_engine.order["low_sma"]} | {sma_engine.order["high_sma"]}')
                     s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], high_sma=sma_engine.order["high_sma"], low_sma=sma_engine.order["low_sma"], close=sma_engine.order["close"], price_date=d)
                     s.save()
                 else:

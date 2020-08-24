@@ -308,9 +308,13 @@ class Home extends React.Component {
             </Grid>
 
             <Grid item container xs={12} sm={6}  >
-              <Paper style={{padding:5, flexGrow: 1, height: '300px'}} ref={this.graphRef} >
+              <Paper style={{padding:5, flexGrow: 1, minHeight:300}} ref={this.graphRef} >
                 <Typography variant='h5' style={{display: 'inline-block'}}> Cash/Investments evolution </Typography>
-                <Area_Chart data={this.area_chart_data()} height={this.state.g_height} width={this.state.g_width}/>
+                <Area_Chart
+                  data={this.area_chart_data()}
+                  height={this.state.g_height}
+                  width={this.state.g_width}
+                />
               </Paper>
             </Grid>
 
