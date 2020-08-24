@@ -374,6 +374,7 @@ def update_orders_task(user_id):
 def update_sma_positions():
     print('update_sma_positions')
     backtests = SMABacktest.objects.all()
+    print(len(backtests))
     for b in backtests:
         print(f'#### {b} ####')
         sma_position = b.sma_position.first()
@@ -394,7 +395,6 @@ def update_sma_positions():
                     s.save()
                 else:
                     print(sma_engine.order["error"])
-        break
     gc.collect()
 
 @shared_task
