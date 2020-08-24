@@ -14,12 +14,6 @@ class BuyOrderTable extends React.Component {
     };
   } 
 
-  componentDidMount(){
-      console.log('BuyOrderTable')
-      console.log(this.props)
-  }
-
-
   render() {
     const { classes, theme, portfolio} = this.props;
     return (

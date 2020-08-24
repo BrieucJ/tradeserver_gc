@@ -29,7 +29,6 @@ class Home extends React.Component {
   }
 
   componentDidMount = () => {
-    console.log(this.props)
     window.addEventListener("resize", this.updateGraph);
     this.setState({loading:true})
     this.retrieveHome()

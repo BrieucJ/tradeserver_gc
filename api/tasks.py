@@ -333,7 +333,7 @@ def update_investments(portfolio_id):
                     stop_loss = last_price.close - b.model.stop_loss * last_price.close
                     take_profit = last_price.close + b.model.take_profit * last_price.close
                     total_investment = num_of_shares * last_price.close
-                    serializer = BuyOrderCreateSerializer(data={'user':user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
+                    serializer = BuyOrderCreateSerializer(data={'user':portfolio.user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
                     if serializer.is_valid():
                         serializer.save()
                         print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
