@@ -105,7 +105,7 @@ class SMAPosition(models.Model):
 
     class Meta:
         ordering = ['-price_date']
-        unique_together = ['price_date', 'stock', 'model']
+        unique_together = ['price_date', 'stock', 'model', 'sma_backtest']
     
     def __str__(self):
         return f'{self.model}_{self.stock}_{self.buy}'

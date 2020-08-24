@@ -77,7 +77,10 @@ class PositionDetails(generics.RetrieveAPIView):
         pos_id = request.GET['id']
         pos = Position.objects.get(id=pos_id)
         delta_days = 40
-        start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
+        if pos.open_date == None:
+            start_date = (pos.created_at - datetime.timedelta(days=delta_days)).date()
+        else:
+            start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
 
         #price_history
         close_prices = [item.close for item in pos.stock.price_history.all()]

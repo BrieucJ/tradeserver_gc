@@ -99,8 +99,6 @@ class App extends React.Component {
 
   update_user = async (params) => {
     this.setState({errors: {}})
-    console.log('PARAMS')
-    console.log(params)
     put('api/user/', params).then((resp) => {
       console.log(resp)
       var response = JSON.parse(resp.response)
@@ -140,7 +138,7 @@ class App extends React.Component {
                     <Menu handleThemeChange={() => {this.handleThemeChange()}} handlePortfolioChange={() => {this.handlePortfolioChange()}} portfolio_type={this.state.portfolio_type}/>
                     {this.state.message !== null && <Toast type={this.state.message_type} message={this.state.message} opacity={this.state.opacity} />}
                     <Switch>
-                      <Route exact={true} path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
+                      <Route exact={true} path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type} logout={() => {this.logout()}}/>} />
                       <Route path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/position" render={(props) => <Position {...props} portfolio_type={this.state.portfolio_type}/>} />
                       <Route path="/buy_order" render={(props) => <BuyOrder {...props} portfolio_type={this.state.portfolio_type}/>} />

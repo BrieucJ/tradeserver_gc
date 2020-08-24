@@ -29,6 +29,7 @@ class Home extends React.Component {
   }
 
   componentDidMount = () => {
+    console.log(this.props)
     window.addEventListener("resize", this.updateGraph);
     this.setState({loading:true})
     this.retrieveHome()
@@ -65,6 +66,10 @@ class Home extends React.Component {
           p_real: response.p_real,
           loading: false
         })
+      }
+      if (resp.status === 401){
+        console.log('Unauthorized')
+        this.props.logout()
       }
     })
   }
@@ -243,13 +248,17 @@ class Home extends React.Component {
         <Container>
           <Grid container direction="row" spacing={1}>
             <Grid item  xs={12} sm={6} >
-              <Paper style={{padding:5, flexGrow: 1, height: '300px'}}>
+              <Paper style={{padding:5, flexGrow: 1}}>
                 <Typography variant='h5'>
                   Summary
                 </Typography>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Portfolio type: </Typography>
                   <Typography variant='body1'> {this.props.portfolio_type ? 'REAL' : 'DEMO'} </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Portfolio status: </Typography>
+                  <Typography variant='body1' style={{color: this.props.portfolio_type ? this.props.user.real_live === 'False' ? 'red': 'green' : this.props.user.demo_live === 'False' ? 'red': 'green' }}> {this.props.portfolio_type ? this.props.user.real_live : this.props.user.demo_live} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Creation date: </Typography>

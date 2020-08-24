@@ -23,6 +23,8 @@ class PortfolioTable extends React.Component {
   }
 
   holding_duration = (open_date, close_date) => {
+    console.log(open_date)
+    console.log(close_date)
     var delta = Math.abs(new Date(open_date) - new Date(close_date)) / 1000;
     // calculate (and subtract) whole days
     var days = Math.floor(delta / 86400);
@@ -182,7 +184,7 @@ class PortfolioTable extends React.Component {
                                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} >
                                     {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                                 </TableCell>
-                                <TableCell align="right"> {this.holding_duration(po.open_date, new Date())} </TableCell>
+                                <TableCell align="right" style={{color: po.open_date === null && 'red'}}> {po.open_date === null ? 'None' : this.holding_duration(po.open_date, new Date())} </TableCell>
                             </TableRow>
                         ))}
                         </TableBody>

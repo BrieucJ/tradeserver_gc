@@ -65,10 +65,12 @@ class SMAEngine():
     def backtest(self):
         difference = relativedelta(self.df.index[-1], self.df.index[0])
         duration = float(difference.years + difference.months/12)
+        print(difference)
+        print(duration)
         for i in range(self.data_size):
             date = self.df.index.values[i]
             current_price = self.df.iloc[i]['close']
-            buy = self.buy_signal(self, self.df.iloc[i]['low_sma'], self.df.iloc[i]['high_sma']) #buy signal
+            buy = self.buy_signal(self.df.iloc[i]['low_sma'], self.df.iloc[i]['high_sma']) #buy signal
             if self.portfolio == None:
                 if buy:
                     self.buy_count += 1
@@ -131,9 +133,7 @@ class SMAEngine():
         print('trade')
         try:
             current_date_values = self.df.loc[str(self.date)]
-            print(self.df.head())
-            print(self.date)
-            buy = self.buy_signal(self, current_date_values['low_sma'], current_date_values['high_sma'])
+            buy = self.buy_signal(current_date_values['low_sma'], current_date_values['high_sma'])
             self.order['buy'] = buy
             self.order['high_sma'] = current_date_values['high_sma']
             self.order['low_sma'] = current_date_values['low_sma']
