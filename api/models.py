@@ -8,6 +8,8 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     broker_username = encrypt(models.CharField(max_length=50, blank=True, null=True))
     broker_password = encrypt(models.CharField(max_length=50, blank=True, null=True))
+    demo_live = models.BooleanField(default=False)
+    real_live = models.BooleanField(default=False)
 
 class Stock(models.Model):
     symbol = models.CharField(max_length=5)
@@ -97,6 +99,9 @@ class SMAPosition(models.Model):
     sma_backtest = models.ForeignKey(SMABacktest, on_delete=models.CASCADE, related_name='sma_position')
     price_date = models.DateField(default=None)
     buy = models.BooleanField(default=None, null=True)
+    high_sma = models.FloatField(default=0)
+    low_sma = models.FloatField(default=0)
+    close = models.FloatField(default=0)
 
     class Meta:
         ordering = ['-price_date']

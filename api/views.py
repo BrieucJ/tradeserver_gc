@@ -104,19 +104,7 @@ class PositionDetails(generics.RetrieveAPIView):
 
         df['date'] = df.index
 
-        #sma_positions
-        if pos.buy_order.first() == None:
-            sma_positions = []
-        else:
-            if pos.close_date == None:
-                sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
-            else:
-                if (pos.close_date + datetime.timedelta(days=delta_days)).date() > datetime.datetime.today().date():
-                    sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
-                else:
-                    sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, (pos.close_date + datetime.timedelta(days=delta_days)).date()], stock=pos.stock, model=pos.buy_order.first().sma_position.model)
-
-        return Response({'position': PositionSerializer(pos).data, 'price_df': df, 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data}, status=status.HTTP_200_OK)
+        return Response({'position': PositionSerializer(pos).data, 'price_df': df}, status=status.HTTP_200_OK)
 
 class BuyOrderDetails(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -144,7 +132,9 @@ class BuyOrderDetails(generics.RetrieveAPIView):
         df = df[start_date : datetime.datetime.today().date()]
         df['date'] = df.index
 
-        return Response({'buy_order': BuyOrderReadSerializer(bo).data, 'price_df': df}, status=status.HTTP_200_OK)
+        sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=bo.stock, model=bo.sma_position.model)
+
+        return Response({'buy_order': BuyOrderReadSerializer(bo).data, 'price_df': df, 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data}, status=status.HTTP_200_OK)
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -158,6 +148,7 @@ class CustomAuthToken(ObtainAuthToken):
 class UserView(generics.CreateAPIView, generics.UpdateAPIView):
     permission_classes = (IsAuthenticatedOrWriteOnly,)
     serializer_class = UserSerializer
+
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -168,11 +159,15 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, format=None):
+        print('PUT UserView')
+        print(request.data)
         serializer = self.serializer_class(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'user': serializer.data}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RetrievePortfolio(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)

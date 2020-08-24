@@ -50,8 +50,6 @@ class Position extends React.Component {
   }
 
   retrieve_order_details = (order_id) => {
-      console.log('retrieve_order_details')
-      console.log(order_id)
     get('api/buy_order_details/?id='+ order_id).then((resp) => {
         if (resp.status === 200){
           var response = JSON.parse(resp.response)

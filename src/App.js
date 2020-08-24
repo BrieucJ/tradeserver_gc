@@ -18,12 +18,17 @@ import Auth from './pages/Auth'
 import Profile from './pages/Profile'
 // COMPONENTS
 import Menu from './components/Menu'
+import Toast from './components/Toast'
 import {post, put} from './utils/Api'
+import { isThisISOWeek } from 'date-fns';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      message: null,
+      message_type: null,
+      opacity: 0,
       theme: localStorage.getItem('theme'),
       logged_in: localStorage.getItem('token') ? true : false,
       user: JSON.parse(localStorage.getItem('user')),
@@ -94,12 +99,16 @@ class App extends React.Component {
 
   update_user = async (params) => {
     this.setState({errors: {}})
+    console.log('PARAMS')
+    console.log(params)
     put('api/user/', params).then((resp) => {
       console.log(resp)
       var response = JSON.parse(resp.response)
         if(resp.status === 201){
+          console.log(response)
           localStorage.setItem('user', JSON.stringify(response.user))
           this.setState({user: response.user})
+          this.display_toast('Account updated !', 'success')
         } else {
             var errors = this.state.errors
             for (const err in response) {
@@ -108,6 +117,10 @@ class App extends React.Component {
             this.setState({errors: errors})
         }
     })
+  }
+
+  display_toast = async (message, type) => {
+    this.setState({opacity: 1, message: message, message_type: type}, () => setTimeout(() => this.setState({opacity:0}),4000)); 
   }
 
   render() {
@@ -125,6 +138,7 @@ class App extends React.Component {
                 {this.state.logged_in &&
                   <Fragment>
                     <Menu handleThemeChange={() => {this.handleThemeChange()}} handlePortfolioChange={() => {this.handlePortfolioChange()}} portfolio_type={this.state.portfolio_type}/>
+                    {this.state.message !== null && <Toast type={this.state.message_type} message={this.state.message} opacity={this.state.opacity} />}
                     <Switch>
                       <Route exact={true} path="/" render={(props) => <Home {...props} user={this.state.user} portfolio_type={this.state.portfolio_type}/>}/>
                       <Route path="/portfolio" render={(props) => <Portfolio {...props} portfolio_type={this.state.portfolio_type}/>} />

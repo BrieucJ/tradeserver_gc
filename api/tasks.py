@@ -225,84 +225,99 @@ def update_orders_task(user_id):
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
-        print(len(positions))
-        print(f'Portfolio type: {portfolio.portfolio_type}')
-        for position in positions:
-            print(position.stock.name)
-            bo = position.buy_order.first()
-            pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
-            if bo == None and pending_bo == None:
-                print('NO BUY ORDER or penging buy order')
+
+        print('PORTFOLIO DISABLED')
+        if (portfolio.portfolio_type and user.profile.real_live == False) or (portfolio.portfolio_type == False and user.profile.real_live == False):
+            for position in positions:
                 if position.sell_order.first() == None:
-                    print(f'CREATING SELL ORDER {position.stock}')
+                    print(f'SELLING ALL {position.stock}')
                     order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
                     order.save()
-            else:
-                sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
-                if sma_position == None or sma_position.buy == False:
-                    print('SMA POS NONE OR SMA POS SELL')
-                    if not position.sell_order.first():
-                        print(f'CREATING SELL ORDER {position.stock}')
-                        order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
-                        order.save()
-        
-        #PENDING BUY ORDERS REALLOCATION
-        print('PENDING ORDERS REALLOCATION')
-        pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
-        for order in pending_buy_orders:
-            if order.submited_at != None and order.canceled_at == None:
-                if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
+            
+            pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
+            for order in pending_buy_orders:
+                if order.submited_at != None and order.canceled_at == None:
                     print(f'CANCEL ORDER TOO OLD {order.stock}')
                     order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                     order.save()
-                if order.current_price / order.order_price > 1.05:
-                    print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
-                    order.canceled_at = datetime.datetime.now(tz=timezone.utc)
-                    order.save()
-            if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
-                print(f'DELETE {order.stock}')
-                order.delete()
-        
-        #INVESTMENTS
-        print('PORTFOLIO INVESTMENTS')
-        if portfolio_history.cash != None:
-            min_score = SMABacktest.objects.aggregate(Min('score'))
-            max_score = SMABacktest.objects.aggregate(Max('score'))
-            total_invested_value = portfolio_history.total_invested_value
-            cash = portfolio_history.cash
-            print(f'CASH {cash}')
-            if cash + portfolio_history.total_invested_value > 10000:
-                max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
-            elif cash + portfolio_history.total_invested_value > 100000:
-                max_allocation = 0.01 * (cash + portfolio_history.total_invested_value)
-            else:
-                max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
-
-            for b in backtests:
-                print(len(b.model.sma_position.filter(price_date=last_business_day.date())))
-                sma_position = b.model.sma_position.filter(price_date=last_business_day.date()).first()
-                last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
-                pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
-
-                if pending_buy_orders['total_investment__sum'] == None:
-                    available_cash = cash
+        else:
+            print('PORTFOLIO ACTIF')
+            for position in positions:
+                print(position.stock.name)
+                bo = position.buy_order.first()
+                pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
+                if bo == None and pending_bo == None:
+                    print('NO BUY ORDER or penging buy order')
+                    if position.sell_order.first() == None:
+                        print(f'CREATING SELL ORDER {position.stock}')
+                        order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
+                        order.save()
                 else:
-                    available_cash = cash - pending_buy_orders['total_investment__sum']
+                    sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
+                    if sma_position == None or sma_position.buy == False:
+                        print('SMA POS NONE OR SMA POS SELL')
+                        if not position.sell_order.first():
+                            print(f'CREATING SELL ORDER {position.stock}')
+                            order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
+                            order.save()
+        
+            #PENDING BUY ORDERS REALLOCATION
+            print('PENDING ORDERS REALLOCATION')
+            pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
+            for order in pending_buy_orders:
+                if order.submited_at != None and order.canceled_at == None:
+                    if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
+                        print(f'CANCEL ORDER TOO OLD {order.stock}')
+                        order.canceled_at = datetime.datetime.now(tz=timezone.utc)
+                        order.save()
+                    if order.current_price / order.order_price > 1.05:
+                        print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
+                        order.canceled_at = datetime.datetime.now(tz=timezone.utc)
+                        order.save()
+                if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
+                    print(f'DELETE {order.stock}')
+                    order.delete()
+        
+            #INVESTMENTS
+            print('PORTFOLIO INVESTMENTS')
+            if portfolio_history.cash != None:
+                min_score = SMABacktest.objects.aggregate(Min('score'))
+                max_score = SMABacktest.objects.aggregate(Max('score'))
+                total_invested_value = portfolio_history.total_invested_value
+                cash = portfolio_history.cash
+                print(f'CASH {cash}')
+                if cash + portfolio_history.total_invested_value > 10000:
+                    max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
+                elif cash + portfolio_history.total_invested_value > 100000:
+                    max_allocation = 0.01 * (cash + portfolio_history.total_invested_value)
+                else:
+                    max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
 
-                if sma_position and last_price and sma_position.buy and available_cash > 0:
-                    stock_allocation = max_allocation * (b.score/max_score['score__max'])
-                    num_of_shares = int(stock_allocation/last_price.close)
-                    if num_of_shares > 0:
-                        stop_loss = last_price.close - b.model.stop_loss * last_price.close
-                        take_profit = last_price.close + b.model.take_profit * last_price.close
-                        total_investment = num_of_shares * last_price.close
-                        serializer = BuyOrderCreateSerializer(data={'user':user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
-                        if serializer.is_valid():
-                            serializer.save()
-                            print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
-                        else:
-                            print(f'SERIALIZER ERROR {b.stock}')
-                            print(serializer.errors)
+                for b in backtests:
+                    print(len(b.model.sma_position.filter(price_date=last_business_day.date())))
+                    sma_position = b.model.sma_position.filter(price_date=last_business_day.date()).first()
+                    last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
+                    pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
+
+                    if pending_buy_orders['total_investment__sum'] == None:
+                        available_cash = cash
+                    else:
+                        available_cash = cash - pending_buy_orders['total_investment__sum']
+
+                    if sma_position and last_price and sma_position.buy and available_cash > 0:
+                        stock_allocation = max_allocation * (b.score/max_score['score__max'])
+                        num_of_shares = int(stock_allocation/last_price.close)
+                        if num_of_shares > 0:
+                            stop_loss = last_price.close - b.model.stop_loss * last_price.close
+                            take_profit = last_price.close + b.model.take_profit * last_price.close
+                            total_investment = num_of_shares * last_price.close
+                            serializer = BuyOrderCreateSerializer(data={'user':user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
+                            if serializer.is_valid():
+                                serializer.save()
+                                print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
+                            else:
+                                print(f'SERIALIZER ERROR {b.stock}')
+                                print(serializer.errors)
     gc.collect()
 
 
@@ -313,19 +328,24 @@ def update_sma_positions():
     for b in backtests:
         print(f'#### {b} ####')
         sma_position = b.sma_position.first()
-        sma_position_date = sma_position.price_date
-        last_price_date = sma_position.stock.price_history.first().price_date
+        if sma_position == None:
+            sma_position_date = (datetime.datetime.today() - datetime.timedelta(days=100)).date()
+        else:
+            sma_position_date = sma_position.price_date
+
+        last_price_date = b.stock.price_history.first().price_date
         delta = last_price_date - sma_position_date
         days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
         for d in days:
             if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
-                sma_engine = SMAEngine(sma_position.stock.price_history.all(), b.model, date=d, backtest=False)
+                sma_engine = SMAEngine(b.stock.price_history.all(), b.model, date=d, backtest=False)
                 if 'buy' in sma_engine.order.keys():
                     print(f'BUY: {sma_engine.order["buy"]}')
-                    s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], price_date=d)
+                    s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], high_sma=sma_engine.order["high_sma"], low_sma=sma_engine.order["low_sma"], close=sma_engine.order["close"], price_date=d)
                     s.save()
                 else:
                     print(sma_engine.order["error"])
+        break
     gc.collect()
 
 @shared_task

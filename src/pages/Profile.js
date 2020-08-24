@@ -1,6 +1,5 @@
 import React from 'react';
-import { TextField, Grid, Button, Divider } from '@material-ui/core';
-
+import { TextField, Grid, Button, Divider, Typography, Switch } from '@material-ui/core';
 class Profile extends React.Component {
     constructor(props) {
         super(props);
@@ -92,7 +91,29 @@ class Profile extends React.Component {
                     helperText={this.props.errors.broker_password}
                 />
             </Grid>
-            <Grid item xs={10}>
+            <Grid container alignItems='center' justify='space-between' item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:5}}>
+                <Typography variant='body1'>
+                    Demo account
+                </Typography>
+                <Switch
+                    name='demo_live'
+                    checked={this.props.user.demo_live === 'True'}
+                    onChange={() => {this.props.update_user({'demo_live': this.props.user.demo_live === 'True' ? 'False' : 'True'})}}
+                    name="portfolio_type"
+                />
+            </Grid>
+            <Grid container alignItems='center' justify='space-between' item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:5}}>
+                <Typography variant='body1'>
+                    Real account
+                </Typography>
+                <Switch
+                    name='real_live'
+                    checked={this.props.user.real_live === 'True'}
+                    onChange={() => {this.props.update_user({'real_live': this.props.user.real_live === 'True' ? 'False' : 'True'})}}
+                    name="portfolio_type"
+                />
+            </Grid>
+            <Grid item xs={10} style={{margin:10}}>
                 <Button
                     type="submit"
                     fullWidth

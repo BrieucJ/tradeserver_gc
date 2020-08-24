@@ -91,10 +91,16 @@ class API():
             assert('demo-mode' in new_element.get_attribute('class').split())
     
     def validate_ticker(self, ticker):
-        self.browser.get(f'https://www.etoro.com/markets/{ticker}')
+        self.browser.get(f'https://www.etoro.com/markets/{ticker.lower()}')
+        try:
+            self.wait.until(lambda driver: self.browser.current_url == f'https://www.etoro.com/markets/{ticker.lower()}')
+        except TimeoutException as err:
+            return False
+            print(err)
         try:
             self.browser.find_element_by_css_selector("h1[automation-id='market-header-nickname']")
         except NoSuchElementException as err:
+            print(err)
             return False
         else:
             if self.browser.find_element_by_css_selector("h1[automation-id='market-header-nickname']").text.lower() == ticker.lower():

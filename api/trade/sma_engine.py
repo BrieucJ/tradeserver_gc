@@ -56,6 +56,11 @@ class SMAEngine():
             if self.df.index.size <= self.high_sma:
                 print('Sample too small!')
                 return
+    def buy_signal(self, low_sma, high_sma):
+        if high_sma > low_sma:
+            return True
+        else:
+            return False
     
     def backtest(self):
         difference = relativedelta(self.df.index[-1], self.df.index[0])
@@ -63,7 +68,7 @@ class SMAEngine():
         for i in range(self.data_size):
             date = self.df.index.values[i]
             current_price = self.df.iloc[i]['close']
-            buy = self.df.iloc[i]['low_sma'] > self.df.iloc[i]['high_sma'] #buy signal
+            buy = self.buy_signal(self, self.df.iloc[i]['low_sma'], self.df.iloc[i]['high_sma']) #buy signal
             if self.portfolio == None:
                 if buy:
                     self.buy_count += 1
@@ -126,8 +131,13 @@ class SMAEngine():
         print('trade')
         try:
             current_date_values = self.df.loc[str(self.date)]
-            buy = current_date_values['low_sma'] > current_date_values['high_sma']
+            print(self.df.head())
+            print(self.date)
+            buy = self.buy_signal(self, current_date_values['low_sma'], current_date_values['high_sma'])
             self.order['buy'] = buy
+            self.order['high_sma'] = current_date_values['high_sma']
+            self.order['low_sma'] = current_date_values['low_sma']
+            self.order['close'] = current_date_values['close']
         except KeyError as err:
             self.order['error'] = err
             pass

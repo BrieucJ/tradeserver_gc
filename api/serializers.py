@@ -92,11 +92,14 @@ class PositionSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     broker_username = serializers.CharField(source='profile.broker_username', default=None, allow_blank=True, allow_null=True)
     broker_password = serializers.CharField(source='profile.broker_password', default=None, allow_blank=True, allow_null=True, write_only=True)
+    demo_live = serializers.CharField(source='profile.demo_live', default=None, allow_blank=True, allow_null=True)
+    real_live = serializers.CharField(source='profile.real_live', default=None, allow_blank=True, allow_null=True)
+
     email = serializers.CharField(validators=[UniqueValidator(queryset=User.objects.all())], label="email", required=True, allow_blank=False, allow_null=False)
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'password', 'broker_username', 'broker_password']
+        fields = ['id', 'email', 'username', 'password', 'broker_username', 'broker_password', 'demo_live', 'real_live']
         extra_kwargs = {'password': {'write_only': True},  'broker_password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -108,13 +111,17 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
     def update(self, instance, validated_data):
+        print('UPDATE UserSerializer')
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         profile_data = validated_data.get('profile', None)
         if profile_data is not None:
+            print(profile_data)
             profile = Profile.objects.get(user=instance)
             profile.broker_username = profile_data.get('broker_username', profile.broker_username)
             profile.broker_password = profile_data.get('broker_password', profile.broker_password)
+            profile.demo_live = profile_data.get('demo_live', profile.demo_live)
+            profile.real_live = profile_data.get('real_live', profile.real_live)
             profile.save()
         instance.save()
         return instance
