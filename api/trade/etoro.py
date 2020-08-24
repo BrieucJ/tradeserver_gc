@@ -396,8 +396,7 @@ class API():
             except:
                 print(f'Unknown position {order.stock.symbol}')
                 pass
-
-
+    
     def transmit_orders(self, orders):
         print('transmit orders')
         for order in orders:

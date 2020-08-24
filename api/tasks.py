@@ -374,7 +374,6 @@ def update_orders_task(user_id):
 def update_sma_positions():
     print('update_sma_positions')
     backtests = SMABacktest.objects.all()
-    print(len(backtests))
     for b in backtests:
         print(f'#### {b} ####')
         sma_position = b.sma_position.first()
@@ -394,6 +393,7 @@ def update_sma_positions():
                     s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], high_sma=sma_engine.order["high_sma"], low_sma=sma_engine.order["low_sma"], close=sma_engine.order["close"], price_date=d)
                     s.save()
                 else:
+                    print('SMA ENGINE ERROR')
                     print(sma_engine.order["error"])
     gc.collect()
 

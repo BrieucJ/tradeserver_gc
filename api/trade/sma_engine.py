@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 class SMAEngine():
     def __init__(self, data, model, date=str(datetime.date.today()), initial_balance=100000, nav=100000, portfolio=None, backtest=True):
-        # print('__INIT__')
+        print('__INIT__ SMAEngine')
         self.symbol = None
         self.stop_loss = model.stop_loss
         self.take_profit = model.take_profit
@@ -20,6 +20,7 @@ class SMAEngine():
         self.balance = initial_balance
         self.portfolio = portfolio
         if backtest:
+            print('Backtest')
             self.unprofitable_buy = 0
             self.profitable_buy = 0
             self.model_return = 0
@@ -36,6 +37,7 @@ class SMAEngine():
             self.history = []
             self.backtest()
         else:
+            print('Trade')
             self.order = {}
             self.date = date
             self.trade()
@@ -65,8 +67,6 @@ class SMAEngine():
     def backtest(self):
         difference = relativedelta(self.df.index[-1], self.df.index[0])
         duration = float(difference.years + difference.months/12)
-        print(difference)
-        print(duration)
         for i in range(self.data_size):
             date = self.df.index.values[i]
             current_price = self.df.iloc[i]['close']
@@ -139,6 +139,8 @@ class SMAEngine():
             self.order['low_sma'] = current_date_values['low_sma']
             self.order['close'] = current_date_values['close']
         except KeyError as err:
+            print('Trade error')
+            print(err)
             self.order['error'] = err
             pass
         
