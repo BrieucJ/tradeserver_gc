@@ -59,7 +59,7 @@ class SMAEngine():
                 print('Sample too small!')
                 return
     def buy_signal(self, low_sma, high_sma):
-        if high_sma > low_sma:
+        if low_sma > high_sma:
             return True
         else:
             return False

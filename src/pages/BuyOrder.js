@@ -206,7 +206,7 @@ class Position extends React.Component {
                                     low_sma value
                                 </Typography>
                                 <Typography variant='body2'>  
-                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.low_sma}
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.low_sma.toFixed(2)}
                                 </Typography>
                             </Grid>
                             <Grid item container direction="row" alignItems="center" justify="space-between">
@@ -214,7 +214,7 @@ class Position extends React.Component {
                                     high_sma value
                                 </Typography>
                                 <Typography variant='body2'>  
-                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.high_sma}
+                                    {this.state.order.sma_position !== undefined && this.state.order.sma_position.high_sma.toFixed(2)}
                                 </Typography>
                             </Grid>
                             <Grid item container direction="row" alignItems="center" justify="space-between">

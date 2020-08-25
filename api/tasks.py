@@ -378,13 +378,14 @@ def update_sma_positions():
         print(f'#### {b} ####')
         sma_position = b.sma_position.first()
         if sma_position == None:
-            sma_position_date = (datetime.datetime.today() - datetime.timedelta(days=100)).date()
+            sma_position_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
         else:
             sma_position_date = sma_position.price_date
 
         last_price_date = b.stock.price_history.first().price_date
         delta = last_price_date - sma_position_date
         days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
+        print(len(days))
         for d in days:
             if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
                 sma_engine = SMAEngine(b.stock.price_history.all(), b.model, date=d, backtest=False)
