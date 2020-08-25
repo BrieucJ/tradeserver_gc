@@ -10,7 +10,6 @@ class PortfolioTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-        active_index: 0,
         sorting_col: 'total_investment',
         sorting_dir: 'asc',
     };

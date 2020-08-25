@@ -53,7 +53,6 @@ class Position extends React.Component {
     get('api/buy_order_details/?id='+ order_id).then((resp) => {
         if (resp.status === 200){
           var response = JSON.parse(resp.response)
-          console.log(response)
           this.setState({
               order: response.buy_order,
               price_df: response.price_df,
@@ -63,7 +62,6 @@ class Position extends React.Component {
   }
 
   line_chart_data = () => {
-    console.log('line_chart_data')
     var data = []
     if (this.state.price_df !== undefined){
         for (let i = 0; i < this.state.price_df.date.length; i++) {
@@ -79,7 +77,6 @@ class Position extends React.Component {
   }
 
     price_max = () => {
-        console.log('min_max')
         var max = 0
         if (this.state.price_df !== undefined){
             var arr = [this.state.price_df.close, this.state.price_df.high_sma, this.state.price_df.low_sma].flat()
@@ -89,7 +86,6 @@ class Position extends React.Component {
     }
 
     price_min = () => {
-        console.log('min_max')
         var min = 0
         if (this.state.price_df !== undefined){
             var arr = [this.state.price_df.close, this.state.price_df.high_sma, this.state.price_df.low_sma].flat()

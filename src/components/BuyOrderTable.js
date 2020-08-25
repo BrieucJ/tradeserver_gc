@@ -10,9 +10,76 @@ class BuyOrderTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-        active_index: 0
+        sorting_col: 'total_investment',
+        sorting_dir: 'asc',
     };
   } 
+
+  name_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.pending_buy_orders.sort((a, b) => a.stock[col].localeCompare(b.stock[col]))
+    } else {
+        this.props.portfolio.pending_buy_orders.sort((a, b) => b.stock[col].localeCompare(a.stock[col]))
+    }
+  }
+
+  number_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.pending_buy_orders.sort((a,b) => a[col] < b[col] ? 1 : -1)
+    } else {
+        this.props.portfolio.pending_buy_orders.sort((a,b) => a[col] > b[col] ? 1 : -1)
+    }
+  }
+
+  p_l_sorter = (col, order) => {
+    if (order === 'asc') {
+        this.props.portfolio.pending_buy_orders.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) < ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+    } else {
+        this.props.portfolio.pending_buy_orders.sort((a,b) => ((a.current_rate - a.open_rate) * a.num_of_shares) > ((b.current_rate - b.open_rate) * b.num_of_shares) ? 1 : -1)
+    }
+  }
+
+  sorter = (col, order) => {
+    console.log('sorter')
+    switch (col) {
+        case 'symbol':
+            this.name_sorter(col, order)
+        break;
+        case 'name':
+            this.name_sorter(col, order)
+            break;
+        case 'total_investment':
+            this.number_sorter(col, order)
+            break;
+        case 'price_date':
+            this.number_sorter(col, order)
+            break;
+        case 'order_rate':
+            this.number_sorter(col, order)
+            break;
+        case 'current_rate':
+            this.number_sorter(col, order)
+            break;
+        case 'submited_at':
+            this.number_sorter(col, order)
+            break;
+        case 'canceled_at':
+            this.number_sorter(col, order)
+            break;
+        default:
+            console.log('Unknown col');
+    }
+  }
+
+  handleSorting = (e) => {
+    if (this.state.sorting_dir === 'asc') {
+      this.sorter(e.currentTarget.id, 'desc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'desc'})
+    } else {
+      this.sorter(e.currentTarget.id, 'asc')
+      this.setState({sorting_col: e.currentTarget.id, sorting_dir:'asc'})
+    }
+  }
 
   render() {
     const { classes, theme, portfolio} = this.props;
@@ -24,15 +91,32 @@ class BuyOrderTable extends React.Component {
                     <Table size="small" stickyHeader aria-label="sticky table" >
                     <TableHead>
                         <TableRow>
-                            <TableCell>Ticker</TableCell>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Price date</TableCell>
-                            <TableCell>Model</TableCell>
-                            <TableCell align="right">Amount </TableCell>
-                            <TableCell align="right">Order price </TableCell>
-                            <TableCell align="right">Current price </TableCell>
-                            <TableCell align="right">Submited</TableCell>
-                            <TableCell align="right">Canceled</TableCell>
+                            <TableCell>Ticker
+                                <TableSortLabel active={this.state.sorting_col==='symbol'} direction={this.state.sorting_dir} id='symbol' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell>Name
+                                <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell>Price date
+                                <TableSortLabel active={this.state.sorting_col==='price_date'} direction={this.state.sorting_dir} id='price_date' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell>Model </TableCell>
+                            <TableCell align="right">Amount 
+                                <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell align="right">Order price
+                                <TableSortLabel active={this.state.sorting_col==='order_rate'} direction={this.state.sorting_dir} id='order_rate' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell align="right">Current price
+                                <TableSortLabel active={this.state.sorting_col==='current_rate'} direction={this.state.sorting_dir} id='current_rate' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell align="right">Submited
+                                <TableSortLabel active={this.state.sorting_col==='submited_at'} direction={this.state.sorting_dir} id='submited_at' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell align="right">Canceled
+                            <TableSortLabel active={this.state.sorting_col==='canceled_at'} direction={this.state.sorting_dir} id='canceled_at' onClick={e => {this.handleSorting(e)}} />
+
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
