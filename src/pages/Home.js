@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Typography, CircularProgress, Paper} from '@material-ui/core';
+import { Container, Grid, Typography, CircularProgress, Paper, FormControl, InputLabel, Select, MenuItem} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 import Area_Chart from '../components/AreaChart'
@@ -15,6 +15,8 @@ class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      graph_dd: false,
+      graph_type: 'investments',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -234,6 +236,16 @@ class Home extends React.Component {
     }
   }
 
+  toggle_graph_dd = () => {
+    console.log('toggle_graph_dd')
+    this.setState({graph_dd: !this.state.graph_dd})
+  }
+
+  handle_graph_change = (e) => {
+    console.log('handle_graph_change')
+    this.setState({graph_type: e.target.value})
+  }
+
   render() {
     if (this.state.loading){
       return(<Grid container
@@ -248,7 +260,7 @@ class Home extends React.Component {
           <Grid container direction="row" spacing={1}>
             <Grid item  xs={12} sm={6} >
               <Paper style={{padding:5, flexGrow: 1}}>
-                <Typography variant='h5'>
+                <Typography variant='h6'>
                   Summary
                 </Typography>
                 <Grid container justify='space-between'>
@@ -309,11 +321,40 @@ class Home extends React.Component {
 
             <Grid item container xs={12} sm={6}  >
               <Paper style={{padding:5, flexGrow: 1, minHeight:300}} ref={this.graphRef} >
-                <Typography variant='h5' style={{display: 'inline-block'}}> Cash/Investments evolution </Typography>
+              <FormControl>
+              
+                <Select
+                  disableUnderline
+                  open={this.state.graph_dd}
+                  onClose={() => {this.toggle_graph_dd()}}
+                  onOpen={() => {this.toggle_graph_dd()}}
+                  value={this.state.graph_type}
+                  onChange={(e) => {this.handle_graph_change(e)}}
+                >
+                  
+                  <MenuItem value='cash'>
+                    <Typography variant='h6'>
+                      Cash
+                    </Typography>
+                  </MenuItem>
+                  
+                  <MenuItem value='investments'>
+                    <Typography variant='h6'>
+                        Investments
+                      </Typography>
+                  </MenuItem>
+                  <MenuItem value='cash_investments'>
+                      <Typography variant='h6'>
+                        Cash/Investments
+                      </Typography>
+                  </MenuItem>
+                </Select>
+              </FormControl>
                 <Area_Chart
                   data={this.area_chart_data()}
                   height={this.state.g_height}
                   width={this.state.g_width}
+                  graph_type={this.state.graph_type}
                 />
               </Paper>
             </Grid>
