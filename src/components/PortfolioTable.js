@@ -22,8 +22,6 @@ class PortfolioTable extends React.Component {
   }
 
   holding_duration = (open_date, close_date) => {
-    console.log(open_date)
-    console.log(close_date)
     var delta = Math.abs(new Date(open_date) - new Date(close_date)) / 1000;
     // calculate (and subtract) whole days
     var days = Math.floor(delta / 86400);
@@ -64,7 +62,6 @@ class PortfolioTable extends React.Component {
   }
 
   sorter = (col, order) => {
-    console.log('sorter')
     switch (col) {
         case 'symbol':
             this.name_sorter(col, order)

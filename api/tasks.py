@@ -1,5 +1,6 @@
 import datetime
 import sys
+import time
 from django.db.models import Sum
 from itertools import chain
 from datetime import timedelta
@@ -251,9 +252,9 @@ def update_sell_orders(portfolio_id):
     print('update_sell_orders')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     positions = portfolio.position.filter(close_date__isnull=True)
+    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
     for position in positions:
-        print(position.stock.name)
         bo = position.buy_order.first()
         pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
         if bo == None and pending_bo == None:
@@ -316,25 +317,26 @@ def update_investments(portfolio_id):
             max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
         
         for b in backtests:
-            print(f'BACKTEST {b.stock} | {b.score}')
+            time.sleep(5)
+            # print(f'BACKTEST {b.stock} | {b.score}')
             sma_position = b.sma_position.filter(price_date=last_business_day.date()).first()
             last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
-            print(sma_position)
-            print(last_price)
-            print(pending_buy_orders)
             if pending_buy_orders['total_investment__sum'] == None:
                 available_cash = cash
             else:
                 available_cash = cash - pending_buy_orders['total_investment__sum']
-
-            if sma_position and last_price and sma_position.buy and available_cash > 0:
-                stock_allocation = max_allocation * (b.score/max_score['score__max'])
+            print(available_cash)
+            print(last_price)
+            print(sma_position)
+            stock_allocation = max_allocation * (b.score/max_score['score__max'])
+            if sma_position and last_price and sma_position.buy and available_cash > stock_allocation:
                 num_of_shares = int(stock_allocation/last_price.close)
                 if num_of_shares > 0:
                     stop_loss = last_price.close - b.model.stop_loss * last_price.close
                     take_profit = last_price.close + b.model.take_profit * last_price.close
                     total_investment = num_of_shares * last_price.close
+                    assert(total_investment < available_cash)
                     serializer = BuyOrderCreateSerializer(data={'user':portfolio.user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
                     if serializer.is_valid():
                         serializer.save()

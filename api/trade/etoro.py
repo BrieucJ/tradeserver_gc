@@ -342,6 +342,7 @@ class API():
                 take_profit_input.send_keys(Keys.ENTER)
 
                 #PLACE ORDER
+                print('PLACING ORDER')
                 try:
                     self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
                 except TimeoutException as err:
