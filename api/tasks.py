@@ -317,8 +317,7 @@ def update_investments(portfolio_id):
             max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
         
         for b in backtests:
-            time.sleep(5)
-            # print(f'BACKTEST {b.stock} | {b.score}')
+            print(f'BACKTEST {b.stock} | {b.score}')
             sma_position = b.sma_position.filter(price_date=last_business_day.date()).first()
             last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))

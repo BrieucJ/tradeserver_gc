@@ -125,7 +125,7 @@ class BuyOrderTable extends React.Component {
                             <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
                             <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
                             <TableCell component="th" scope="row">{bo.price_date} </TableCell>
-                            <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
+                            <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
                             <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
                             <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
