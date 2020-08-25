@@ -117,7 +117,7 @@ class Position extends React.Component {
                         {this.state.position.stock.symbol} | {this.state.position.stock.name}
                     </Typography>
                     <Typography variant='h6'>
-                        {this.state.position.open_date !== null && new Date(this.state.position.open_date).toLocaleString({formatMatcher:'basic'})} - {this.state.position.sell_order[0].sma_position !== null && new Date(this.state.position.close_date).toLocaleString({timeZoneName:'short'})}
+                        {this.state.position.open_date !== null && new Date(this.state.position.open_date).toLocaleString({formatMatcher:'basic'})} - {this.state.position.close_date !== null && new Date(this.state.position.close_date).toLocaleString({timeZoneName:'short'})}
                     </Typography>
                 </Grid>
                 <Grid item container xs={12} sm={12} direction="row" justify="center" spacing={1}>
