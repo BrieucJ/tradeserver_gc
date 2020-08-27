@@ -319,7 +319,6 @@ def update_investments(portfolio_id):
             max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
         
         for b in backtests:
-            print(f'BACKTEST {b.stock} | {b.score}')
             sma_position = b.sma_position.filter(price_date=last_business_day.date()).first()
             last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
@@ -327,9 +326,7 @@ def update_investments(portfolio_id):
                 available_cash = cash
             else:
                 available_cash = cash - pending_buy_orders['total_investment__sum']
-            print(available_cash)
-            print(last_price)
-            print(sma_position)
+
             stock_allocation = max_allocation * (b.score/max_score['score__max'])
             if sma_position and last_price and sma_position.buy and available_cash > stock_allocation:
                 num_of_shares = int(stock_allocation/last_price.close)
