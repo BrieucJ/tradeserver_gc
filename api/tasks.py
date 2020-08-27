@@ -260,7 +260,7 @@ def update_sell_orders(portfolio_id):
         if bo == None and pending_bo == None:
             if position.sell_order.first() == None:
                 print(f'CREATING SELL ORDER {position.stock}')
-                order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
+                order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, position=position)
                 order.save()
         else:
             sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
@@ -268,7 +268,7 @@ def update_sell_orders(portfolio_id):
                 print('SMA POS NONE OR SMA POS SELL')
                 if not position.sell_order.first():
                     print(f'CREATING SELL ORDER {position.stock}')
-                    order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
+                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                     order.save()
     gc.collect()
 
@@ -375,7 +375,6 @@ def update_sma_positions():
     print('update_sma_positions')
     backtests = SMABacktest.objects.all()
     for b in backtests:
-        print(f'#### {b} ####')
         sma_position = b.sma_position.first()
         if sma_position == None:
             sma_position_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
@@ -385,7 +384,6 @@ def update_sma_positions():
         last_price_date = b.stock.price_history.first().price_date
         delta = last_price_date - sma_position_date
         days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
-        print(len(days))
         for d in days:
             if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
                 sma_engine = SMAEngine(b.stock.price_history.all(), b.model, date=d, backtest=False)

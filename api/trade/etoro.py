@@ -136,7 +136,6 @@ class API():
             rows = table.find_elements_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-row']")
             positions = []
             for r in rows:
-                print(r)
                 try:
                     ticker = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-name']").text
                     open_date = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-open-date']").text
@@ -151,7 +150,6 @@ class API():
                     pass
                 else:                 
                     position = {'ticker': ticker, 'open_date': datetime.strptime(open_date, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc), 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': float(num_of_shares), 'open_rate': float(open_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss_rate': float(stop_loss_rate.replace(',','')), 'take_profit_rate': float(take_profit_rate.replace(',','')) }
-                    print(position)
                     positions.append(position)
         else:
             positions = []
