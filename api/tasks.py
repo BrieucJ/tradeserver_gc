@@ -277,10 +277,12 @@ def update_buy_orders(portfolio_id):
     print('update_buy_orders')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
+    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
     for order in pending_buy_orders:
         print(order)
-        if order.submited_at != None and order.canceled_at == None:
+        if order.submited_at != None and order.executed_at == None and order.canceled_at == None:
+            print(f'Pending buy order {order.price_date} | {last_business_day.date()}')
             if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
                 print(f'CANCEL ORDER {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
