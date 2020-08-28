@@ -287,7 +287,7 @@ def update_buy_orders(portfolio_id):
                 print(f'CANCEL ORDER {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
-            if order.current_price / order.order_price > 1.05:
+            if order.current_rate / order.order_rate > 1.05:
                 print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
