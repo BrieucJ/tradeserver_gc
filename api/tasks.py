@@ -143,9 +143,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.save()
 
     #trade history
-    print('saving old positions')
+    print('saving trade history')
     for th in trade_history:
-        print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
@@ -476,8 +475,9 @@ def update_orders():
     print('update_orders')
     users = User.objects.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
+    print(PriceHistory.objects.filter(price_date=last_business_day.date()).first())
     print(last_business_day)
-    if PriceHistory.objects.filter(price_date=last_business_day.date()) == None:
+    if PriceHistory.objects.filter(price_date=last_business_day.date()).first() == None:
         print('update stock prices')
         update_price_history.delay()
     for user in users:
