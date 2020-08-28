@@ -344,7 +344,6 @@ def update_investments(portfolio_id):
                         print(serializer.errors)
     gc.collect()
 
-
 @shared_task
 def update_orders_task(user_id):
     print('update_orders_task')
@@ -439,7 +438,7 @@ def update_portfolio(user_id):
     gc.collect()
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/3')), name="update_price_history", ignore_result=True)
+@shared_task
 def update_price_history():
     print('update_price_history')
     stocks = Stock.objects.filter(valid=True) 
@@ -476,6 +475,11 @@ def update_price_history():
 def update_orders():
     print('update_orders')
     users = User.objects.all()
+    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
+    print(last_business_day)
+    if PriceHistory.objects.filter(price_date=last_business_day.date()) == None:
+        print('update stock prices')
+        update_price_history.delay()
     for user in users:
         update_orders_task.delay(user.id)
     gc.collect()
