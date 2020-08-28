@@ -252,7 +252,7 @@ def update_sell_orders(portfolio_id):
     portfolio = Portfolio.objects.get(id=portfolio_id)
     positions = portfolio.position.filter(close_date__isnull=True)
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-
+    print(last_business_day)
     for position in positions:
         bo = position.buy_order.first()
         pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
@@ -366,7 +366,6 @@ def update_orders_task(user_id):
         update_buy_orders.delay(portfolio.id)
         update_investments.delay(portfolio.id)
     gc.collect()
-
 
 @shared_task
 def update_sma_positions():
