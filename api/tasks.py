@@ -264,10 +264,18 @@ def update_sell_orders(portfolio_id):
                 order.save()
         else:
             sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
-            if sma_position == None or sma_position.buy == False:
-                print('SMA POS NONE OR SMA POS SELL')
-                print(sma_position)
+            print(sma_position)
+            if sma_position.buy == False:
+                print('SMA POS SELL')
                 if not position.sell_order.first():
+                    print(f'CREATING SELL ORDER {position.stock}')
+                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
+                    order.save()
+            if sma_position == None:
+                print('SMA POS NONE')
+                last_sma_position_date = position.sma_position.price_date
+                print(last_sma_position_date)
+                if not position.sell_order.first() and (last_business_day.date() - last_sma_position_date) >= 2:
                     print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                     order.save()
@@ -476,9 +484,7 @@ def update_orders():
     print('update_orders')
     users = User.objects.all()
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-    print(PriceHistory.objects.filter(price_date=last_business_day.date()).first())
-    print(last_business_day)
-    if PriceHistory.objects.filter(price_date=last_business_day.date()).first() == None:
+    if len(Stock.objects.filter(valid=True, price_history__price_date=last_business_day.date())) != len(Stock.objects.filter(valid=True)):
         print('update stock prices')
         update_price_history.delay()
     for user in users:
