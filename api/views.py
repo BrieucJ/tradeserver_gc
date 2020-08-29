@@ -41,7 +41,7 @@ class Home(generics.RetrieveAPIView):
         
         if p_real != None:
             pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
-            pending_sell_orders_demo = PositionSerializer(p_real.position.filter(close_date__isnull=True, sell_order__isnull=False, sell_order__executed_at__isnull=True).order_by('-total_investment'), many=True).data 
+            pending_sell_orders_real = PositionSerializer(p_real.position.filter(close_date__isnull=True, sell_order__isnull=False, sell_order__executed_at__isnull=True).order_by('-total_investment'), many=True).data 
             portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
         else:
