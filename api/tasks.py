@@ -254,6 +254,7 @@ def update_sell_orders(portfolio_id):
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
     print(last_business_day)
     for position in positions:
+        print(position)
         bo = position.buy_order.first()
         pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
         if bo == None and pending_bo == None:
@@ -265,6 +266,7 @@ def update_sell_orders(portfolio_id):
             sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
             if sma_position == None or sma_position.buy == False:
                 print('SMA POS NONE OR SMA POS SELL')
+                print(sma_position)
                 if not position.sell_order.first():
                     print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
