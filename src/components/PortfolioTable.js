@@ -99,14 +99,6 @@ class PortfolioTable extends React.Component {
     }
   }
 
-  handleOpen = async (id) => {
-    if (id === this.state.open_id){
-      this.setState({open_id: null})
-    } else {
-      this.setState({open_id: id})
-      this.props.retrieve_history_details(id)
-    }
-  }
 
   render() {
     const { classes, theme, portfolio} = this.props;
@@ -156,10 +148,10 @@ class PortfolioTable extends React.Component {
                             <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">P/L $
-                            <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='P_L_$'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">P/L %
-                            <TableSortLabel active={this.state.sorting_col==='P_L'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
+                            <TableSortLabel active={this.state.sorting_col==='P_L_%'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
                         <TableCell align="right">Duration
                             <TableSortLabel active={this.state.sorting_col==='open_date'} direction={this.state.sorting_dir} id='open_date' onClick={e => {this.handleSorting(e)}} />
@@ -167,7 +159,7 @@ class PortfolioTable extends React.Component {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {portfolio.current_positions.map((po) => (
+                        {portfolio.current_positions.map((po, index) => (
                             <TableRow hover key={po.id} onClick={() => {this.props.history.push('/position/?id='+po.id)}}>
                                 <TableCell component="th" scope="row">{po.stock.symbol.substring(0,20)}  </TableCell>
                                 <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>

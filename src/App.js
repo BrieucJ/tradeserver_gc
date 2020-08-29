@@ -20,7 +20,6 @@ import Profile from './pages/Profile'
 import Menu from './components/Menu'
 import Toast from './components/Toast'
 import {post, put} from './utils/Api'
-import { isThisISOWeek } from 'date-fns';
 
 class App extends React.Component {
   constructor(props) {

@@ -114,8 +114,7 @@ class BuyOrderTable extends React.Component {
                                 <TableSortLabel active={this.state.sorting_col==='submited_at'} direction={this.state.sorting_dir} id='submited_at' onClick={e => {this.handleSorting(e)}} />
                             </TableCell>
                             <TableCell align="right">Canceled
-                            <TableSortLabel active={this.state.sorting_col==='canceled_at'} direction={this.state.sorting_dir} id='canceled_at' onClick={e => {this.handleSorting(e)}} />
-
+                                <TableSortLabel active={this.state.sorting_col==='canceled_at'} direction={this.state.sorting_dir} id='canceled_at' onClick={e => {this.handleSorting(e)}} />
                             </TableCell>
                         </TableRow>
                     </TableHead>
