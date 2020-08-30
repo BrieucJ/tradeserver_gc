@@ -7,7 +7,6 @@ import pandas as pd
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
-from django.db.models.functions import TruncDay
 from django.db.models import Min, Max
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -204,23 +203,25 @@ class RetrieveOrder(generics.RetrieveAPIView):
         user = request.user
         #demo
         p_demo = user.portfolio.filter(portfolio_type=False).first()
-        if p_demo == None:
-            pending_buy_orders_demo = []
-            pending_sell_orders_demo = []
-        else:
-            pending_buy_orders_demo = BuyOrderReadSerializer(p_demo.buy_order.filter(executed_at__isnull=True), many=True).data 
-            pending_sell_orders_demo = SellOrderSerializer(p_demo.sell_order.filter(executed_at__isnull=True), many=True).data
-        
-        #real
         p_real = user.portfolio.filter(portfolio_type=True).first()
-        if p_real == None:
-            pending_buy_orders_real = []
-            pending_sell_orders_real = []
+        
+        if p_demo == None:
+            orders_demo = []
         else:
-            pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True), many=True).data 
-            pending_sell_orders_real = SellOrderSerializer(p_real.sell_order.filter(executed_at__isnull=True), many=True).data
+            orders_demo = [BuyOrderReadSerializer(p_demo.buy_order.all(), many=True).data, SellOrderSerializer(p_demo.sell_order.all(), many=True).data]
+            orders_demo = [order for type_order in orders_demo for order in type_order]
+            orders_demo.sort(key=lambda x: x['created_at'], reverse=True)
+            print('ORDERS DEMO')
+            orders_demo = [{'order': order,'position': PositionSerializer(Position.objects.get(id=order['position'])).data} for order in orders_demo]
+        #real
+        if p_real == None:
+            orders_real = []
+        else:
+            orders_real = [BuyOrderReadSerializer(p_real.buy_order.all(), many=True).data, SellOrderSerializer(p_real.sell_order.all(), many=True).data]
+            orders_real = [order for type_order in orders_real for order in type_order]
+            orders_real = orders_real.sort(key=lambda x: x['created_at'], reverse=True)
 
-        return Response({'p_demo': {'pending_buy_orders': pending_buy_orders_demo,  'pending_sell_orders': pending_sell_orders_demo}, 'p_real': {'pending_buy_orders': pending_buy_orders_real,  'pending_sell_orders': pending_sell_orders_real}}, status=status.HTTP_200_OK)
+        return Response({'p_demo': {'orders': orders_demo}, 'p_real': {'orders': orders_real}}, status=status.HTTP_200_OK)
 
 class RetrieveHistory(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
