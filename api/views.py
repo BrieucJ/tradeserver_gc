@@ -219,7 +219,9 @@ class RetrieveOrder(generics.RetrieveAPIView):
         else:
             orders_real = [BuyOrderReadSerializer(p_real.buy_order.all(), many=True).data, SellOrderSerializer(p_real.sell_order.all(), many=True).data]
             orders_real = [order for type_order in orders_real for order in type_order]
-            orders_real = orders_real.sort(key=lambda x: x['created_at'], reverse=True)
+            orders_real.sort(key=lambda x: x['created_at'], reverse=True)
+            print('ORDERS real')
+            orders_real = [{'order': order,'position': PositionSerializer(Position.objects.get(id=order['position'])).data} for order in orders_real]
 
         return Response({'p_demo': {'orders': orders_demo}, 'p_real': {'orders': orders_real}}, status=status.HTTP_200_OK)
 
