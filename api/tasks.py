@@ -362,7 +362,7 @@ def update_orders_task(user_id):
     for portfolio in portfolios:
         portfolio_history = portfolio.portfolio_history.first()
         positions = portfolio.position.filter(close_date__isnull=True)
-        print(portfolio.portfolio_type)
+        print(f'Portfolio type: {portfolio.portfolio_type}')
 
         if (portfolio.portfolio_type and user.profile.real_live == False):
             update_disabled_portfolio.delay(portfolio.id)
@@ -411,22 +411,6 @@ def update_portfolio(user_id):
     real_portfolio = user.portfolio.filter(portfolio_type=True).first()
 
     if user.profile.broker_password != None and user.profile.broker_password != None:
-        #demo portolio
-        if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
-            print(f'Updating demo portfolio')
-            try:
-                api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
-                portfolio, positions = api.update_portfolio()
-                pending_orders = api.get_pending_order()
-                trade_history = api.update_trade_history()
-            except Exception as err:
-                print(err)
-                pass
-            else:
-                if demo_portfolio == None:
-                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
-                else:
-                    save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
         #real portfolio
         if real_portfolio == None or real_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating real portfolio')
@@ -440,6 +424,24 @@ def update_portfolio(user_id):
                 pass
             else:
                 if real_portfolio == None:
+                    print('Creating real portfolio')
+                    create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+                else:
+                    print('Saving real portfolio')
+                    save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+        #demo portolio
+        if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
+            print(f'Updating demo portfolio')
+            try:
+                api = API(user.profile.broker_username, user.profile.broker_password, mode='demo')
+                portfolio, positions = api.update_portfolio()
+                pending_orders = api.get_pending_order()
+                trade_history = api.update_trade_history()
+            except Exception as err:
+                print(err)
+                pass
+            else:
+                if demo_portfolio == None:
                     create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
                 else:
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)

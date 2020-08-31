@@ -49,7 +49,6 @@ class API():
         print(f'ETORO took {time.time() - self.start_time} seconds')
     
     def login(self):
-        print('login')
         start_time = time.time()
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
@@ -65,7 +64,6 @@ class API():
         print(f'Login took {time.time() - start_time} seconds')
 
     def switch_mode(self):
-        print('switch_mode')
         start_time = time.time()
         self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "div[class='e-screen active']")))
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
@@ -76,13 +74,11 @@ class API():
             self.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, 'et-select-body-option')))
             mode_btns = self.browser.find_elements_by_tag_name('et-select-body-option')
             if self.mode == 'real':
-                print('switching from demo to real')
                 mode_btns[0].click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
                 toggle_btn.click()
             elif self.mode == 'demo':
-                print('switching from real to demo')
                 mode_btns[1].click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='toggle-account-button']")))
                 toggle_btn = self.browser.find_element_by_css_selector("a[class='toggle-account-button']")
@@ -162,13 +158,13 @@ class API():
         return portfolio, positions
 
     def get_pending_order(self):
-        print('get_pending_order')
+        start_time = time.time()
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
         empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
         pending_orders = []
+
         #buy orders
-        print('get buy orders')
         if len(empty_order_book) == 0:
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
             table = self.browser.find_element_by_css_selector("ui-table[data-etoro-automation-id='orders-table']")
@@ -189,7 +185,6 @@ class API():
                 pending_orders.append(order)
         
         #sell orders
-        print('get sell orders')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
@@ -218,7 +213,6 @@ class API():
 
     def update_trade_history(self):
         start_time = time.time()
-        print('update_trade_history')
         self.browser.get('https://www.etoro.com/portfolio/history')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/history')
 
@@ -254,12 +248,10 @@ class API():
 
     def execute_buy_order(self, order):
         start_time = time.time()
-        print('execute_buy_order')
         self.browser.get(f'https://www.etoro.com/markets/{str(order.stock.symbol).lower()}')
         try:
             self.wait.until(EC.element_to_be_clickable((By.TAG_NAME, 'trade-button')))
         except TimeoutException as err:
-            print(err)
             pass
         else:
             trade_btn = self.browser.find_element_by_tag_name('trade-button')
@@ -268,12 +260,11 @@ class API():
             try:
                 self.browser.find_element_by_css_selector("div[id='open-position-view']")
             except NoSuchElementException as err:
-                print(err)
+                pass
             else:
                 #SWITCH TO ORDER MODE IF PRESENT (to be investigated)
                 toggle_btn = self.browser.find_elements_by_css_selector("div[data-etoro-automation-id='execution-trade-mode-drop-box']")
                 if len(toggle_btn) !=0:
-                    print('SWITCH TO ORDER MODE')
                     toggle_btn[0].click()
                     order_btn = self.browser.find_element_by_css_selector("a[data-etoro-automation-id='execution-trade-mode-switch-to-order']")
                     order_btn.click()
@@ -282,17 +273,14 @@ class API():
 
                 buy_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-buy-button']")
                 buy_btn.click()
-                print('buy_btn click')
 
                 #ORDER TYPE SWITCH
                 switch_order_rate_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-order-rate']")
                 switch_units_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-button-switch-to-units']")
                 if len(switch_order_rate_btn) != 0:
-                    print('switched to order_rate')
                     switch_order_rate_btn[0].click()
                 if len(switch_units_btn) != 0:
                     switch_units_btn[0].click()
-                    print('switched to units')
 
                 # PRICE AND SHARE INPUT (order is important)
                 price_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-order-rate-input-section']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
@@ -317,12 +305,10 @@ class API():
                 share_input.send_keys(Keys.ENTER)
 
                 #STOP LOSS
-                print('STOP LOSS')
                 stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
                 stop_loss_btn.click()
                 stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
                 if len(stop_loss_switch_btn) != 0:
-                    print('switch-to-rate-button')
                     stop_loss_switch_btn[0].click()
                 
                 stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
@@ -334,7 +320,6 @@ class API():
                 stop_loss_input.send_keys(Keys.ENTER)
 
                 #TAKE PROFIT
-                print('TAKE PROFIT')
                 take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
                 take_profit_btn.click()
                 take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
@@ -351,35 +336,28 @@ class API():
                 take_profit_input.send_keys(Keys.ENTER)
 
                 #PLACE ORDER
-                print('PLACING ORDER')
                 try:
                     self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='execution-open-order-button']")))
                 except TimeoutException as err:
-                    print(TimeoutException)
-                    print(err)
+                    pass
                 else:
                     place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
                     place_order_btn.click()
-                    print('ORDER SUBMITTED')
         print(f'Execute buy order took {time.time() - start_time} seconds')
 
 
     def execute_sell_order(self, order):
         start_time = time.time()
-        print('execute_sell_order')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         try:
             ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{order.stock.symbol}')]")
-            print(ticker_element.text)
         except:
-            print(f'error {order.stock.symbol}')
+            pass
         else:
             row = ticker_element.find_element_by_xpath(".//ancestor::div[contains(@data-etoro-automation-id, 'portfolio-manual-trades-row')]")
             row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
-            print(row_pending_sell)
             if len(row_pending_sell) == 0:
-                print(f'Selling {ticker_element.text}')
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-etoro-automation-id='close-position-table']")))
@@ -392,23 +370,19 @@ class API():
 
     def cancel_order(self, order):
         start_time = time.time()
-        print('cancel order')
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
         empty_order_book = self.browser.find_elements_by_css_selector("div[class='w-portfolio-table-empty']")
-        print(len(empty_order_book))
         if len(empty_order_book) == 0:
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='orders-table']")))
             try:
                 row = self.browser.find_element_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
-                print('canceling')
                 cancel_btn = row.find_element_by_css_selector("a[data-etoro-automation-id='orders-table-body-close-order-action']")
                 cancel_btn.click()
                 self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='close-order-container']")))
                 cancel_modal = self.browser.find_element_by_css_selector("div[class='close-order-container']")
                 execute_btn = cancel_modal.find_element_by_css_selector("button[class^='close-order-button']") # ^ => partial class match
                 execute_btn.click()
-                print('canceled')
             except:
                 print(f'Unknown position {order.stock.symbol}')
                 pass
@@ -417,7 +391,6 @@ class API():
     
     def transmit_orders(self, orders):
         start_time = time.time()
-        print('transmit orders')
         for order in orders:
             #BUY/SELL SWITCH
             if str(order.__class__.__name__) == 'BuyOrder':
@@ -427,8 +400,15 @@ class API():
                     self.browser.get('https://www.etoro.com/portfolio/orders')
                     self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
                     pending_buy_order = self.browser.find_elements_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
+                    self.browser.get('https://www.etoro.com/portfolio/manual-trades')
+                    self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
+                    order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[contains(text(),'{order.stock.symbol}')]")
+
                     if len(pending_buy_order) != 0:
                         print('ORDER ALREADY IN ORDER BOOK')
+                        pass
+                    elif len(order_in_portfolio) != 0:
+                        print('ORDER ALREADY IN PORTFOLIO')
                         pass
                     else:
                         self.execute_buy_order(order)
