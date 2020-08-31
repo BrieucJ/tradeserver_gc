@@ -102,7 +102,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
 @shared_task
 def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    print(f'save_portfolio {portfolio['portfolio_type']}')
+    print(f'save_portfolio {portfolio["portfolio_type"]}')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
     print(user_portfolio)
@@ -475,7 +475,7 @@ def update_price_history():
     gc.collect()
 
 #PERIODIC TASKS
-@periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_orders", ignore_result=True)
 def update_orders():
     print('update_orders')
     users = User.objects.all()
@@ -487,7 +487,7 @@ def update_orders():
         update_orders_task.delay(user.id)
     gc.collect()
 
-@periodic_task(run_every=(crontab(minute=30, hour='*/1')), name="transmit_orders", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=30, hour='*/2')), name="transmit_orders", ignore_result=True)
 def transmit_orders():
     print('transmit_orders')
     users = User.objects.all()
