@@ -102,10 +102,10 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
 @shared_task
 def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
-    print('save_portfolio')
+    print(f'save_portfolio {portfolio['portfolio_type']}')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
-
+    print(user_portfolio)
     #portfolio
     print('saving portfolio')
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
@@ -115,10 +115,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     portfolio_history.save()
 
     #positions
-    print('saving positions')
-    print(positions)
     for position in positions:
-        print(position)
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=position['ticker']).first()
         else:
@@ -143,7 +140,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.save()
 
     #trade history
-    print('saving trade history')
     for th in trade_history:
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
@@ -175,7 +171,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             print('position is an old positions')
 
     #orders
-    print('Canceled orders')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
     canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
     for co in canceled_orders:
@@ -184,8 +179,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
             co.save()
 
-    print('Updating order')
-    print(pending_orders)
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
@@ -193,10 +186,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             stock = None
 
         if pending_order['order_type'] == 1:
-            #print('BUY ORDER')
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
             if buy_order:
-                #print('updating known buy order')
                 buy_order.current_rate = pending_order['current_rate']
                 buy_order.submited_at = pending_order['submited_at']
                 buy_order.save()
@@ -420,6 +411,7 @@ def update_portfolio(user_id):
                 pending_orders = api.get_pending_order()
                 trade_history = api.update_trade_history()
             except Exception as err:
+                print('#### ETORO ERROR ####')
                 print(err)
                 pass
             else:
@@ -438,6 +430,7 @@ def update_portfolio(user_id):
                 pending_orders = api.get_pending_order()
                 trade_history = api.update_trade_history()
             except Exception as err:
+                print('#### ETORO ERROR ####')
                 print(err)
                 pass
             else:
