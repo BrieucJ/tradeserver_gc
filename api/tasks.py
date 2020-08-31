@@ -109,6 +109,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     #portfolio
     print('saving portfolio')
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
+    if user_portfolio.portfolio_history.first().cash == 0 and user_portfolio.portfolio_history.first().total_invested_value == 0:
+        user_portfolio.created_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
 
     portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
