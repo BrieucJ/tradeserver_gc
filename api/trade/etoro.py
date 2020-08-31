@@ -112,7 +112,6 @@ class API():
     
     def update_portfolio(self):
         start_time = time.time()
-        print('update_portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         empty_portfolio = self.browser.find_elements_by_css_selector("div[class='empty portfolio ng-scope']")
@@ -178,8 +177,8 @@ class API():
                 stop_loss = r.find_element_by_css_selector("span[data-etoro-automation-id='orders-table-body-cell-sl']").text
                 take_profit = r.find_element_by_css_selector("ui-table-cell[data-etoro-automation-id='orders-table-body-cell-tp']").text
                 date = r.find_element_by_css_selector("p[data-etoro-automation-id='orders-table-body-cell-open-date-date-value']").text
-                time = r.find_element_by_css_selector("p[data-etoro-automation-id='orders-table-body-cell-open-date-time-value']").text
-                date_time = date + ' ' + time
+                hour = r.find_element_by_css_selector("p[data-etoro-automation-id='orders-table-body-cell-open-date-time-value']").text
+                date_time = date + ' ' + hour
                 submited_at = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc)
                 order = {'ticker': ticker, 'order_type': order_type, 'total_investment': float(Decimal(sub(r'[^\d.]', '', str(total_investment)))), 'num_of_shares': int(float(Decimal(sub(r'[^\d.]', '', str(total_investment))))/float(order_rate.replace(',',''))), 'order_rate': float(order_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss': float(stop_loss.replace(',','')), 'take_profit': float(take_profit.replace(',','')), 'submited_at': submited_at}
                 pending_orders.append(order)
@@ -208,7 +207,7 @@ class API():
                     order = {'ticker': ticker, 'order_type': order_type, 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': int(float(num_of_shares.replace(',',''))), 'open_rate': float(open_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss': float(stop_loss.replace(',','')), 'take_profit': float(take_profit.replace(',',''))}
                     pending_orders.append(order)
         
-        print(f'Update Portfolio took {time.time() - start_time} seconds')
+        print(f'Update pending orders took {time.time() - start_time} seconds')
         return pending_orders
 
     def update_trade_history(self):
