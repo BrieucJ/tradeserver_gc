@@ -161,8 +161,6 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, format=None):
-        print('PUT UserView')
-        print(request.data)
         serializer = self.serializer_class(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

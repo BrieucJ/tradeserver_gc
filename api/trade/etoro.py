@@ -19,6 +19,7 @@ from django.utils import timezone
 class API():
     def __init__(self, broker_username, broker_password, mode):
         print(f'API __init__ {mode}')
+        self.start_time = time.clock()
         self.mode = mode
         self.user_name = broker_username
         self.password = broker_password
@@ -45,9 +46,11 @@ class API():
         self.browser.close()
         self.browser.quit()
         self.browser = None
+        print(f'ETORO took {time.clock() - self.start_time} seconds')
     
     def login(self):
         print('login')
+        start_time = time.clock()
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)
         email_field = self.browser.find_element_by_id("username")
@@ -59,9 +62,11 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
         self.switch_mode()
+        print(f'Login took {time.clock() - start_time} seconds')
 
     def switch_mode(self):
         print('switch_mode')
+        start_time = time.clock()
         self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "div[class='e-screen active']")))
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
         if ('demo-mode' in current_mode and self.mode == 'real') or ('demo-mode' not in current_mode and self.mode == 'demo'):
@@ -89,7 +94,8 @@ class API():
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
             assert('demo-mode' in new_element.get_attribute('class').split())
-    
+        print(f'Switch mode took {time.clock() - start_time} seconds')
+
     def validate_ticker(self, ticker):
         self.browser.get(f'https://www.etoro.com/markets/{ticker.lower()}')
         try:
@@ -109,6 +115,7 @@ class API():
                 return False
     
     def update_portfolio(self):
+        start_time = time.clock()
         print('update_portfolio')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
@@ -146,7 +153,6 @@ class API():
                     stop_loss_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-stop-loss-rate']").text
                     take_profit_rate = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']").text
                 except NoSuchElementException as err:
-                    print(err)
                     pass
                 else:                 
                     position = {'ticker': ticker, 'open_date': datetime.strptime(open_date, "%d/%m/%Y %H:%M").replace(tzinfo=timezone.utc), 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': float(num_of_shares), 'open_rate': float(open_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss_rate': float(stop_loss_rate.replace(',','')), 'take_profit_rate': float(take_profit_rate.replace(',','')) }
@@ -206,10 +212,12 @@ class API():
                     take_profit = r.find_element_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-take-profit-rate']").text
                     order = {'ticker': ticker, 'order_type': order_type, 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': int(float(num_of_shares.replace(',',''))), 'open_rate': float(open_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss': float(stop_loss.replace(',','')), 'take_profit': float(take_profit.replace(',',''))}
                     pending_orders.append(order)
-
+        
+        print(f'Update Portfolio took {time.clock() - start_time} seconds')
         return pending_orders
 
     def update_trade_history(self):
+        start_time = time.clock()
         print('update_trade_history')
         self.browser.get('https://www.etoro.com/portfolio/history')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/history')
@@ -240,9 +248,12 @@ class API():
             else:
                 hist = {'ticker': ticker, 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': int(float(num_of_shares)), 'open_rate': float(open_rate.replace(',','')), 'open_date': datetime.strptime(str(open_date.replace('\n', ' ')), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc), 'close_rate': float(close_rate.replace(',','')), 'close_date': datetime.strptime(str(close_date.replace('\n', ' ')), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc)}
                 trade_history.append(hist)
+
+        print(f'Update Trade history took {time.clock() - start_time} seconds')
         return trade_history
 
     def execute_buy_order(self, order):
+        start_time = time.clock()
         print('execute_buy_order')
         self.browser.get(f'https://www.etoro.com/markets/{str(order.stock.symbol).lower()}')
         try:
@@ -350,8 +361,11 @@ class API():
                     place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
                     place_order_btn.click()
                     print('ORDER SUBMITTED')
+        print(f'Execute buy order took {time.clock() - start_time} seconds')
+
 
     def execute_sell_order(self, order):
+        start_time = time.clock()
         print('execute_sell_order')
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
@@ -373,8 +387,11 @@ class API():
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='close-position-close-button']")))
                 sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
                 sell_button.click()
+        print(f'Execute sell order took {time.clock() - start_time} seconds')
+
 
     def cancel_order(self, order):
+        start_time = time.clock()
         print('cancel order')
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
@@ -395,8 +412,11 @@ class API():
             except:
                 print(f'Unknown position {order.stock.symbol}')
                 pass
+        print(f'Execute cancel order took {time.clock() - start_time} seconds')
+
     
     def transmit_orders(self, orders):
+        start_time = time.clock()
         print('transmit orders')
         for order in orders:
             #BUY/SELL SWITCH
@@ -418,3 +438,5 @@ class API():
             else:
                 print('Error unknown order_type')
                 continue
+        print(f'Transmit orders took {time.clock() - start_time} seconds')
+

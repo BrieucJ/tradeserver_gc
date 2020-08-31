@@ -101,10 +101,10 @@ class Order extends React.Component {
     const orders = this.props.portfolio_type ? this.state.orders_real : this.state.orders_demo;
     const table_height = 'calc("100vh" - "100px")'
     return (
-      <Container >
-        <Grid container direction="column" alignItems="center" justify="center" xs={12}>
+        <Grid container spacing={0} direction="columns" alignItems="center" justify="center" >
+          <Grid item xs={12} sm={10}>
             <TableContainer component={Paper} style={{height: 'calc(100vh - 100px)'}}>
-              <Table stickyHeader aria-label="simple table" >
+              <Table size='small' stickyHeader aria-label="orders table">
                 <TableHead>
                   <TableRow>
                     <TableCell align="right">Order type</TableCell>
@@ -115,9 +115,7 @@ class Order extends React.Component {
                       <TableCell align="right">Total investment </TableCell>
                     <Hidden smDown>
                       <TableCell align="right"># of shares</TableCell>
-                    </Hidden>
                       <TableCell align="right">Total profit/loss</TableCell>
-                    <Hidden smDown>
                       <TableCell align="right">created_at</TableCell>
                       <TableCell align="right">submited_at</TableCell>
                       <TableCell align="right">executed_at</TableCell>
@@ -141,14 +139,12 @@ class Order extends React.Component {
                             <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
                             <TableCell component="th" scope="row">{order.order.stock.symbol} </TableCell>
                             <Hidden smDown>
-                              <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis', maxWidth: 150}}>{order.order.stock.name} </TableCell>   
+                              <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis'}}>{order.order.stock.name} </TableCell>   
                             </Hidden>          
-                            <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(2)} </TableCell>
+                            <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(1)} </TableCell>
                             <Hidden smDown>
                               <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
-                            </Hidden>
-                            <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(2)} </TableCell>
-                            <Hidden smDown>
+                              <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(1)} </TableCell>
                               <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
                               <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
                               <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
@@ -165,14 +161,12 @@ class Order extends React.Component {
                         <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
                         <TableCell component="th" scope="row">{order.order.stock.symbol} </TableCell>
                         <Hidden smDown>
-                          <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis', maxWidth: 150}}>{order.order.stock.name} </TableCell>   
+                          <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis'}}>{order.order.stock.name} </TableCell>   
                         </Hidden>          
-                        <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(2)} </TableCell>
+                        <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(1)} </TableCell>
                         <Hidden smDown>
                           <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
-                        </Hidden>
-                        <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(2)} </TableCell>
-                        <Hidden smDown>
+                          <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(1)} </TableCell>
                           <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
                           <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
                           <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
@@ -187,8 +181,8 @@ class Order extends React.Component {
                   </TableBody>
               </Table>
             </TableContainer>
+            </Grid>
           </Grid>
-      </Container>
     ); 
   }
 }
