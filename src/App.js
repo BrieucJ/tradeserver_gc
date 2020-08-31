@@ -102,7 +102,6 @@ class App extends React.Component {
       console.log(resp)
       var response = JSON.parse(resp.response)
         if(resp.status === 201){
-          console.log(response)
           localStorage.setItem('user', JSON.stringify(response.user))
           this.setState({user: response.user})
           this.display_toast('Account updated !', 'success')

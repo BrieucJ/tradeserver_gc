@@ -109,8 +109,10 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     #portfolio
     print('saving portfolio')
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
+    #reset portfolio 'BALANCE and investments were 0'
     if user_portfolio.portfolio_history.first().cash == 0 and user_portfolio.portfolio_history.first().total_invested_value == 0:
         user_portfolio.created_at = datetime.datetime.now(tz=timezone.utc)
+        user_portfolio.portfolio_history.all().delete()
     user_portfolio.save()
 
     portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
@@ -447,7 +449,7 @@ def update_portfolio(user_id):
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
     gc.collect()
 
-#PERIODIC TASKS
+
 @shared_task
 def update_price_history():
     print('update_price_history')
@@ -481,6 +483,7 @@ def update_price_history():
     update_sma_positions.delay()
     gc.collect()
 
+#PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/1')), name="update_orders", ignore_result=True)
 def update_orders():
     print('update_orders')
