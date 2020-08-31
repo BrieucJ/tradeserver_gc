@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
+import { Container, Hidden, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
 
@@ -48,48 +48,51 @@ class Order extends React.Component {
 
   order_status = (order) => {
     var buy_order = order.order.order_rate !== undefined
-    var status = null
+    var status = {}
 
     if(buy_order){
       //BUY ORDER
-      if (order.position === null){
-        var canceled = order.canceled_at !== null;
-        var terminated = order.terminated_at !== null;
+      if (order.order.position === null){
+        var canceled = order.order.canceled_at !== null;
+        var terminated = order.order.terminated_at !== null;
         if (canceled){
-          status = 'CANCELED'
+          status = {'status': 'CANCELED', 'color': 'orange'}
         }
         if (terminated){
-          status = 'TERMINATED'
+          status = {'status': 'CANCELED', 'color': 'orange'}
         }
       } else {
-        var submited = order.submited_at !== null;
-        var executed = submited && order.executed_at !== null;
-        var in_portfolio = executed && !canceled && !terminated && order.position.close_date === null;
-        var closed = order.position.close_date !== null;
-        if (in_portfolio){
-          status = 'HOLDING'
+        var submited = order.order.submited_at !== null;
+        var executed = submited && order.order.executed_at !== null;
+        var in_portfolio = executed && !canceled && !terminated && order.order.position.close_date === null;
+        var closed = order.order.position.close_date !== null;
+        if (!submited){
+          status = {'status': 'PENDING', 'color': 'orange'}
         }
-        if (canceled){
-          status = 'CANCELED'
+        if (!executed){
+          status = {'status': 'PENDING', 'color': 'orange'}
         }
-        if (terminated){
-          status = 'TERMINATED'
+        if (executed){
+          status = {'status': 'EXECUTED', 'color': 'green'}
         }
         if (closed){
-          status = 'CLOSED'
+          status = {'status': 'EXECUTED', 'color': 'green'}
         }
       }
     } else {
-      //SELL ORDER
-      if (order.submited_at !== null){
-        status = 'PENDING'
+      //SELL order
+      if (order.order.submited_at === null && order.order.executed_at === null){
+        status = {'status': 'PENDING', 'color': 'orange'}
       }
-      if (order.submited_at !== null && order.executed_at !== null){
-        status = 'SOLD'
+      if (order.order.submited_at !== null && order.order.executed_at === null){
+        status = {'status': 'PENDING', 'color': 'orange'}
+      }
+      if (order.order.submited_at !== null && order.order.executed_at !== null){
+        status = {'status': 'EXECUTED', 'color': 'green'}
       }
     }
-    if (status === null){
-      status = 'ERROR'
+    if (status === {}){
+      status = {'status': 'ERROR', 'color': 'red'}
     }
     return status
   }
@@ -98,29 +101,36 @@ class Order extends React.Component {
     const orders = this.props.portfolio_type ? this.state.orders_real : this.state.orders_demo;
     const table_height = 'calc("100vh" - "100px")'
     return (
-      <Container>
-        <Grid container direction="column" alignItems="center" justify="center">
+      <Container >
+        <Grid container direction="column" alignItems="center" justify="center" xs={12}>
             <TableContainer component={Paper} style={{height: 'calc(100vh - 100px)'}}>
               <Table stickyHeader aria-label="simple table" >
                 <TableHead>
                   <TableRow>
                     <TableCell align="right">Order type</TableCell>
                     <TableCell>Symbol</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell align="right">Total investment </TableCell>
-                    <TableCell align="right"># of shares</TableCell>
-                    <TableCell align="right">Total profit/loss</TableCell>
-                    <TableCell align="right">created_at</TableCell>
-                    <TableCell align="right">submited_at</TableCell>
-                    <TableCell align="right">executed_at</TableCell>
-                    <TableCell align="right">canceled_at</TableCell>
-                    <TableCell align="right">terminated_at</TableCell>
+                    <Hidden smDown>
+                      <TableCell>Name</TableCell>
+                    </Hidden>
+                      <TableCell align="right">Total investment </TableCell>
+                    <Hidden smDown>
+                      <TableCell align="right"># of shares</TableCell>
+                    </Hidden>
+                      <TableCell align="right">Total profit/loss</TableCell>
+                    <Hidden smDown>
+                      <TableCell align="right">created_at</TableCell>
+                      <TableCell align="right">submited_at</TableCell>
+                      <TableCell align="right">executed_at</TableCell>
+                      <TableCell align="right">canceled_at</TableCell>
+                      <TableCell align="right">terminated_at</TableCell>
+                    </Hidden>
                     <TableCell align="right">Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {
                   orders.map((order, index)=>{
+                    var status = this.order_status(order)
                     if(index === 0 || new Date(order.order.created_at).getDay() !== new Date(orders[index-1].order.created_at).getDay()){
                       return(
                         <React.Fragment key={order.order.id}>
@@ -128,37 +138,49 @@ class Order extends React.Component {
                             <TableCell component="th" scope="row" align='center' colSpan={12} style={{fontWeight:'bold'}}>{order.order.created_at.split('T')[0]} </TableCell>
                           </TableRow>
                           <TableRow hover key={order.order.id} onClick={() => {this.props.history.push('/position/?id='+order.position.id)}} >
-                            <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
+                            <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
                             <TableCell component="th" scope="row">{order.order.stock.symbol} </TableCell>
-                            <TableCell component="th" scope="row">{order.order.stock.name} </TableCell>
+                            <Hidden smDown>
+                              <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis', maxWidth: 150}}>{order.order.stock.name} </TableCell>   
+                            </Hidden>          
                             <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(2)} </TableCell>
-                            <TableCell align='right'>{order.position === null ? 'None' :  order.position.num_of_shares} </TableCell>
+                            <Hidden smDown>
+                              <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
+                            </Hidden>
                             <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(2)} </TableCell>
-                            <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.canceled_at === null || order.order.canceled_at === undefined ? '-' : new Date(order.order.canceled_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.terminated_at === null || order.order.terminated_at === undefined ? '-' : new Date(order.order.terminated_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'> {this.order_status(order)} </TableCell>                          
-                          </TableRow>
+                            <Hidden smDown>
+                              <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
+                              <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
+                              <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
+                              <TableCell align='right'>{order.order.canceled_at === null || order.order.canceled_at === undefined ? '-' : new Date(order.order.canceled_at).toLocaleTimeString()} </TableCell>
+                              <TableCell align='right'>{order.order.terminated_at === null || order.order.terminated_at === undefined ? '-' : new Date(order.order.terminated_at).toLocaleTimeString()} </TableCell>
+                            </Hidden>
+                            <TableCell align='right' style={{color: status['color']}}> {status['status']} </TableCell>
+                        </TableRow>
                         </React.Fragment>
                       )
                     } else {
                       return(
-                        <TableRow hover key={order.order.id} onClick={() => {this.props.history.push('/position/?id='+order.position.id)}} >
-                            <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
-                            <TableCell component="th" scope="row">{order.order.stock.symbol} </TableCell>
-                            <TableCell component="th" scope="row">{order.order.stock.name} </TableCell>
-                            <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(2)} </TableCell>
-                            <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
-                            <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(2)} </TableCell>
-                            <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.canceled_at === null || order.order.canceled_at === undefined ? '-' : new Date(order.order.canceled_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'>{order.order.terminated_at === null || order.order.terminated_at === undefined ? '-' : new Date(order.order.terminated_at).toLocaleTimeString()} </TableCell>
-                            <TableCell align='right'> {this.order_status(order)} </TableCell>
-                        </TableRow>
+                      <TableRow hover key={order.order.id} onClick={() => {this.props.history.push('/position/?id='+order.position.id)}} >
+                        <TableCell component="th" scope="row" style={{color: order.order.order_rate === undefined ? 'red' : 'green'}}>{order.order.order_rate === undefined ? 'SELL' : 'BUY'} </TableCell>
+                        <TableCell component="th" scope="row">{order.order.stock.symbol} </TableCell>
+                        <Hidden smDown>
+                          <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis', maxWidth: 150}}>{order.order.stock.name} </TableCell>   
+                        </Hidden>          
+                        <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(2)} </TableCell>
+                        <Hidden smDown>
+                          <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
+                        </Hidden>
+                        <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(2)} </TableCell>
+                        <Hidden smDown>
+                          <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
+                          <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
+                          <TableCell align='right'>{order.order.executed_at === null ? '-' : new Date(order.order.executed_at).toLocaleTimeString()} </TableCell>
+                          <TableCell align='right'>{order.order.canceled_at === null || order.order.canceled_at === undefined ? '-' : new Date(order.order.canceled_at).toLocaleTimeString()} </TableCell>
+                          <TableCell align='right'>{order.order.terminated_at === null || order.order.terminated_at === undefined ? '-' : new Date(order.order.terminated_at).toLocaleTimeString()} </TableCell>
+                        </Hidden>
+                        <TableCell align='right' style={{color: status['color']}}> {status['status']} </TableCell>
+                      </TableRow>
                       )
                     }
                   })}
