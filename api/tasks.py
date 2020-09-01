@@ -498,8 +498,8 @@ def transmit_orders():
                 mode = 'real'
             else:
                 mode = 'demo'
-            sell_orders = portfolio.sell_order.filter(submited_at__isnull=True)
-            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True).order_by('-total_investment') 
+            sell_orders = portfolio.sell_order.filter(submited_at__isnull=True, executed_at__isnull=True)
+            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True, canceled_at__isnull=True, terminated_at__isnull=True, executed_at__isnull=True).order_by('-total_investment') 
             canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
             orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
             if len(orders) != 0:
