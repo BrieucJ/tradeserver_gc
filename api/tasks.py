@@ -141,12 +141,13 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
     #trade history
     for th in trade_history:
+        print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
             stock = None
         
-        old_positions = user_portfolio.position.filter(stock=stock, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
+        old_positions = user_portfolio.position.filter(stock=stock, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=False)
         print(len(old_positions))
         if not old_positions.first():
             print('position is not a closed position')
@@ -168,8 +169,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             else:
                 print('#### UNKNOW POSITION ####')
                 print(stock)
-                # pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
-                # pos.save()
+                pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
+                pos.save()
         else:
             print('position is an old positions')
 
