@@ -152,9 +152,9 @@ class Order extends React.Component {
                             <Hidden smDown>
                               <TableCell component="th" scope="row" style={{display:'block', overflow: 'hidden',  whiteSpace:'nowrap', textOverflow:'ellipsis'}}>{order.order.stock.name} </TableCell>   
                             </Hidden>          
-                            <TableCell align='right'>{order.position === null ? 'None' : order.position.total_investment.toFixed(1)} </TableCell>
+                            <TableCell align='right'>{order.order.order_rate === undefined ? order.position.total_investment.toFixed(1) : order.order.total_investment.toFixed(1)} </TableCell>
                             <Hidden smDown>
-                              <TableCell align='right'>{order.position === null ? 'None' : order.position.num_of_shares} </TableCell>
+                              <TableCell align='right'>{order.order.order_rate === undefined ? order.position.num_of_shares : order.order.num_of_shares} </TableCell>
                               <TableCell align='right' style={{color: this.total_profit(order) === null ? 'white' : this.total_profit(order) > 0 ? 'green' : 'red'}} >{this.total_profit(order) === null ? 'n.a.' : this.total_profit(order).toFixed(1)} </TableCell>
                               <TableCell align='right'>{order.order.created_at === null ? '-' : new Date(order.order.created_at).toLocaleTimeString()} </TableCell>
                               <TableCell align='right'>{order.order.submited_at === null ? '-' : new Date(order.order.submited_at).toLocaleTimeString()} </TableCell>
@@ -163,7 +163,7 @@ class Order extends React.Component {
                               <TableCell align='right'>{order.order.terminated_at === null || order.order.terminated_at === undefined ? '-' : new Date(order.order.terminated_at).toLocaleTimeString()} </TableCell>
                             </Hidden>
                             <TableCell align='right' style={{color: status['color']}}> {status['status']} </TableCell>
-                        </TableRow>
+                          </TableRow>
                         </React.Fragment>
                       )
                     } else {

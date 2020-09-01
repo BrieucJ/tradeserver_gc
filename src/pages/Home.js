@@ -147,7 +147,7 @@ class Home extends React.Component {
     if(this.props.portfolio_type){
       if (this.state.p_real.portfolio.created_at !== null){
         return this.state.p_real.portfolio.last_portfolio_history.cash
-      } else{
+      } else {
         return null
       }
     }else{
@@ -197,6 +197,7 @@ class Home extends React.Component {
   }
 
   annualized_performance = () => {
+    console.log('annualized_performance')
     if(this.props.portfolio_type) {
       if (this.state.p_real.portfolio.created_at !== null){
         var delta = Math.abs(new Date(this.state.p_real.portfolio.created_at) - new Date()) / 1000;
@@ -223,17 +224,40 @@ class Home extends React.Component {
   initial_balance = () => {
     if(this.props.portfolio_type) {
       if (this.state.p_real.p_history.length !== 0){
+        this.state.p_real.p_history.sort((a,b) => a['created_at'] > b['created_at'] ? 1 : -1)
         return this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
       } else {
         return null
       }
     } else {
       if (this.state.p_demo.p_history.length !== 0){
+        this.state.p_demo.p_history.sort((a,b) => a['created_at'] > b['created_at'] ? 1 : -1)
         return this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
       } else {
         return null
       }
     }
+  }
+
+  max_drawdown = () => {
+    var lowest_balance = null;
+    var init_balance = this.initial_balance()
+    if(this.props.portfolio_type) {
+      this.state.p_real.p_history.forEach(element => {
+        var bal = element['cash'] + element['total_invested_value']
+        if (lowest_balance === null || bal < lowest_balance){
+          lowest_balance = bal
+        }
+      });
+    } else {
+      this.state.p_demo.p_history.forEach(element => {
+        var bal = element['cash'] + element['total_invested_value']
+        if (lowest_balance === null || bal < lowest_balance){
+          lowest_balance = bal
+        }
+      });
+    }
+    return lowest_balance - init_balance
   }
 
   toggle_graph_dd = () => {
@@ -274,8 +298,8 @@ class Home extends React.Component {
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Creation date: </Typography>
                   <Typography variant='body1'> {this.props.portfolio_type ? 
-                    this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_real.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null 
-                  : this.state.p_real.p_history[0] !== undefined ? new Date(this.state.p_demo.p_history[0].created_at).toLocaleString({timeZoneName:'short'}) : null} </Typography>
+                    this.state.p_real.portfolio !== undefined ? this.state.p_demo.portfolio.created_at.split('T')[0] : null 
+                  : this.state.p_real.portfolio !== undefined ? this.state.p_real.portfolio.created_at.split('T')[0] : null} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Last update: </Typography>
@@ -315,6 +339,10 @@ class Home extends React.Component {
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Annualized return: </Typography>
                   <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {(this.annualized_performance()*100).toFixed(2)}%</Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Max drawdown : </Typography>
+                  <Typography variant='body1' style={{color: this.max_drawdown() < 0 ? 'red' : 'green'}}> {(this.max_drawdown()).toFixed(2)} ({ ((((this.max_drawdown() + this.initial_balance())/ this.initial_balance())-1 )*100).toFixed(1) }%)</Typography>
                 </Grid>
               </Paper>
             </Grid>

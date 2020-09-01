@@ -211,7 +211,6 @@ class RetrieveOrder(generics.RetrieveAPIView):
             temp_demo.sort(key=lambda x: x['created_at'], reverse=True)
             orders_demo = []
             for obj in temp_demo:
-                print(obj)
                 if Position.objects.filter(id=obj['position']).first() == None:
                     order =  {'order': obj, 'position': None}
                 else:
