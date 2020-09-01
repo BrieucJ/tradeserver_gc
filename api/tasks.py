@@ -30,6 +30,11 @@ import gc
 def create_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
     print('create_portfolio')
     user = User.objects.get(id=user_id)
+
+    tickers_list = [pos['ticker'] for pos in positions]
+    print(tickers_list)
+    print(set(tickers_list))
+    print( len(set(tickers_list)) == len(tickers_list) )
     
     #portfolio
     # print('creating portfolio')
@@ -95,6 +100,11 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
     print(user_portfolio.portfolio_type)
+
+    tickers_list = [pos['ticker'] for pos in positions]
+    print(tickers_list)
+    print(set(tickers_list))
+    print( len(set(tickers_list)) == len(tickers_list) )
     
     #portfolio
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
@@ -109,13 +119,14 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             stock = Stock.objects.filter(symbol=position['ticker']).first()
         else:
             stock = None
-        pos = user_portfolio.position.filter(stock=stock, close_date__isnull=True).first()
-        if pos:
+        
+        pos = user_portfolio.position.filter(stock=stock, close_date__isnull=True)
+        if len(pos) == 1:
             print(f'updating {position["ticker"]}')
             pos.current_rate = position['current_rate']
             pos.updated_at = datetime.datetime.now(tz=timezone.utc)
             pos.save()
-        else:
+        elif len(pos) == 0:
             print(f'creating new position {position["ticker"]}')
             new_pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
             new_pos.save()
@@ -127,6 +138,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 if buy_order.submited_at == None:
                     buy_order.submited_at = position['open_date']
                 buy_order.save()
+        else:
+            print(f'ERROR SAME STOCK {len(pos)} IN PORTFOLIO')
 
     #trade history
     print('#### TH ####')
