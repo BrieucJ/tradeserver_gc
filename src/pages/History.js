@@ -137,6 +137,8 @@ class History extends React.Component {
               </TableCell>
               <TableCell>Sector
               </TableCell>
+              <TableCell align="right">created_at 
+              </TableCell>
               <TableCell align="right">Open date 
               </TableCell>
               <TableCell align="right">Close date
@@ -156,6 +158,7 @@ class History extends React.Component {
               <TableRow hover key={hi.id} onClick={() => {this.props.history.push('/position/?id='+hi.id)}} >
                 <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
                 <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+                <TableCell align="right"> {new Date(hi.created_at).toLocaleString({timeZoneName:'short'})} </TableCell>
                 <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
                 <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
                 <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
@@ -176,15 +179,15 @@ class History extends React.Component {
 
   render() {
     return (
-      <Container>
-        <Grid  container direction="column" alignItems="center" justify="center">
+      <Grid container spacing={0} direction="column" alignItems="center" justify="center" >
+        <Grid item xs={12} sm={10}>
         <Typography variant="h4" style={{margin:5}}>
             {this.props.portfolio_type && 'Real history'}
             {!this.props.portfolio_type && 'Demo history'}
         </Typography>
           {this.renderHistory()}
           </Grid>
-      </Container>
+      </Grid>
     ); 
   }
 }

@@ -63,20 +63,11 @@ class Menu extends React.Component {
                 <ListItem button component="a" key={'home'} href="/">
                   <ListItemText primary={'Home'} />
                 </ListItem>
-                <ListItem button component="a" key={'portfolio'} href="/portfolio">
-                  <ListItemText primary={'Portfolio'} />
-                </ListItem>
                 <ListItem button component="a" key={'order'} href="/order">
-                  <ListItemText primary={'Order'} />
+                  <ListItemText primary={'Orders'} />
                 </ListItem>
                 <ListItem button component="a" key={'history'} href="/history">
                   <ListItemText primary={'History'} />
-                </ListItem>
-                <ListItem button component="a" key={'market'} href="/market">
-                  <ListItemText primary={'Market'} />
-                </ListItem>
-                <ListItem button component="a" key={'model'} href="/model">
-                  <ListItemText primary={'Model'} />
                 </ListItem>
               </List>
               </Hidden>
@@ -104,20 +95,11 @@ class Menu extends React.Component {
                 <ListItem button component="a" key={'home'} href="/">
                   <ListItemText primary={'Home'} />
                 </ListItem>
-                <ListItem button component="a" key={'portfolio'} href="/portfolio">
-                  <ListItemText primary={'Portfolio'} />
-                </ListItem>
-                <ListItem button component="a" key={'order'} href="/order">
-                  <ListItemText primary={'Order'} />
+                <ListItem button component="a" key={'orders'} href="/order">
+                  <ListItemText primary={'Orders'} />
                 </ListItem>
                 <ListItem button component="a" key={'history'} href="/history">
                   <ListItemText primary={'History'} />
-                </ListItem>
-                <ListItem button component="a" key={'market'} href="/market">
-                  <ListItemText primary={'Market'} />
-                </ListItem>
-                <ListItem button component="a" key={'model'} href="/model">
-                  <ListItemText primary={'Model'} />
                 </ListItem>
               </List>
             </SwipeableDrawer>

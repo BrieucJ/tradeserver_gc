@@ -37,63 +37,10 @@ class Portfolio extends React.Component {
     })
   }
 
-  renderCurrentPositions = () => {
-    var positions = []
-    if (this.props.portfolio_type) {
-      positions = this.state.current_real_positions
-    } else {
-      positions = this.state.current_demo_positions
-    }
-
-    return(
-      positions.map((position) => (
-        <TableRow key={position.id}>
-          <TableCell component="th" scope="row">{position.stock !== null ? position.stock.symbol : 'Unknown'} </TableCell>
-          <TableCell component="th" scope="row">{position.stock !== null ? position.stock.name : 'Unknown'} </TableCell>
-          <TableCell align="right">{position.open_date === null ? 'N.A.' : new Date(position.open_date).toLocaleString({timeZoneName:'short'})}</TableCell>
-          <TableCell align="right">{position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })}</TableCell>
-          <TableCell align="right">{position.num_of_shares}</TableCell>
-          <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {Math.round(position.current_rate*position.num_of_shares - position.open_rate*position.num_of_shares)} </TableCell>
-          <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {((position.current_rate/position.open_rate-1)*100).toFixed(2)+"%"} </TableCell>
-        </TableRow>
-      ))
-    )
-  }
-
-  renderPortfolio = () => {
-    var portfolio = {}
-    if (this.props.portfolio_type) {
-      portfolio = this.state.real_portfolio
-    } else {
-      portfolio = this.state.demo_portfolio
-    }
-    return (
-      <Grid container direction="row" alignItems="center" justify="center" style={{padding:10}}>
-        <Typography variant='h6' style={{paddingRight: 10}}>
-          Cash: {portfolio.last_portfolio_history !== undefined ? portfolio.last_portfolio_history.cash.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
-        </Typography>
-        <Typography variant='h6'>
-          Total invested value: {portfolio.last_portfolio_history !== undefined ? portfolio.last_portfolio_history.total_invested_value.toLocaleString(undefined, {maximumFractionDigits: 0 }) : 'None'} {portfolio.currency}
-        </Typography>
-      </Grid>
-    )
-  }
-
   render() {
+    const positions = this.props.portfolio_type ? this.state.current_real_positions : this.state.current_demo_positions
     return (
       <Container>
-        <Grid container direction="column" alignItems="center" justify="center">
-          <Typography variant="h4" style={{margin:5}}>
-            {this.props.portfolio_type && 'Real portfolio'}
-            {!this.props.portfolio_type && 'Demo portfolio'}
-          </Typography>
-          <Typography variant='body1' style={{paddingRight: 10}}>
-            {this.props.portfolio_type ? new Date(this.state.real_portfolio.updated_at).toLocaleString({timeZoneName:'short'}) : new Date(this.state.demo_portfolio.updated_at).toLocaleString({timeZoneName:'short'}) }
-          </Typography>          
-        </Grid>
-        <Grid container direction="column" alignItems="center" justify="center">
-          {this.renderPortfolio()}
-        </Grid>
         <Grid container direction="column" alignItems="center" justify="center">
           <TableContainer component={Paper}>
             <Table aria-label="simple table">
@@ -109,7 +56,17 @@ class Portfolio extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.renderCurrentPositions()}
+                {positions.map((position) => (
+                  <TableRow key={position.id}>
+                    <TableCell component="th" scope="row">{position.stock !== null ? position.stock.symbol : 'Unknown'} </TableCell>
+                    <TableCell component="th" scope="row">{position.stock !== null ? position.stock.name : 'Unknown'} </TableCell>
+                    <TableCell align="right">{position.open_date === null ? 'N.A.' : new Date(position.open_date).toLocaleString({timeZoneName:'short'})}</TableCell>
+                    <TableCell align="right">{position.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })}</TableCell>
+                    <TableCell align="right">{position.num_of_shares}</TableCell>
+                    <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {Math.round(position.current_rate*position.num_of_shares - position.open_rate*position.num_of_shares)} </TableCell>
+                    <TableCell align="right" style={{color: position.current_rate - position.open_rate > 0 ? 'green' : 'red'}}> {((position.current_rate/position.open_rate-1)*100).toFixed(2)+"%"} </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>

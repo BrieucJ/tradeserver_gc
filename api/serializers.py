@@ -64,7 +64,7 @@ class BuyOrderCreateSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         pos = data['portfolio'].position.filter(stock=data['stock'], close_date__isnull=True).first()
-        bo = data['portfolio'].buy_order.filter(stock=data['stock'], executed_at__isnull=True).first()
+        bo = data['portfolio'].buy_order.filter(stock=data['stock'], executed_at__isnull=True, terminated_at__isnull=True).first()
         if pos:
             raise ValidationError('Order is already in portfolio')
         elif bo:

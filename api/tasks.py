@@ -1,7 +1,7 @@
 import datetime
 import sys
 import time
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from itertools import chain
 from datetime import timedelta
 from django.db import IntegrityError
@@ -164,7 +164,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                         sell_order.executed_at = th['close_date']
                         sell_order.save()
             else:
-                print('unknown position')
+                print('#### UNKNOW POSITION ####')
+                print(stock)
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
         else:
@@ -243,9 +244,7 @@ def update_sell_orders(portfolio_id):
     portfolio = Portfolio.objects.get(id=portfolio_id)
     positions = portfolio.position.filter(close_date__isnull=True)
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-    print(last_business_day)
     for position in positions:
-        print(position)
         bo = position.buy_order.first()
         pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
         if bo == None and pending_bo == None:
@@ -255,11 +254,10 @@ def update_sell_orders(portfolio_id):
                 order.save()
         else:
             sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
-            print(sma_position)
+
             if sma_position == None:
                 print('SMA POS NONE')
                 last_sma_position_date = position.sma_position.price_date
-                print(last_sma_position_date)
                 if not position.sell_order.first() and (last_business_day.date() - last_sma_position_date) >= 2:
                     print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)

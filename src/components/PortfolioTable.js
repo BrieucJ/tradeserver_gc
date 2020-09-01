@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel} from '@material-ui/core';
+import { Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TableSortLabel, Hidden} from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = {
@@ -135,21 +135,25 @@ class PortfolioTable extends React.Component {
                         <TableCell>Ticker
                             <TableSortLabel active={this.state.sorting_col==='symbol'} direction={this.state.sorting_dir} id='symbol' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
-                        <TableCell>Name
-                            <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
-                        </TableCell>
-                        <TableCell>Sector
-                            <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
-                        </TableCell>
+                        <Hidden smDown>
+                          <TableCell>Name
+                              <TableSortLabel active={this.state.sorting_col==='name'} direction={this.state.sorting_dir} id='name' onClick={e => {this.handleSorting(e)}} />
+                          </TableCell>
+                          <TableCell>Sector
+                              <TableSortLabel active={this.state.sorting_col==='sector'} direction={this.state.sorting_dir} id='sector' onClick={e => {this.handleSorting(e)}} />
+                          </TableCell>
+                        </Hidden>
                         <TableCell align="right">Amount 
                             <TableSortLabel active={this.state.sorting_col==='total_investment'} direction={this.state.sorting_dir} id='total_investment' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
-                        <TableCell align="right">% 
-                            <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
-                        </TableCell>
-                        <TableCell align="right">P/L $
-                            <TableSortLabel active={this.state.sorting_col==='P_L_$'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
-                        </TableCell>
+                        <Hidden smDown>
+                          <TableCell align="right">% 
+                              <TableSortLabel active={this.state.sorting_col==='alloc_percentage'} direction={this.state.sorting_dir} id='alloc_percentage' onClick={e => {this.handleSorting(e)}} />
+                          </TableCell>
+                          <TableCell align="right">P/L $
+                              <TableSortLabel active={this.state.sorting_col==='P_L_$'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
+                          </TableCell>
+                        </Hidden>
                         <TableCell align="right">P/L %
                             <TableSortLabel active={this.state.sorting_col==='P_L_%'} direction={this.state.sorting_dir} id='P_L' onClick={e => {this.handleSorting(e)}} />
                         </TableCell>
@@ -162,13 +166,17 @@ class PortfolioTable extends React.Component {
                         {portfolio.current_positions.map((po, index) => (
                             <TableRow hover key={po.id} onClick={() => {this.props.history.push('/position/?id='+po.id)}}>
                                 <TableCell component="th" scope="row">{po.stock.symbol.substring(0,20)}  </TableCell>
-                                <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
-                                <TableCell scope="row">{po.stock.sector}  </TableCell>
+                                <Hidden smDown>
+                                  <TableCell component="th" scope="row">{po.stock.name.substring(0,20)}  </TableCell>
+                                  <TableCell scope="row">{po.stock.sector}  </TableCell>
+                                </Hidden>
                                 <TableCell align="right"> {po.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                                <TableCell align="right"> { ((po.total_investment / this.total_balance(portfolio.portfolio)) * 100).toFixed(2)}% </TableCell>
-                                <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
-                                {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })}
-                                </TableCell>
+                                <Hidden smDown>
+                                  <TableCell align="right"> { ((po.total_investment / this.total_balance(portfolio.portfolio)) * 100).toFixed(2)}% </TableCell>
+                                  <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} > 
+                                  {((po.current_rate - po.open_rate) * po.num_of_shares).toLocaleString(undefined, {maximumFractionDigits: 0 })}
+                                  </TableCell>
+                                </Hidden>
                                 <TableCell align="right" style={{color: po.current_rate > po.open_rate ? 'green' : 'red'}} >
                                     {((po.current_rate/po.open_rate-1)*100).toFixed(2)}%
                                 </TableCell>

@@ -130,7 +130,8 @@ class Position(models.Model):
     
     class Meta:
         ordering = ['-open_date']
-        constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio') ]
+        unique_together = ['stock', 'portfolio', 'open_date', 'open_rate', 'num_of_shares', 'total_investment', 'stop_loss_rate', 'take_profit_rate', 'close_rate', 'close_date']
+        constraints = [models.UniqueConstraint(fields=['stock', 'portfolio'], condition=models.Q(close_date__isnull=True), name='unique stock if in portfolio')]
 
     @property
     def sma_position(self):
