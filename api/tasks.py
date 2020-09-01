@@ -165,9 +165,9 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                         sell_order.save()
             else:
                 print('#### UNKNOW POSITION ####')
-                print(stock)
-                pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
-                pos.save()
+                # print(stock)
+                # pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
+                # pos.save()
         else:
             print('position is an old positions')
 
