@@ -106,7 +106,7 @@ class Home extends React.Component {
         for (let i = 0; i < this.state.p_real.p_history.length; i++) {
           const cash = this.state.p_real.p_history[i].cash
           const total_invested_value = this.state.p_real.p_history[i].total_invested_value
-          const name = this.state.p_demo.p_history[i].created_at.split('T')[0]
+          const name = this.state.p_real.p_history[i].created_at.split('T')[0]
           const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value}
           data.push(item)
         }
@@ -381,7 +381,7 @@ class Home extends React.Component {
                   </MenuItem>
                 </Select>
               </FormControl>
-                <Area_Chart
+                  <Area_Chart
                   data={this.area_chart_data()}
                   height={this.state.g_height}
                   width={this.state.g_width}

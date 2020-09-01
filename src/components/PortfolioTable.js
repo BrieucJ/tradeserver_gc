@@ -33,7 +33,7 @@ class PortfolioTable extends React.Component {
     if (days < 1){
       return `${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 2})} day` 
     } else {
-      return `${days},${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 0})} day(s)` 
+      return `${days},${(hours/24).toLocaleString(undefined, {maximumFractionDigits: 0})} days` 
     }
   }
 
