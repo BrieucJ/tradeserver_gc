@@ -40,32 +40,19 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
 
     #positions
     print('creating current positions')
-    print(positions)
     for position in positions:
+        print(position)
         if len(Stock.objects.filter(symbol=position['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=position['ticker']).first()
         else:
             stock = None
-        pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], total_investment=position['total_investment'], current_rate=position['current_rate'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
+        pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
         pos.save()
-        buy_order = user_portfolio.buy_order.filter(stock=pos.stock, executed_at__isnull=True).first()
-        if buy_order:
-            print('existing buy order')
-            buy_order.position = pos
-            buy_order.executed_at = position['open_date']
-            if buy_order.submited_at == None:
-                buy_order.submited_at = position['open_date']
-            buy_order.save()
-        else:
-            print('BUY ORDER unknow')
-            if pos.sell_order.first() == None:
-                print(f'CREATING SELL ORDER {pos.stock}')
-                order = SellOrder(user=user, stock=pos.stock, portfolio=user_portfolio, position=pos)
-                order.save()
 
     #trade history
-    # print('creating old positions')
+    print('creating old positions')
     for th in trade_history:
+        print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
@@ -75,7 +62,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
         pos.save()
 
     #orders
-    # print('creating orders')
+    print('creating orders')
     for pending_order in pending_orders:
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
@@ -84,11 +71,13 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
         
         if pending_order['order_type'] == 1:
             bo = BuyOrder(user=user, stock=stock, portfolio=user_portfolio, num_of_shares=pending_order['num_of_shares'], order_rate=pending_order['order_rate'], current_rate=pending_order['current_rate'],
-                        total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], created_at=datetime.datetime.now(tz=timezone.utc), submited_at=pending_order['submited_at'])
+                        total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], created_at=datetime.datetime.now(tz=timezone.utc),
+                        submited_at=pending_order['submited_at'])
             bo.save()
         elif pending_order['order_type'] == 0:
             existing_position = user_portfolio.position.filter(close_date__isnull=True, stock=stock)
             if len(existing_position) == 0:
+                print('Creating old position for pending sell order')
                 position = Position(stock=stock, portfolio=user_portfolio, open_rate=pending_order['open_rate'], num_of_shares=pending_order['num_of_shares'], current_rate=pending_order['current_rate'], total_investment=pending_order['total_investment'])
                 position.save()
             else:
@@ -105,7 +94,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     print(f'save_portfolio {portfolio["portfolio_type"]}')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
-    print(user_portfolio)
+    print(user_portfolio.portfolio_type)
+    
     #portfolio
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
