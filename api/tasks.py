@@ -107,7 +107,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
     print(user_portfolio)
     #portfolio
-    print('saving portfolio')
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
 
@@ -122,12 +121,12 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             stock = None
         pos = user_portfolio.position.filter(stock=stock, close_date__isnull=True).first()
         if pos:
-            print(f'updating {position}')
+            print(f'updating {position["ticker"]}')
             pos.current_rate = position['current_rate']
             pos.updated_at = datetime.datetime.now(tz=timezone.utc)
             pos.save()
         else:
-            print(f'creating new position {position}')
+            print(f'creating new position {position["ticker"]}')
             new_pos = Position(stock=stock, portfolio=user_portfolio, open_date=position['open_date'], open_rate=position['open_rate'], num_of_shares=position['num_of_shares'], current_rate=position['current_rate'], total_investment=position['total_investment'], stop_loss_rate=position['stop_loss_rate'], take_profit_rate=position['take_profit_rate'])
             new_pos.save()
             buy_order = user_portfolio.buy_order.filter(stock=stock, executed_at__isnull=True).first()
@@ -140,41 +139,40 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                 buy_order.save()
 
     #trade history
+    print('#### TH ####')
     for th in trade_history:
-        print(th)
+        print(f'#### {th} ####')
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
             stock = None
-        
-        old_positions = user_portfolio.position.filter(stock=stock, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=False)
+
+        old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
         print(len(old_positions))
-        if not old_positions.first():
-            print('position is not a closed position')
-            current_position = user_portfolio.position.filter(stock=stock, close_date__isnull=True).first()
+        if old_positions.first() != None:
+            print('EXISTING OLD POSITION')
+        else:
+            current_position = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=True).first()
             if current_position:
-                print('position is in portfolio')
+                print(f'Closing {th["ticker"]}')
                 current_position.close_date = th['close_date']
                 current_position.close_rate = th['close_rate']
                 current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
                 current_position.save()
                 sell_order = current_position.sell_order.first()
-                print('check sell order')
                 if sell_order:
-                    print('SELL ORDER PRESENT')
+                    print(f'Closing {th["ticker"]} sell order')
                     if sell_order.executed_at == None:
                         sell_order.submited_at = th['close_date']
                         sell_order.executed_at = th['close_date']
                         sell_order.save()
             else:
-                print('#### UNKNOW POSITION ####')
-                print(stock)
+                print('#### UNKNOW OLD POSITION ####')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
-        else:
-            print('position is an old positions')
+        print(f'########')
 
-    #orders
+    print('#### ORDERS ####')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
     canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
     for co in canceled_orders:
@@ -202,7 +200,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                     total_investment=pending_order['total_investment'], stop_loss=pending_order['stop_loss'], take_profit=pending_order['take_profit'], submited_at=pending_order['submited_at'])
                 bo.save()
         elif pending_order['order_type'] == 0:
-            existing_position = user_portfolio.position.filter(close_date__isnull=True, stock=stock)
+            existing_position = user_portfolio.position.filter(stock=stock, close_date__isnull=True)
             if len(existing_position) == 0:
                 position = Position(stock=stock, portfolio=user_portfolio, open_rate=pending_order['open_rate'], num_of_shares=pending_order['num_of_shares'], current_rate=pending_order['current_rate'], total_investment=pending_order['total_investment'])
                 position.save()

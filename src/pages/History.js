@@ -188,6 +188,7 @@ class History extends React.Component {
               <TableCell align="right">Open date </TableCell>
               <TableCell align="right">Close date</TableCell>
               <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Total investment</TableCell>
               <TableCell align="right">Open rate </TableCell>
               <TableCell align="right">Close rate</TableCell>
               <TableCell align="right">P/L $</TableCell>
@@ -204,6 +205,7 @@ class History extends React.Component {
                 <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
                 <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
                 <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+                <TableCell align="right"> {hi.total_investment.toFixed(1)} </TableCell>
                 <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
                 <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
                 <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 

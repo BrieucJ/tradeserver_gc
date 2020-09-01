@@ -301,14 +301,14 @@ class Home extends React.Component {
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Creation date: </Typography>
                   <Typography variant='body1'> {this.props.portfolio_type ? 
-                    this.state.p_real.portfolio !== undefined ? this.state.p_demo.portfolio.created_at.split('T')[0] : null 
-                  : this.state.p_real.portfolio !== undefined ? this.state.p_real.portfolio.created_at.split('T')[0] : null} </Typography>
+                    this.state.p_real.portfolio !== undefined ? this.state.p_real.portfolio.created_at.split('T')[0] : null 
+                  : this.state.p_demo.portfolio !== undefined ? this.state.p_demo.portfolio.created_at.split('T')[0] : null} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Last update: </Typography>
                   <Typography variant='body1'> {this.props.portfolio_type ? 
                     this.state.p_real.portfolio !== undefined ? new Date(this.state.p_real.portfolio.updated_at).toLocaleString({timeZoneName:'short'})  : null 
-                  : this.state.p_real.portfolio !== undefined ? new Date(this.state.p_demo.portfolio.updated_at).toLocaleString({timeZoneName:'short'}) : null} </Typography>
+                  : this.state.p_demo.portfolio !== undefined ? new Date(this.state.p_demo.portfolio.updated_at).toLocaleString({timeZoneName:'short'}) : null} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Currency: </Typography>

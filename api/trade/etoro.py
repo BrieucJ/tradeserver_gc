@@ -46,7 +46,7 @@ class API():
         self.browser.close()
         self.browser.quit()
         self.browser = None
-        print(f'ETORO took {time.time() - self.start_time} seconds')
+        print(f'ETORO took {round(time.time() - self.start_time)} seconds')
     
     def login(self):
         start_time = time.time()
@@ -61,7 +61,7 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/watchlists')
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[automation-id='menu-user-page-link']")))
         self.switch_mode()
-        print(f'Login took {time.time() - start_time} seconds')
+        print(f'Login took {round(time.time() - start_time)} seconds')
 
     def switch_mode(self):
         start_time = time.time()
@@ -90,7 +90,7 @@ class API():
             assert('demo-mode' not in new_element.get_attribute('class').split())
         else:
             assert('demo-mode' in new_element.get_attribute('class').split())
-        print(f'Switch mode took {time.time() - start_time} seconds')
+        print(f'Switch mode took {round(time.time() - start_time)} seconds')
 
     def validate_ticker(self, ticker):
         self.browser.get(f'https://www.etoro.com/markets/{ticker.lower()}')
@@ -154,6 +154,7 @@ class API():
                     positions.append(position)
         else:
             positions = []
+        print(f'Update portfolio took {round(time.time() - start_time)} seconds')
         return portfolio, positions
 
     def get_pending_order(self):
@@ -207,7 +208,7 @@ class API():
                     order = {'ticker': ticker, 'order_type': order_type, 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': int(float(num_of_shares.replace(',',''))), 'open_rate': float(open_rate.replace(',','')), 'current_rate': float(current_rate.replace(',','')), 'stop_loss': float(stop_loss.replace(',','')), 'take_profit': float(take_profit.replace(',',''))}
                     pending_orders.append(order)
         
-        print(f'Update pending orders took {time.time() - start_time} seconds')
+        print(f'Update pending orders took {round(time.time() - start_time)} seconds')
         return pending_orders
 
     def update_trade_history(self):
@@ -242,7 +243,7 @@ class API():
                 hist = {'ticker': ticker, 'total_investment': Decimal(sub(r'[^\d.]', '', str(total_investment))), 'num_of_shares': int(float(num_of_shares)), 'open_rate': float(open_rate.replace(',','')), 'open_date': datetime.strptime(str(open_date.replace('\n', ' ')), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc), 'close_rate': float(close_rate.replace(',','')), 'close_date': datetime.strptime(str(close_date.replace('\n', ' ')), "%d/%m/%Y %H:%M:%S").replace(tzinfo=timezone.utc)}
                 trade_history.append(hist)
 
-        print(f'Update Trade history took {time.time() - start_time} seconds')
+        print(f'Update Trade history took {round(time.time() - start_time)} seconds')
         return trade_history
 
     def execute_buy_order(self, order):
@@ -342,7 +343,7 @@ class API():
                 else:
                     place_order_btn = self.browser.find_element_by_css_selector("button[data-etoro-automation-id='execution-open-order-button']")
                     place_order_btn.click()
-        print(f'Execute buy order took {time.time() - start_time} seconds')
+        print(f'Execute {order.stock.symbol} buy order took {round(time.time() - start_time)} seconds')
 
 
     def execute_sell_order(self, order):
@@ -364,7 +365,7 @@ class API():
                 self.wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-etoro-automation-id='close-position-close-button']")))
                 sell_button = close_modal.find_element_by_css_selector("button[data-etoro-automation-id='close-position-close-button']")
                 sell_button.click()
-        print(f'Execute sell order took {time.time() - start_time} seconds')
+        print(f'Execute sell order took {round(time.time() - start_time)} seconds')
 
 
     def cancel_order(self, order):
@@ -385,7 +386,7 @@ class API():
             except:
                 print(f'Unknown position {order.stock.symbol}')
                 pass
-        print(f'Execute cancel order took {time.time() - start_time} seconds')
+        print(f'Execute {order.stock.symbol} cancel order took {round(time.time() - start_time)} seconds')
 
     
     def transmit_orders(self, orders):
@@ -417,5 +418,5 @@ class API():
             else:
                 print('Error unknown order_type')
                 continue
-        print(f'Transmit orders took {time.time() - start_time} seconds')
+        print(f'Transmit {len(orders)} orders took {round(time.time() - start_time)} seconds')
 
