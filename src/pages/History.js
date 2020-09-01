@@ -133,24 +133,16 @@ class History extends React.Component {
           <Table size="small" stickyHeader aria-label="sticky table" >
           <TableHead>
             <TableRow>
-              <TableCell>Name
-              </TableCell>
-              <TableCell>Sector
-              </TableCell>
-              <TableCell align="right">created_at 
-              </TableCell>
-              <TableCell align="right">Open date 
-              </TableCell>
-              <TableCell align="right">Close date
-              </TableCell>
-              <TableCell align="right">Duration
-              </TableCell>
-              <TableCell align="right">Open rate 
-              </TableCell>
-              <TableCell align="right">Close rate
-              </TableCell>
-              <TableCell align="right">P/L</TableCell>
-              <TableCell></TableCell>
+              <TableCell>Name </TableCell>
+              <TableCell>Sector </TableCell>
+              <TableCell align="right">created_at </TableCell>
+              <TableCell align="right">Open date </TableCell>
+              <TableCell align="right">Close date</TableCell>
+              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Open rate </TableCell>
+              <TableCell align="right">Close rate</TableCell>
+              <TableCell align="right">P/L $</TableCell>
+              <TableCell align="right">P/L %</TableCell>
               </TableRow>
           </TableHead>
           <TableBody>
@@ -165,6 +157,9 @@ class History extends React.Component {
                 <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
                 <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
                 <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+                   {((hi.close_rate-hi.open_rate)*hi.num_of_shares).toFixed(1)}
+                </TableCell>
+                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
                    {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
                 </TableCell>
               </TableRow>
@@ -178,15 +173,51 @@ class History extends React.Component {
 
 
   render() {
+    const old_positions = this.props.portfolio_type ? this.state.history_real : this.state.history_demo
     return (
       <Grid container spacing={0} direction="column" alignItems="center" justify="center" >
         <Grid item xs={12} sm={10}>
-        <Typography variant="h4" style={{margin:5}}>
-            {this.props.portfolio_type && 'Real history'}
-            {!this.props.portfolio_type && 'Demo history'}
-        </Typography>
-          {this.renderHistory()}
-          </Grid>
+        <TableContainer component={Paper} style={{ overflow: 'auto'}} >
+          <Table size="small" stickyHeader aria-label="sticky table" >
+          <TableHead>
+            <TableRow>
+            <TableCell>Ticker </TableCell>
+              <TableCell>Name </TableCell>
+              <TableCell>Sector </TableCell>
+              <TableCell align="right">created_at </TableCell>
+              <TableCell align="right">Open date </TableCell>
+              <TableCell align="right">Close date</TableCell>
+              <TableCell align="right">Duration</TableCell>
+              <TableCell align="right">Open rate </TableCell>
+              <TableCell align="right">Close rate</TableCell>
+              <TableCell align="right">P/L $</TableCell>
+              <TableCell align="right">P/L %</TableCell>
+              </TableRow>
+          </TableHead>
+          <TableBody>
+            {old_positions.map((hi) => (
+              <TableRow hover key={hi.id} onClick={() => {this.props.history.push('/position/?id='+hi.id)}} >
+                <TableCell component="th" scope="row">{hi.stock.symbol} </TableCell>
+                <TableCell component="th" scope="row">{hi.stock.name} </TableCell>
+                <TableCell component="th" scope="row">{hi.stock.sector} </TableCell>
+                <TableCell align="right"> {new Date(hi.created_at).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {new Date(hi.open_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {new Date(hi.close_date).toLocaleString({timeZoneName:'short'})} </TableCell>
+                <TableCell align="right"> {this.holding_duration(hi.open_date, hi.close_date)} </TableCell>
+                <TableCell align="right"> {hi.open_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right"> {hi.close_rate.toLocaleString(undefined, {maximumFractionDigits: 2 })} </TableCell>
+                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+                   {((hi.close_rate-hi.open_rate)*hi.num_of_shares).toFixed(1)}
+                </TableCell>
+                <TableCell align="right" style={{color: hi.close_rate > hi.open_rate ? 'green' : 'red'}} > 
+                   {((hi.close_rate/hi.open_rate-1)*100).toFixed(2)}%
+                </TableCell>
+              </TableRow>
+            ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        </Grid>
       </Grid>
     ); 
   }

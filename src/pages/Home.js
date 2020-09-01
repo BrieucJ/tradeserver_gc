@@ -197,7 +197,6 @@ class Home extends React.Component {
   }
 
   annualized_performance = () => {
-    console.log('annualized_performance')
     if(this.props.portfolio_type) {
       if (this.state.p_real.portfolio.created_at !== null){
         var delta = Math.abs(new Date(this.state.p_real.portfolio.created_at) - new Date()) / 1000;
@@ -257,7 +256,11 @@ class Home extends React.Component {
         }
       });
     }
-    return lowest_balance - init_balance
+    if (Math.round(lowest_balance - init_balance) === 0){
+      return 0
+    } else {
+      return lowest_balance - init_balance
+    }
   }
 
   toggle_graph_dd = () => {
