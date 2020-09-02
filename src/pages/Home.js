@@ -16,7 +16,7 @@ class Home extends React.Component {
     super(props);
     this.state = {
       graph_dd: false,
-      graph_type: 'investments',
+      graph_type: 'performance',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -101,13 +101,25 @@ class Home extends React.Component {
 
   area_chart_data = () => {
     var data = []
+    // var fake_data = [
+    //   {name: '2020-21-08', cash: 50, total_invested_value: 1000, perf: null},
+    //   {name: '2020-22-08', cash: 50, total_invested_value: 1010, perf: ((1060-1050)/1060)*100},
+    //   {name: '2020-23-08', cash: 100, total_invested_value: 900, perf: ((1000-1060)/1000)*100},
+    //   {name: '2020-24-08', cash: 50, total_invested_value: 1100, perf: ((1150-1000)/1150)*100},
+    //   {name: '2020-25-08', cash: 50, total_invested_value: 1150, perf: ((1200-1150)/1200)*100},
+    //   {name: '2020-26-08', cash: 50, total_invested_value: 800, perf: ((2000-1200)/850)*100},
+    // ]
     if (this.props.portfolio_type) {
       if (this.state.p_real.p_history !== undefined){
-        for (let i = 0; i < this.state.p_real.p_history.length; i++) {
+        for (let i = 0; i < this.state.p_real.p_history.length; i++) { 
           const cash = this.state.p_real.p_history[i].cash
           const total_invested_value = this.state.p_real.p_history[i].total_invested_value
+          const perf = null
+          if (i !== 0){
+            perf = (((cash + total_invested_value) - (this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
+          }
           const name = this.state.p_real.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value}
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf}
           data.push(item)
         }
       }
@@ -116,8 +128,12 @@ class Home extends React.Component {
         for (let i = 0; i < this.state.p_demo.p_history.length; i++) {
           const cash = this.state.p_demo.p_history[i].cash
           const total_invested_value = this.state.p_demo.p_history[i].total_invested_value
+          const perf = null
+          if (i !== 0){
+            perf = (((cash + total_invested_value) - (this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
+          }
           const name = this.state.p_demo.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value}
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf}
           data.push(item)
         }
       }
@@ -377,6 +393,11 @@ class Home extends React.Component {
                   <MenuItem value='cash_investments'>
                       <Typography variant='h6'>
                         Cash/Investments
+                      </Typography>
+                  </MenuItem>
+                  <MenuItem value='performance'>
+                      <Typography variant='h6'>
+                        Performance
                       </Typography>
                   </MenuItem>
                 </Select>

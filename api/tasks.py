@@ -92,6 +92,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
             so.save()
         else:
             print('UNKNOW ORDER TYPE')
+    gc.collect()
 
 
 @shared_task
@@ -144,7 +145,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     #trade history
     print('#### TH ####')
     for th in trade_history:
-        print(f'#### {th} ####')
+        print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
@@ -153,7 +154,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
         print(len(old_positions))
         if old_positions.first() != None:
-            print('EXISTING OLD POSITION')
+            print(f'EXISTING OLD POSITION {th["ticker"]}')
         else:
             current_position = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=True).first()
             if current_position:
@@ -170,10 +171,9 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
                         sell_order.executed_at = th['close_date']
                         sell_order.save()
             else:
-                print('#### UNKNOW OLD POSITION ####')
+                print(f'UNKNOW OLD POSITION  {th["ticker"]}')
                 pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
                 pos.save()
-        print(f'########')
 
     print('#### ORDERS ####')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
@@ -212,15 +212,17 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
             sell_order = position.sell_order.first()
             if sell_order:
-                print('updating know sell order')
                 if sell_order.submited_at == None:
+                    print('updating know sell order')
                     sell_order.submited_at = datetime.datetime.now(tz=timezone.utc)
                     sell_order.save()
             else:
+                print('creating unknow sell order')
                 so = SellOrder(user=user, stock=stock, portfolio=user_portfolio, position=position, submited_at=datetime.datetime.now(tz=timezone.utc))
                 so.save()
         else:
             print('UNKNOW ORDER')
+    gc.collect()
 
 @shared_task
 def update_disabled_portfolio(portfolio_id):
@@ -508,4 +510,4 @@ def transmit_orders():
                 api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
                 api.transmit_orders(orders=orders)
         update_portfolio.delay(user.id)
-        gc.collect()
+    gc.collect()
