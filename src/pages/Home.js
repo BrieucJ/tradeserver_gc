@@ -114,7 +114,7 @@ class Home extends React.Component {
         for (let i = 0; i < this.state.p_real.p_history.length; i++) { 
           const cash = this.state.p_real.p_history[i].cash
           const total_invested_value = this.state.p_real.p_history[i].total_invested_value
-          const perf = null
+          var perf = null
           if (i !== 0){
             perf = (((cash + total_invested_value) - (this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
           }
@@ -128,7 +128,7 @@ class Home extends React.Component {
         for (let i = 0; i < this.state.p_demo.p_history.length; i++) {
           const cash = this.state.p_demo.p_history[i].cash
           const total_invested_value = this.state.p_demo.p_history[i].total_invested_value
-          const perf = null
+          var perf = null
           if (i !== 0){
             perf = (((cash + total_invested_value) - (this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
           }
