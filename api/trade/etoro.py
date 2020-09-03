@@ -384,7 +384,7 @@ class API():
                 execute_btn = cancel_modal.find_element_by_css_selector("button[class^='close-order-button']") # ^ => partial class match
                 execute_btn.click()
             except:
-                print(f'Unknown position {order.stock.symbol}')
+                print(f'Order {order.stock.symbol} not in order book')
                 pass
         print(f'Execute {order.stock.symbol} cancel order took {round(time.time() - start_time)} seconds')
 
@@ -407,10 +407,10 @@ class API():
                     order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[contains(text(),'{order.stock.symbol}')]")
 
                     if len(pending_buy_order) != 0:
-                        print('ORDER ALREADY IN ORDER BOOK')
+                        print(f'ORDER ALREADY IN ORDER BOOK - {order.stock.symbol}')
                         pass
                     elif len(order_in_portfolio) != 0:
-                        print('ORDER ALREADY IN PORTFOLIO')
+                        print(f'ORDER ALREADY IN PORTFOLIO - {order.stock.symbol}')
                         pass
                     else:
                         self.execute_buy_order(order)

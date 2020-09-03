@@ -181,8 +181,9 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     print('#### ORDERS ####')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
     canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
-    print(pending_orders)
-    print(canceled_orders)
+    print(len(pending_orders))
+    print(len(canceled_orders))
+    print('canceled orders')
     for co in canceled_orders:
         print(co)
         if co.stock not in pending_order_stocks:
@@ -190,6 +191,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
             co.save()
 
+    print('pending orgers')
     for pending_order in pending_orders:
         print(pending_order)
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
