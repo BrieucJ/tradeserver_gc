@@ -398,22 +398,25 @@ class API():
                     self.cancel_order(order)
                 else:
                     #pending order check
-                    self.browser.get('https://www.etoro.com/portfolio/orders')
-                    self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
-                    pending_buy_order = self.browser.find_elements_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
-                    #portfolio check
-                    self.browser.get('https://www.etoro.com/portfolio/manual-trades')
-                    self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
-                    order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[contains(text(),'{order.stock.symbol}')]")
-
-                    if len(pending_buy_order) != 0:
-                        print(f'ORDER ALREADY IN ORDER BOOK - {order.stock.symbol}')
-                        pass
-                    elif len(order_in_portfolio) != 0:
-                        print(f'ORDER ALREADY IN PORTFOLIO - {order.stock.symbol}')
-                        pass
+                    try:
+                        self.browser.get('https://www.etoro.com/portfolio/orders')
+                        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
+                        pending_buy_order = self.browser.find_elements_by_css_selector(f"div[data-etoro-automation-id='orders-table-row-{order.stock.symbol}']")
+                        #portfolio check
+                        self.browser.get('https://www.etoro.com/portfolio/manual-trades')
+                        self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
+                        order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[contains(text(),'{order.stock.symbol}')]")
+                    except:
+                        print('ERROR')
                     else:
-                        self.execute_buy_order(order)
+                        if len(pending_buy_order) != 0:
+                            print(f'ORDER ALREADY IN ORDER BOOK - {order.stock.symbol}')
+                            pass
+                        elif len(order_in_portfolio) != 0:
+                            print(f'ORDER ALREADY IN PORTFOLIO - {order.stock.symbol}')
+                            pass
+                        else:
+                            self.execute_buy_order(order)
 
             elif str(order.__class__.__name__) == 'SellOrder':
                 self.execute_sell_order(order)
