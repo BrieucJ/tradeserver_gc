@@ -103,10 +103,12 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     print(user_portfolio.portfolio_type)
 
     tickers_list = [pos['ticker'] for pos in positions]
-    print(tickers_list)
-    print(set(tickers_list))
-    print( len(set(tickers_list)) == len(tickers_list) )
-    
+
+    if (len(set(tickers_list)) != len(tickers_list)):
+        print(tickers_list)
+        print(set(tickers_list))
+        print('#### ERROR ####')
+        
     #portfolio
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
@@ -296,8 +298,8 @@ def update_buy_orders(portfolio_id):
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
         if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
-            print(f'DELETE {order.stock}')
-            order.delete()
+            print(f'CANCEL {order.stock} - TOO OLD')
+            order.canceled_at = datetime.datetime.now(tz=timezone.utc)
     gc.collect()
 
 @shared_task
