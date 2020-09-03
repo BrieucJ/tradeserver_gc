@@ -405,7 +405,7 @@ class API():
                         #portfolio check
                         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
                         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
-                        order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[contains(text(),'{order.stock.symbol}')]")
+                        order_in_portfolio = self.browser.find_elements_by_xpath(f"//div[@class='table-first-name']/span[text()='{order.stock.symbol}']")
                     except:
                         print('ERROR')
                     else:
