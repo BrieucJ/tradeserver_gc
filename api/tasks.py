@@ -242,7 +242,7 @@ def update_disabled_portfolio(portfolio_id):
     for position in positions:
         if position.sell_order.first() == None:
             print(f'SELLING ALL {position.stock}')
-            order = SellOrder(user=user, stock=position.stock, portfolio=portfolio, position=position)
+            order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, position=position)
             order.save()
     
     pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
