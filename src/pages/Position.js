@@ -78,7 +78,6 @@ class Position extends React.Component {
   }
 
     price_max = () => {
-        console.log('min_max')
         var max = 0
         if (this.state.price_df !== undefined){
             var arr = [this.state.price_df.close, this.state.price_df.high_sma, this.state.price_df.low_sma].flat()
@@ -88,7 +87,6 @@ class Position extends React.Component {
     }
 
     price_min = () => {
-        console.log('min_max')
         var min = 0
         if (this.state.price_df !== undefined){
             var arr = [this.state.price_df.close, this.state.price_df.high_sma, this.state.price_df.low_sma].flat()

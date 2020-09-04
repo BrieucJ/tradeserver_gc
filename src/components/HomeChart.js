@@ -19,10 +19,10 @@ const DataFormater = (number) => {
 }
 
 const PercentageFormater = (number) => {
-  return number.toFixed(0) + '%'
+  return number.toFixed(1) + '%'
 }
 
-class Area_Chart extends React.Component {
+class HomeChart extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
@@ -34,10 +34,6 @@ class Area_Chart extends React.Component {
     console.log(this.props.data)
   }
 
-  pct_format = () => {
-    console.log('pct_format')
-
-  }
   render() {
     const { theme } = this.props;
     switch (this.props.graph_type) {
@@ -72,18 +68,31 @@ class Area_Chart extends React.Component {
             <Area type='monotone' dataKey='cash' stackId='1' stroke={theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light} fill={theme.palette.type === 'dark' ? theme.palette.primary.dark : theme.palette.primary.light} />
           </AreaChart>
         )
-      case 'performance':
+      case 'performance_pct':
         return(
           <BarChart height={this.props.height*0.82} width={this.props.width*0.98} data={this.props.data} >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis tickFormatter={PercentageFormater}/>
-            <Tooltip />
             <Bar dataKey="perf" >
               {this.props.data.map((entry, index) => (
-                  <Cell fill={entry.perf > 0 ? 'green' : 'red' }/>
+                <Cell key={entry.name} fill={entry.perf > 0 ? 'green' : 'red' }/>
               ))}
               <LabelList dataKey="perf" position="top" formatter={PercentageFormater} />
+          </Bar>
+          </BarChart>
+        )
+      case 'performance_curr':
+        return(
+          <BarChart height={this.props.height*0.82} width={this.props.width*0.98} data={this.props.data} >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis tickFormatter={DataFormater}/>
+            <Bar dataKey="latent_p_l" >
+              {this.props.data.map((entry, index) => (
+                <Cell key={entry.name} fill={entry.latent_p_l > 0 ? 'green' : 'red' }/>
+              ))}
+              <LabelList dataKey="latent_p_l" position="top" formatter={DataFormater} />
           </Bar>
           </BarChart>
         )
@@ -93,4 +102,4 @@ class Area_Chart extends React.Component {
   }
 }
 
-export default withStyles(styles, { withTheme: true })(Area_Chart);
+export default withStyles(styles, { withTheme: true })(HomeChart);

@@ -60,6 +60,9 @@ class BuyOrderTable extends React.Component {
         case 'current_rate':
             this.number_sorter(col, order)
             break;
+        case 'created_at':
+            this.number_sorter(col, order)
+            break;
         case 'submited_at':
             this.number_sorter(col, order)
             break;
@@ -110,27 +113,31 @@ class BuyOrderTable extends React.Component {
                             <TableCell align="right">Current price
                                 <TableSortLabel active={this.state.sorting_col==='current_rate'} direction={this.state.sorting_dir} id='current_rate' onClick={e => {this.handleSorting(e)}} />
                             </TableCell>
-                            <TableCell align="right">Submited
+                            <TableCell align="right">created_at
+                                <TableSortLabel active={this.state.sorting_col==='created_at'} direction={this.state.sorting_dir} id='created_at' onClick={e => {this.handleSorting(e)}} />
+                            </TableCell>
+                            <TableCell align="right">submited_at
                                 <TableSortLabel active={this.state.sorting_col==='submited_at'} direction={this.state.sorting_dir} id='submited_at' onClick={e => {this.handleSorting(e)}} />
                             </TableCell>
-                            <TableCell align="right">Canceled
+                            <TableCell align="right">canceled_at
                                 <TableSortLabel active={this.state.sorting_col==='canceled_at'} direction={this.state.sorting_dir} id='canceled_at' onClick={e => {this.handleSorting(e)}} />
                             </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {portfolio.pending_buy_orders.map((bo) => (
-                        <TableRow key={bo.id} hover onClick={() => {this.props.history.push('/buy_order/?id='+bo.id)}}>
-                            <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
-                            <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
-                            <TableCell component="th" scope="row">{bo.price_date} </TableCell>
-                            <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
-                            <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                            <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                            <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
-                            <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
-                            <TableCell align="right"> {bo.canceled_at === null ? '-' : new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'})} </TableCell>
-                        </TableRow>
+                            <TableRow key={bo.id} hover onClick={() => {this.props.history.push('/buy_order/?id='+bo.id)}}>
+                                <TableCell component="th" scope="row">{bo.stock.symbol} </TableCell>
+                                <TableCell component="th" scope="row">{bo.stock.name.substring(0,20)} </TableCell>
+                                <TableCell component="th" scope="row">{bo.price_date} </TableCell>
+                                <TableCell component="th" scope="row" style={{color: bo.sma_position === null && 'red'}}> {bo.sma_position === null ? 'None' : <Typography component="span" variant='body2' style={{display: 'inline-block'}}> {bo.sma_position.model.low_sma} | <Typography variant='body2' component="span" style={{display: 'inline-block'}}> {bo.sma_position.model.high_sma} </Typography> </Typography>}  </TableCell>
+                                <TableCell align="right"> {bo.total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                                <TableCell align="right"> {bo.order_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                                <TableCell align="right"> {bo.current_rate.toLocaleString(undefined, {maximumFractionDigits: 0 })} </TableCell>
+                                <TableCell align="right"> {bo.created_at === null ? '-' : new Date(bo.created_at).toLocaleString({timeZoneName:'short'})} </TableCell>
+                                <TableCell align="right"> {bo.submited_at === null ? 'Not sent' : new Date(bo.submited_at).toLocaleString({timeZoneName:'short'})} </TableCell>
+                                <TableCell align="right"> {bo.canceled_at === null ? '-' : new Date(bo.canceled_at).toLocaleString({timeZoneName:'short'})} </TableCell>
+                            </TableRow>
                         ))}
                         </TableBody>
                     </Table>

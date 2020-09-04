@@ -40,7 +40,7 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
     # print('creating portfolio')
     user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], currency=portfolio['currency'], created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
     user_portfolio.save()
-    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
+    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], latent_p_l=portfolio['latent_p_l'], created_at=datetime.datetime.now(tz=timezone.utc))
     portfolio_history.save()
 
     #positions
@@ -113,7 +113,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
 
-    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], created_at=datetime.datetime.now(tz=timezone.utc))
+    portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], latent_p_l=portfolio['latent_p_l'], created_at=datetime.datetime.now(tz=timezone.utc))
     portfolio_history.save()
 
     #positions

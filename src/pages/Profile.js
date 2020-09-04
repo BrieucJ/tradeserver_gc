@@ -12,7 +12,7 @@ class Profile extends React.Component {
     }
 
     render() {
-    return (
+        return (
         <Grid
             container
             direction='column'
@@ -99,7 +99,6 @@ class Profile extends React.Component {
                     name='demo_live'
                     checked={this.props.user.demo_live === 'True'}
                     onChange={() => {this.props.update_user({'demo_live': this.props.user.demo_live === 'True' ? 'False' : 'True'})}}
-                    name="portfolio_type"
                 />
             </Grid>
             <Grid container alignItems='center' justify='space-between' item xs={10} sm={4} md={4} lg={4} xl={4} style={{margin:5}}>
@@ -110,7 +109,6 @@ class Profile extends React.Component {
                     name='real_live'
                     checked={this.props.user.real_live === 'True'}
                     onChange={() => {this.props.update_user({'real_live': this.props.user.real_live === 'True' ? 'False' : 'True'})}}
-                    name="portfolio_type"
                 />
             </Grid>
             <Grid item xs={10} style={{margin:10}}>

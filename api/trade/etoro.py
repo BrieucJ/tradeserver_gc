@@ -120,17 +120,20 @@ class API():
         #PORTFOLIO
         cash = self.browser.find_element_by_css_selector("span[automation-id='account-balance-availible-unit-value']").text
         total_invested_value = self.browser.find_element_by_css_selector("span[automation-id='account-balance-amount-unit-value']").text
-        
+        latent_p_l = self.browser.find_element_by_css_selector("div[automation-id='account-balance-profit-unit']").find_element_by_css_selector("span[class^='footer-unit-value']").text
         if cash == None or total_invested_value == None:
             cash_value = None
             total_invested_val = None
+            latent_p_l = None
             currency = '$'
         else:
             cash_value = Decimal(sub(r'[^\d.]', '', str(cash)))
             total_invested_val = Decimal(sub(r'[^\d.]', '', str(total_invested_value)))
+            latent_p_l = Decimal(str(latent_p_l.replace('$','').replace(',','')))
             currency = cash[0]
 
-        portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash_value, 'total_invested_value': total_invested_val, 'currency': currency}
+        portfolio = {'portfolio_type': True if self.mode == 'real' else False, 'cash': cash_value, 'total_invested_value': total_invested_val, 'latent_p_l': latent_p_l ,'currency': currency}
+        print(portfolio)
         if len(empty_portfolio) == 0:
             #POSITIONS
             self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "ui-table[data-etoro-automation-id='portfolio-manual-trades-table']")))

@@ -2,7 +2,7 @@ import React from 'react';
 import { Container, Grid, Typography, CircularProgress, Paper, FormControl,  Select, MenuItem} from '@material-ui/core';
 import {get} from '../utils/Api'
 import { withStyles } from '@material-ui/core/styles';
-import Area_Chart from '../components/AreaChart'
+import HomeChart from '../components/HomeChart'
 import PortfolioTable from '../components/PortfolioTable'
 import BuyOrderTable from '../components/BuyOrderTable'
 import SellOrderTable from '../components/SellOrderTable'
@@ -16,7 +16,7 @@ class Home extends React.Component {
     super(props);
     this.state = {
       graph_dd: false,
-      graph_type: 'performance',
+      graph_type: 'performance_pct',
       loading:true,
       g_height: 0 ,
       g_width: 0 ,
@@ -101,39 +101,38 @@ class Home extends React.Component {
 
   area_chart_data = () => {
     var data = []
-    // var fake_data = [
-    //   {name: '2020-21-08', cash: 50, total_invested_value: 1000, perf: null},
-    //   {name: '2020-22-08', cash: 50, total_invested_value: 1010, perf: ((1060-1050)/1060)*100},
-    //   {name: '2020-23-08', cash: 100, total_invested_value: 900, perf: ((1000-1060)/1000)*100},
-    //   {name: '2020-24-08', cash: 50, total_invested_value: 1100, perf: ((1150-1000)/1150)*100},
-    //   {name: '2020-25-08', cash: 50, total_invested_value: 1150, perf: ((1200-1150)/1200)*100},
-    //   {name: '2020-26-08', cash: 50, total_invested_value: 800, perf: ((2000-1200)/850)*100},
-    // ]
     if (this.props.portfolio_type) {
       if (this.state.p_real.p_history !== undefined){
         for (let i = 0; i < this.state.p_real.p_history.length; i++) { 
           const cash = this.state.p_real.p_history[i].cash
           const total_invested_value = this.state.p_real.p_history[i].total_invested_value
+          const latent_p_l = this.state.p_demo.p_history[i].latent_p_l
           var perf = null
-          if (i !== 0){
-            perf = (((cash + total_invested_value) - (this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
+          if (i === 0){
+            perf = (latent_p_l / (cash + total_invested_value))*100
+          } else {
+            perf = (((cash + total_invested_value + latent_p_l) - (this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value + this.state.p_real.p_history[i-1].latent_p_l))/(cash + total_invested_value + latent_p_l))*100
           }
           const name = this.state.p_real.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf}
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'latent_p_l':latent_p_l, 'perf': perf}
           data.push(item)
         }
       }
     } else {
       if (this.state.p_demo.p_history !== undefined){
         for (let i = 0; i < this.state.p_demo.p_history.length; i++) {
+          console.log(i)
           const cash = this.state.p_demo.p_history[i].cash
           const total_invested_value = this.state.p_demo.p_history[i].total_invested_value
+          const latent_p_l = this.state.p_demo.p_history[i].latent_p_l
           var perf = null
-          if (i !== 0){
-            perf = (((cash + total_invested_value) - (this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value))/(cash + total_invested_value))*100
+          if (i === 0){
+            perf = (latent_p_l / (cash + total_invested_value))*100
+          } else {
+            perf = (((cash + total_invested_value + latent_p_l) - (this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value + this.state.p_demo.p_history[i-1].latent_p_l))/(cash + total_invested_value + latent_p_l))*100
           }
           const name = this.state.p_demo.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf}
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'latent_p_l':latent_p_l, 'perf': perf}
           data.push(item)
         }
       }
@@ -141,22 +140,20 @@ class Home extends React.Component {
     return data
   }
 
-  total_pl() {
-    var pl = 0
-    if (this.props.portfolio_type){
-      var pos_real = this.state.p_real.current_positions
-      for (let i = 0; i < pos_real.length; i++) {
-        var po_pl_real = (pos_real[i].current_rate - pos_real[i].open_rate) * pos_real[i].num_of_shares
-        pl += po_pl_real
+  total_pl = () => {
+    if(this.props.portfolio_type){
+      if (this.state.p_real.portfolio.created_at !== null){
+        return this.state.p_real.portfolio.last_portfolio_history.latent_p_l
+      } else {
+        return null
       }
-    } else {
-      var pos_demo = this.state.p_demo.current_positions
-      for (let i = 0; i < pos_demo.length; i++) {
-        var po_pl_demo = (pos_demo[i].current_rate - pos_demo[i].open_rate) * pos_demo[i].num_of_shares
-        pl += po_pl_demo
+    }else{
+      if (this.state.p_demo.portfolio.created_at !== null){
+        return this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
+      } else{
+        return null
       }
     }
-    return pl
   }
 
   total_cash = () => {
@@ -280,12 +277,10 @@ class Home extends React.Component {
   }
 
   toggle_graph_dd = () => {
-    console.log('toggle_graph_dd')
     this.setState({graph_dd: !this.state.graph_dd})
   }
 
   handle_graph_change = (e) => {
-    console.log('handle_graph_change')
     this.setState({graph_type: e.target.value})
   }
 
@@ -332,36 +327,36 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 2 })} </Typography>
+                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() > 0 && '+'}{this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Total balance: </Typography>
-                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 2 }) } </Typography>
+                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
                 </Grid>
   
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Return to date: </Typography>
-                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{(this.performance_to_date()*100).toFixed(2)}% </Typography>
+                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{(this.performance_to_date()*100).toFixed(1)}% </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Annualized return: </Typography>
-                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {(this.annualized_performance()*100).toFixed(2)}%</Typography>
+                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {(this.annualized_performance()*100).toFixed(1)}%</Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Max drawdown : </Typography>
-                  <Typography variant='body1' style={{color: this.max_drawdown() < 0 ? 'red' : 'green'}}> {(this.max_drawdown()).toFixed(2)} ({ ((((this.max_drawdown() + this.initial_balance())/ this.initial_balance())-1 )*100).toFixed(1) }%)</Typography>
+                  <Typography variant='body1' style={{color: this.max_drawdown() < 0 ? 'red' : 'green'}}> {(this.max_drawdown()).toFixed(0)} ({ ((((this.max_drawdown() + this.initial_balance())/ this.initial_balance())-1 )*100).toFixed(1) }%)</Typography>
                 </Grid>
               </Paper>
             </Grid>
@@ -395,19 +390,24 @@ class Home extends React.Component {
                         Cash/Investments
                       </Typography>
                   </MenuItem>
-                  <MenuItem value='performance'>
+                  <MenuItem value='performance_pct'>
                       <Typography variant='h6'>
-                        Performance
+                        Performance %
+                      </Typography>
+                  </MenuItem>
+                  <MenuItem value='performance_curr'>
+                      <Typography variant='h6'>
+                        Performance $
                       </Typography>
                   </MenuItem>
                 </Select>
               </FormControl>
-                  <Area_Chart
-                  data={this.area_chart_data()}
-                  height={this.state.g_height}
-                  width={this.state.g_width}
-                  graph_type={this.state.graph_type}
-                />
+                  <HomeChart
+                    data={this.area_chart_data()}
+                    height={this.state.g_height}
+                    width={this.state.g_width}
+                    graph_type={this.state.graph_type}
+                  />
               </Paper>
             </Grid>
 

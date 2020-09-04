@@ -47,6 +47,7 @@ class PortfolioHistory(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='portfolio_history')
     cash = models.FloatField(default=None, null=True)
     total_invested_value = models.FloatField(default=None, null=True)
+    latent_p_l = models.FloatField(default=None, null=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
     class Meta:
