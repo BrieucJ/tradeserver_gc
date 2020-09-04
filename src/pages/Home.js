@@ -191,7 +191,7 @@ class Home extends React.Component {
   performance_to_date(){
     if(this.props.portfolio_type) {
       if (this.state.p_real.p_history.length !== 0){
-        var start_balance_real = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
+        var start_balance_real = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value + this.state.p_real.p_history[0].total_p_l
         var last_balance_real = this.total_cash() + this.total_investment() + this.total_pl()
         return last_balance_real/start_balance_real-1
       } else {
@@ -199,7 +199,7 @@ class Home extends React.Component {
       }
     } else {
       if (this.state.p_demo.p_history.length !== 0){
-        var start_balance_demo = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
+        var start_balance_demo = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value + this.state.p_demo.p_history[0].total_p_l
         var last_balance_demo = this.total_cash() + this.total_investment() + this.total_pl()
         return last_balance_demo/start_balance_demo-1
       } else {
