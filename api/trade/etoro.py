@@ -355,11 +355,12 @@ class API():
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
         try:
             ticker_element = self.browser.find_element_by_xpath(f"//span[contains(text(),'{order.stock.symbol}')]")
-        except:
-            pass
-        else:
             row = ticker_element.find_element_by_xpath(".//ancestor::div[contains(@data-etoro-automation-id, 'portfolio-manual-trades-row')]")
             row_pending_sell = row.find_elements_by_css_selector("span[data-etoro-automation-id='portfolio-manual-trades-table-body-market-pending-close']")
+        except Exception:
+            print(Exception)
+            pass
+        else:
             if len(row_pending_sell) == 0:
                 close_btn = row.find_element_by_css_selector("div[data-etoro-automation-id='portfolio-manual-trades-table-body-close-button']")
                 close_btn.click()

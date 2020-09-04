@@ -191,7 +191,7 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
             co.save()
 
-    print('pending orgers')
+    print('pending orders')
     for pending_order in pending_orders:
         print(pending_order)
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
