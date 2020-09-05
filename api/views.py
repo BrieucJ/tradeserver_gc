@@ -28,7 +28,9 @@ class Home(generics.RetrieveAPIView):
         p_real = user.portfolio.filter(portfolio_type=True).first()
 
         if p_demo != None:
-            portfolio_history_demo = p_demo.portfolio_history.distinct('created_at__date').order_by()
+            dates = [ph.created_at.date() for ph in p_demo.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
+            portfolio_history_demo = [p_demo.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
+
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data 
             pending_buy_orders_demo = BuyOrderReadSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True, sell_order__isnull=False, sell_order__executed_at__isnull=True).order_by('-total_investment'), many=True).data 
@@ -39,10 +41,11 @@ class Home(generics.RetrieveAPIView):
             portfolio_history_demo= []
         
         if p_real != None:
+            dates = [ph.created_at.date() for ph in p_real.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
+            portfolio_history_real = [p_real.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
+            current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
             pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_real = PositionSerializer(p_real.position.filter(close_date__isnull=True, sell_order__isnull=False, sell_order__executed_at__isnull=True).order_by('-total_investment'), many=True).data 
-            portfolio_history_real = p_real.portfolio_history.distinct('created_at__date').order_by()
-            current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
         else:
             pending_buy_orders_real = [] 
             pending_sell_orders_real = []
@@ -55,7 +58,7 @@ class Home(generics.RetrieveAPIView):
                             'p_history': PortfolioHistorySerializer(portfolio_history_demo, many=True).data,
                             'pending_buy_orders': pending_buy_orders_demo,
                             'pending_sell_orders': pending_sell_orders_demo,
-                             },
+                            },
                         'p_real': {
                             'portfolio': PortfolioSerializer(p_real).data, 
                             'current_positions': current_pos_real, 

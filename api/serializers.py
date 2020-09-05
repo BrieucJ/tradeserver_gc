@@ -45,10 +45,11 @@ class PortfolioHistorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PortfolioSerializer(serializers.ModelSerializer):
+    first_portfolio_history = PortfolioHistorySerializer(read_only=True)
     last_portfolio_history = PortfolioHistorySerializer(read_only=True)
     class Meta:
         model = Portfolio
-        fields = ['portfolio_type', 'currency', 'created_at', 'updated_at', 'last_portfolio_history']
+        fields = ['portfolio_type', 'currency', 'created_at', 'updated_at', 'first_portfolio_history', 'last_portfolio_history']
 
 class BuyOrderReadSerializer(serializers.ModelSerializer):
     stock = StockSerializer()

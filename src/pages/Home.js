@@ -106,175 +106,76 @@ class Home extends React.Component {
         for (let i = 0; i < this.state.p_real.p_history.length; i++) { 
           const cash = this.state.p_real.p_history[i].cash
           const total_invested_value = this.state.p_real.p_history[i].total_invested_value
-          const latent_p_l = this.state.p_demo.p_history[i].latent_p_l
           var perf = null
+          var diff = null
           if (i === 0){
-            perf = (latent_p_l / (cash + total_invested_value))*100
+            const old_balance = this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value
+            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value
+            perf = (current_balance/old_balance-1)*100
+            diff = current_balance - old_balance
           } else {
-            perf = (((cash + total_invested_value + latent_p_l) - (this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value + this.state.p_real.p_history[i-1].latent_p_l))/(cash + total_invested_value + latent_p_l))*100
+            const old_balance = this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value
+            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value
+            perf = (current_balance/old_balance-1)*100
+            diff = current_balance - old_balance
           }
           const name = this.state.p_real.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'latent_p_l':latent_p_l, 'perf': perf}
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf, 'diff':diff}
           data.push(item)
         }
       }
     } else {
       if (this.state.p_demo.p_history !== undefined){
         for (let i = 0; i < this.state.p_demo.p_history.length; i++) {
-          console.log(i)
           const cash = this.state.p_demo.p_history[i].cash
           const total_invested_value = this.state.p_demo.p_history[i].total_invested_value
-          const latent_p_l = this.state.p_demo.p_history[i].latent_p_l
           var perf = null
+          var diff = null
           if (i === 0){
-            perf = (latent_p_l / (cash + total_invested_value))*100
+            const old_balance = this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
+            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value
+            perf = (current_balance/old_balance-1)*100
+            diff = current_balance - old_balance
           } else {
-            perf = (((cash + total_invested_value + latent_p_l) - (this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value + this.state.p_demo.p_history[i-1].latent_p_l))/(cash + total_invested_value + latent_p_l))*100
+            const old_balance = this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value
+            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value
+            perf = (current_balance/old_balance-1)*100
+            diff = current_balance - old_balance
           }
-          const name = this.state.p_demo.p_history[i].created_at.split('T')[0]
-          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'latent_p_l':latent_p_l, 'perf': perf}
+          const name = this.state.p_real.p_history[i].created_at.split('T')[0]
+          const item = {'name': name, 'cash': cash, 'total_invested_value': total_invested_value, 'perf': perf, 'diff': diff}
           data.push(item)
         }
       }
     }
+    console.log(data)
     return data
   }
 
-  total_pl = () => {
-    if(this.props.portfolio_type){
-      if (this.state.p_real.portfolio.created_at !== null){
-        return this.state.p_real.portfolio.last_portfolio_history.latent_p_l
-      } else {
-        return null
-      }
-    }else{
-      if (this.state.p_demo.portfolio.created_at !== null){
-        return this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
-      } else{
-        return null
-      }
-    }
-  }
-
-  total_cash = () => {
-    if(this.props.portfolio_type){
-      if (this.state.p_real.portfolio.created_at !== null){
-        return this.state.p_real.portfolio.last_portfolio_history.cash
-      } else {
-        return null
-      }
-    }else{
-      if (this.state.p_demo.portfolio.created_at !== null){
-        return this.state.p_demo.portfolio.last_portfolio_history.cash
-      } else{
-        return null
-      }
-    }
-  }
-
-  total_investment = () => {
-    if(this.props.portfolio_type){
-      if (this.state.p_real.portfolio.created_at !== null){
-        return this.state.p_real.portfolio.last_portfolio_history.total_invested_value
-      } else{
-        return null
-      }
-    } else {
-      if (this.state.p_demo.portfolio.created_at !== null){
-        return this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
-      } else{
-        return null
-      }
-    }
-  }
-
-  performance_to_date(){
-    if(this.props.portfolio_type) {
-      if (this.state.p_real.p_history.length !== 0){
-        var start_balance_real = this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value + this.state.p_real.p_history[0].total_p_l
-        var last_balance_real = this.total_cash() + this.total_investment() + this.total_pl()
-        return last_balance_real/start_balance_real-1
-      } else {
-        return undefined
-      }
-    } else {
-      if (this.state.p_demo.p_history.length !== 0){
-        var start_balance_demo = this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value + this.state.p_demo.p_history[0].total_p_l
-        var last_balance_demo = this.total_cash() + this.total_investment() + this.total_pl()
-        return last_balance_demo/start_balance_demo-1
-      } else {
-        return undefined
-      }
-
-    }
-  }
-
-  annualized_performance = () => {
-    if(this.props.portfolio_type) {
-      if (this.state.p_real.portfolio.created_at !== null){
-        var delta = Math.abs(new Date(this.state.p_real.portfolio.created_at) - new Date()) / 1000;
-        var num_of_days_real = delta / 86400
-        var perf_to_date_real = this.performance_to_date()
-        var annualized_return_real = (1+perf_to_date_real)**(365/num_of_days_real)-1
-        return annualized_return_real
-      } else {
-        return null
-      }
-    } else {
-      if (this.state.p_demo.portfolio.demo !== null){
-        var delta = Math.abs(new Date(this.state.p_demo.portfolio.created_at) - new Date()) / 1000;
-        var num_of_days_demo = delta / 86400
-        var perf_to_date_demo = this.performance_to_date()
-        var annualized_return_demo = ((1+perf_to_date_demo)**(365/num_of_days_demo))-1
-        return annualized_return_demo
-      } else {
-        return null
-      }
-    }
-  }
-
-  initial_balance = () => {
-    if(this.props.portfolio_type) {
-      if (this.state.p_real.p_history.length !== 0){
-        this.state.p_real.p_history.sort((a,b) => a['created_at'] > b['created_at'] ? 1 : -1)
-        return this.state.p_real.p_history[0].cash + this.state.p_real.p_history[0].total_invested_value
-      } else {
-        return null
-      }
-    } else {
-      if (this.state.p_demo.p_history.length !== 0){
-        this.state.p_demo.p_history.sort((a,b) => a['created_at'] > b['created_at'] ? 1 : -1)
-        return this.state.p_demo.p_history[0].cash + this.state.p_demo.p_history[0].total_invested_value
-      } else {
-        return null
-      }
-    }
-  }
-
-  max_drawdown = () => {
-    var lowest_balance = null;
-    var init_balance = this.initial_balance()
-    if(this.props.portfolio_type) {
-      this.state.p_real.p_history.forEach(element => {
-        var bal = element['cash'] + element['total_invested_value']
-        if (lowest_balance === null || bal < lowest_balance){
-          lowest_balance = bal
-        }
-      });
-    } else {
-      this.state.p_demo.p_history.forEach(element => {
-        var bal = element['cash'] + element['total_invested_value']
-        if (lowest_balance === null || bal < lowest_balance){
-          lowest_balance = bal
-        }
-      });
-    }
-    if (Math.round(lowest_balance - init_balance) === 0){
-      return 0
-    } else {
-      return lowest_balance - init_balance
-    }
-  }
+  // max_drawdown = () => {
+  //   var lowest_balance = null;
+  //   var init_balance = this.initial_balance()
+  //   if(this.props.portfolio_type) {
+  //     this.state.p_real.p_history.forEach(element => {
+  //       var bal = element['cash'] + element['total_invested_value']
+  //       if (lowest_balance === null || bal < lowest_balance){
+  //         lowest_balance = bal
+  //       }
+  //     });
+  //   } else {
+  //     this.state.p_demo.p_history.forEach(element => {
+  //       var bal = element['cash'] + element['total_invested_value']
+  //       if (lowest_balance === null || bal < lowest_balance){
+  //         lowest_balance = bal
+  //       }
+  //     });
+  //   }
+  //   if (Math.round(lowest_balance - init_balance) === 0){
+  //     return 0
+  //   } else {
+  //     return lowest_balance - init_balance
+  //   }
+  // }
 
   toggle_graph_dd = () => {
     this.setState({graph_dd: !this.state.graph_dd})
@@ -293,6 +194,14 @@ class Home extends React.Component {
         justify="center"
         style={{ minHeight: '100vh' }}> <CircularProgress color='primary' /></Grid>)
     } else {
+      const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
+      const cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
+      const total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
+      const latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
+      const current_balance = cash + total_investment
+      const performance_to_date = current_balance/initial_balance-1
+      const num_of_days = this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400
+      const annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
       return (
         <Container>
           <Grid container direction="row" spacing={1}>
@@ -327,36 +236,36 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {this.initial_balance() === null ? 'None' : (this.initial_balance()).toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
+                  <Typography variant='body1'> {initial_balance.toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {this.total_cash() === null ? 'None' : this.total_cash().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> {cash.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {this.total_investment() === null ? 'None' : this.total_investment().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> {total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: this.total_pl() > 0 ? 'green' : 'red'}}>{this.total_pl() === null ? 'None' : this.total_pl().toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1' style={{color: latent_p_l > 0 ? 'green' : 'red'}}>{latent_p_l.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
-                  <Typography variant='body1'> Total balance: </Typography>
-                  <Typography variant='body1'> {(this.total_pl() + this.total_cash() + this.total_investment()).toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
+                  <Typography variant='body1'> Current balance: </Typography>
+                  <Typography variant='body1'> {current_balance.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
                 </Grid>
-  
+                
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Return to date: </Typography>
-                  <Typography variant='body1' style={{color: this.performance_to_date() > 0 ? 'green' : 'red'}}> {this.performance_to_date() > 0 && '+'}{(this.performance_to_date()*100).toFixed(1)}% </Typography>
+                  <Typography variant='body1' style={{color: performance_to_date > 0 ? 'green' : 'red'}}> {performance_to_date > 0 && '+'}{(performance_to_date*100).toFixed(2)}% </Typography>
+                </Grid>
+                <Grid container justify='space-between'>
+                  <Typography variant='body1'> Days: </Typography>
+                  <Typography variant='body1'> {num_of_days.toFixed(1)} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Annualized return: </Typography>
-                  <Typography variant='body1' style={{color: this.annualized_performance() > 0 ? 'green' : 'red'}}> {(this.annualized_performance()*100).toFixed(1)}%</Typography>
-                </Grid>
-                <Grid container justify='space-between'>
-                  <Typography variant='body1'> Max drawdown : </Typography>
-                  <Typography variant='body1' style={{color: this.max_drawdown() < 0 ? 'red' : 'green'}}> {(this.max_drawdown()).toFixed(0)} ({ ((((this.max_drawdown() + this.initial_balance())/ this.initial_balance())-1 )*100).toFixed(1) }%)</Typography>
+                  <Typography variant='body1' style={{color: annualized_performance > 0 ? 'green' : 'red'}}> {(annualized_performance*100).toFixed(2)}%</Typography>
                 </Grid>
               </Paper>
             </Grid>

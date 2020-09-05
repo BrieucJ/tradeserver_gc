@@ -41,6 +41,10 @@ class Portfolio(models.Model):
     
     @property
     def last_portfolio_history(self):
+        return self.portfolio_history.last()
+    
+    @property
+    def first_portfolio_history(self):
         return self.portfolio_history.first()
 
 class PortfolioHistory(models.Model):
@@ -50,8 +54,8 @@ class PortfolioHistory(models.Model):
     latent_p_l = models.FloatField(default=None, null=True)
     created_at = models.DateTimeField(default=timezone.now, blank=True)
 
-    class Meta:
-        ordering = ['-created_at']
+    # class Meta:
+    #     ordering = ['-created_at']
 
 class SMAModel(models.Model):
     low_sma = models.IntegerField(default=10)

@@ -14,7 +14,7 @@ const DataFormater = (number) => {
   }else if(number > 1000){
     return (number/1000).toString() + 'K';
   }else{
-    return number.toString();
+    return number.toFixed(1).toString();
   }
 }
 
@@ -28,10 +28,6 @@ class HomeChart extends React.Component {
     this.state = { 
 
     };
-  }
-
-  componentDidMount = () => {
-    console.log(this.props.data)
   }
 
   render() {
@@ -73,7 +69,7 @@ class HomeChart extends React.Component {
           <BarChart height={this.props.height*0.82} width={this.props.width*0.98} data={this.props.data} >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis tickFormatter={PercentageFormater}/>
+            <YAxis tickFormatter={PercentageFormater} domain={[-10,10]}/>
             <Bar dataKey="perf" >
               {this.props.data.map((entry, index) => (
                 <Cell key={entry.name} fill={entry.perf > 0 ? 'green' : 'red' }/>
@@ -88,11 +84,11 @@ class HomeChart extends React.Component {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis tickFormatter={DataFormater}/>
-            <Bar dataKey="latent_p_l" >
+            <Bar dataKey="diff" >
               {this.props.data.map((entry, index) => (
-                <Cell key={entry.name} fill={entry.latent_p_l > 0 ? 'green' : 'red' }/>
+                <Cell key={entry.name} fill={entry.diff > 0 ? 'green' : 'red' }/>
               ))}
-              <LabelList dataKey="latent_p_l" position="top" formatter={DataFormater} />
+              <LabelList dataKey="diff" position="top" formatter={DataFormater} />
           </Bar>
           </BarChart>
         )
