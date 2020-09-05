@@ -313,7 +313,7 @@ def update_buy_orders(portfolio_id):
 def update_investments(portfolio_id):
     print('update_investments')
     portfolio = Portfolio.objects.get(id=portfolio_id)
-    portfolio_history = portfolio.portfolio_history.first()
+    portfolio_history = portfolio.last_portfolio_history
     last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
     backtests = SMABacktest.objects.all()
     print(last_business_day)
@@ -364,7 +364,7 @@ def update_orders_task(user_id):
     portfolios = user.portfolio.all()
 
     for portfolio in portfolios:
-        portfolio_history = portfolio.portfolio_history.first()
+        portfolio_history = portfolio.last_portfolio_history
         positions = portfolio.position.filter(close_date__isnull=True)
         print(f'Portfolio type: {portfolio.portfolio_type}')
 
