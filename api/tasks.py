@@ -157,7 +157,8 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
         print(len(old_positions))
         if old_positions.first() != None:
-            print(f'EXISTING OLD POSITION {th["ticker"]}')
+            pass
+            # print(f'EXISTING OLD POSITION {th["ticker"]}')
         else:
             current_position = user_portfolio.position.filter(stock=stock, open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=True).first()
             if current_position:
