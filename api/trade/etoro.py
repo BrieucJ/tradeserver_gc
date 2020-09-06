@@ -49,6 +49,7 @@ class API():
         print(f'ETORO took {round(time.time() - self.start_time)} seconds')
     
     def login(self):
+        print('Login')
         start_time = time.time()
         url = 'https://www.etoro.com/fr/login'
         self.browser.get(url)

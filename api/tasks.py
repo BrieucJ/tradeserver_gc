@@ -147,14 +147,12 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     #trade history
     print('#### TH ####')
     for th in trade_history:
-        print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
         else:
             stock = None
 
         old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
-        print(len(old_positions))
         if old_positions.first() != None:
             pass
             # print(f'EXISTING OLD POSITION {th["ticker"]}')
@@ -486,6 +484,23 @@ def update_price_history():
     update_sma_positions.delay()
     gc.collect()
 
+@shared_task
+def transmit_user_order(user_id, portfolio_id):
+    user = User.objects.get(id=user_id)
+    print(f'transmit {user.email} orders')
+    portfolio = Portfolio.objects.get(id=portfolio_id)
+    if portfolio.portfolio_type:
+        mode = 'real'
+    else:
+        mode = 'demo'
+    sell_orders = portfolio.sell_order.filter(submited_at__isnull=True, executed_at__isnull=True)
+    buy_orders = portfolio.buy_order.filter(submited_at__isnull=True, canceled_at__isnull=True, terminated_at__isnull=True, executed_at__isnull=True).order_by('-total_investment') 
+    canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
+    orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
+    if len(orders) != 0:
+        api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
+        api.transmit_orders(orders=orders)
+
 #PERIODIC TASKS
 @periodic_task(run_every=(crontab(minute=0, hour='*/2')), name="update_orders", ignore_result=True)
 def update_orders():
@@ -507,16 +522,6 @@ def transmit_orders():
         print(user.email)
         portfolios = user.portfolio.all()
         for portfolio in portfolios:
-            if portfolio.portfolio_type:
-                mode = 'real'
-            else:
-                mode = 'demo'
-            sell_orders = portfolio.sell_order.filter(submited_at__isnull=True, executed_at__isnull=True)
-            buy_orders = portfolio.buy_order.filter(submited_at__isnull=True, canceled_at__isnull=True, terminated_at__isnull=True, executed_at__isnull=True).order_by('-total_investment') 
-            canceled_buy_orders = portfolio.buy_order.filter(submited_at__isnull=False, canceled_at__isnull=False, terminated_at__isnull=True).order_by('-total_investment')
-            orders = list(chain(sell_orders, buy_orders, canceled_buy_orders))
-            if len(orders) != 0:
-                api = API(user.profile.broker_username, user.profile.broker_password, mode=mode)
-                api.transmit_orders(orders=orders)
+            transmit_user_order.delay(user.id, portfolio.id)
         update_portfolio.delay(user.id)
     gc.collect()
