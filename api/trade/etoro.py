@@ -64,6 +64,7 @@ class API():
         print(f'Login took {round(time.time() - start_time)} seconds')
 
     def switch_mode(self):
+        print('switch_mode')
         start_time = time.time()
         self.wait.until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "div[class='e-screen active']")))
         current_mode = self.browser.find_element_by_tag_name('header').find_element_by_xpath('..').get_attribute('class').split()
@@ -111,6 +112,7 @@ class API():
                 return False
     
     def update_portfolio(self):
+        print('update_portfolio')
         start_time = time.time()
         self.browser.get('https://www.etoro.com/portfolio/manual-trades')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/manual-trades')
@@ -161,6 +163,7 @@ class API():
         return portfolio, positions
 
     def get_pending_order(self):
+        print('get_pending_order')
         start_time = time.time()
         self.browser.get('https://www.etoro.com/portfolio/orders')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/orders')
@@ -215,6 +218,7 @@ class API():
         return pending_orders
 
     def update_trade_history(self):
+        print('update_trade_history')
         start_time = time.time()
         self.browser.get('https://www.etoro.com/portfolio/history')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/history')

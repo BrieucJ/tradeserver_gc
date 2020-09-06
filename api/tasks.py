@@ -126,7 +126,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
         pos_list = user_portfolio.position.filter(stock=stock, close_date__isnull=True)
         if len(pos_list) == 1:
             existing_pos = pos_list.first()
-            print(f'updating {position["ticker"]}')
             existing_pos.current_rate = position['current_rate']
             existing_pos.updated_at = datetime.datetime.now(tz=timezone.utc)
             existing_pos.save()
@@ -186,7 +185,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     print(len(canceled_orders))
     print('canceled orders')
     for co in canceled_orders:
-        print(co)
         if co.stock not in pending_order_stocks:
             print(f'Buy Order has been canceled {co.stock}')
             co.terminated_at = datetime.datetime.now(tz=timezone.utc)
@@ -194,7 +192,6 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
 
     print('pending orders')
     for pending_order in pending_orders:
-        print(pending_order)
         if len(Stock.objects.filter(symbol=pending_order['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=pending_order['ticker']).first()
         else:
