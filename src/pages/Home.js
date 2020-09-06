@@ -204,13 +204,13 @@ class Home extends React.Component {
       var annualized_performance = null
       console.log(this.state.p_demo.portfolio.created_at)
       if (this.state.p_demo.portfolio.created_at !== null){
-        initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
-        cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
-        total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
-        latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
-        current_balance = cash + total_investment
+        initial_balance = (this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value).toLocaleString(undefined, {maximumFractionDigits: 0 })
+        cash = (this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash).toLocaleString(undefined, {maximumFractionDigits: 0 })
+        total_investment = (this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value).toLocaleString(undefined, {maximumFractionDigits: 0 })
+        latent_p_l = (this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l).toLocaleString(undefined, {maximumFractionDigits: 0 })
+        current_balance = (cash + total_investment).toLocaleString(undefined, {maximumFractionDigits: 0 })
         performance_to_date = current_balance/initial_balance-1
-        num_of_days = this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400
+        num_of_days = (this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400).toFixed(1)
         annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
       }
 
@@ -248,23 +248,23 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Initial balance: </Typography>
-                  <Typography variant='body1'> {initial_balance.toLocaleString(undefined, {maximumFractionDigits: 0 }) } </Typography>
+                  <Typography variant='body1'> {initial_balance } </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Cash: </Typography>
-                  <Typography variant='body1'> {cash.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> {cash} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Investments: </Typography>
-                  <Typography variant='body1'> {total_investment.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> {total_investment} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Latent P&L: </Typography>
-                  <Typography variant='body1' style={{color: latent_p_l > 0 ? 'green' : 'red'}}>{latent_p_l.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1' style={{color: latent_p_l > 0 ? 'green' : 'red'}}>{latent_p_l} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Current balance: </Typography>
-                  <Typography variant='body1'> {current_balance.toLocaleString(undefined, {maximumFractionDigits: 0 })} </Typography>
+                  <Typography variant='body1'> {current_balance} </Typography>
                 </Grid>
                 
                 <Grid container justify='space-between'>
@@ -273,7 +273,7 @@ class Home extends React.Component {
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Days: </Typography>
-                  <Typography variant='body1'> {num_of_days.toFixed(1)} </Typography>
+                  <Typography variant='body1'> {num_of_days} </Typography>
                 </Grid>
                 <Grid container justify='space-between'>
                   <Typography variant='body1'> Annualized return: </Typography>
