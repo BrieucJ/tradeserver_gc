@@ -504,6 +504,7 @@ def transmit_orders():
     print('transmit_orders')
     users = User.objects.all()
     for user in users:
+        print(user.email)
         portfolios = user.portfolio.all()
         for portfolio in portfolios:
             if portfolio.portfolio_type:
