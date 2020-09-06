@@ -425,6 +425,7 @@ def update_portfolio(user_id):
                 trade_history = api.update_trade_history()
             except Exception as err:
                 print('#### ETORO ERROR ####')
+                print(Exception)
                 print(err)
                 pass
             else:
