@@ -194,25 +194,14 @@ class Home extends React.Component {
         justify="center"
         style={{ minHeight: '100vh' }}> <CircularProgress color='primary' /></Grid>)
     } else {
-      if (this.state.p_demo.portfolio.created_at === null) {
-        const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
-        const cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
-        const total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
-        const latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
-        const current_balance = cash + total_investment
-        const performance_to_date = current_balance/initial_balance-1
-        const num_of_days = this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400
-        const annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
-      } else {
-        const initial_balance = null
-        const cash = null
-        const total_investment = null
-        const latent_p_l = null
-        const current_balance = null
-        const performance_to_date = null
-        const num_of_days = null
-        const annualized_performance = null
-      }
+      const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
+      const cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
+      const total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
+      const latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
+      const current_balance = cash + total_investment
+      const performance_to_date = current_balance/initial_balance-1
+      const num_of_days = this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400
+      const annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
 
       return (
         <Container>
