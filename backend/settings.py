@@ -18,6 +18,7 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(BASE_DIR)
 PRODUCTION = os.environ['PRODUCTION'] == 'True'
 
 # Quick-start development settings - unsuitable for production
@@ -152,8 +153,10 @@ STATIC_URL = '/static/'
 
 # Place static in the same location as webpack build files
 STATIC_ROOT = os.path.join(BASE_DIR, 'build', 'static')
+STATIC_PUBLIC = os.path.join(BASE_DIR, 'public')
 
-STATICFILES_DIRS = [STATIC_ROOT]
+STATICFILES_DIRS = [STATIC_ROOT, STATIC_PUBLIC]
+print(STATICFILES_DIRS)
 # If you want to serve user uploaded files add these settings
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'build', 'media')
