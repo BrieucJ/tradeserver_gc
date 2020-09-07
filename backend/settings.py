@@ -145,14 +145,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'build', 'static')
-print(f'STATIC_ROOT: {STATIC_ROOT}')
-STATICFILES_DIRS = [STATIC_ROOT]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build', 'static')]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# print(f'STATIC_ROOT: {STATIC_ROOT}')
+
 
 # If you want to serve user uploaded files add these settings
 # MEDIA_URL = '/media/'
