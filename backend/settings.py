@@ -49,11 +49,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # 'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -148,25 +150,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# # Place static in the same location as webpack build files
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'build', 'static')
 print(f'STATIC_ROOT: {STATIC_ROOT}')
-# STATIC_PUBLIC = os.path.join(BASE_DIR, 'public', 'static')
-
 STATICFILES_DIRS = [STATIC_ROOT]
 
-
 # If you want to serve user uploaded files add these settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'build', 'static')
-print(MEDIA_ROOT)
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'build', 'static')
+# print(MEDIA_ROOT)
 
-import django_heroku
 # Configure app for Heroku deployment
+import django_heroku
 django_heroku.settings(locals())
-
 # override DATABASE_URL set by django_heroku because it forces SSL mode locally
 ssl_require = PRODUCTION
 locals()['DATABASES']['default'] = dj_database_url.config(conn_max_age=django_heroku.MAX_CONN_AGE, ssl_require=ssl_require)
