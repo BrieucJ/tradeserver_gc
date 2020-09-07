@@ -109,13 +109,13 @@ class Home extends React.Component {
           var perf = null
           var diff = null
           if (i === 0){
-            const old_balance = this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value
-            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value
+            const old_balance = this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value + this.state.p_real.portfolio.first_portfolio_history.latent_p_l
+            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value + this.state.p_real.p_history[i].latent_p_l
             perf = (current_balance/old_balance-1)*100
             diff = current_balance - old_balance
           } else {
-            const old_balance = this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value
-            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value
+            const old_balance = this.state.p_real.p_history[i-1].cash + this.state.p_real.p_history[i-1].total_invested_value + this.state.p_real.p_history[i-1].latent_p_l
+            const current_balance = this.state.p_real.p_history[i].cash + this.state.p_real.p_history[i].total_invested_value + this.state.p_real.p_history[i].latent_p_l
             perf = (current_balance/old_balance-1)*100
             diff = current_balance - old_balance
           }
@@ -132,13 +132,13 @@ class Home extends React.Component {
           var perf = null
           var diff = null
           if (i === 0){
-            const old_balance = this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
-            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value
+            const old_balance = this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value + this.state.p_demo.portfolio.first_portfolio_history.latent_p_l
+            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value + this.state.p_demo.p_history[i].latent_p_l
             perf = (current_balance/old_balance-1)*100
             diff = current_balance - old_balance
           } else {
-            const old_balance = this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value
-            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value
+            const old_balance = this.state.p_demo.p_history[i-1].cash + this.state.p_demo.p_history[i-1].total_invested_value + this.state.p_demo.p_history[i-1].latent_p_l
+            const current_balance = this.state.p_demo.p_history[i].cash + this.state.p_demo.p_history[i].total_invested_value + this.state.p_demo.p_history[i].latent_p_l
             perf = (current_balance/old_balance-1)*100
             diff = current_balance - old_balance
           }
@@ -194,11 +194,11 @@ class Home extends React.Component {
         justify="center"
         style={{ minHeight: '100vh' }}> <CircularProgress color='primary' /></Grid>)
     } else {
-      const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value : this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value
+      const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value + this.state.p_real.portfolio.first_portfolio_history.latent_p_l: this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value + this.state.p_demo.portfolio.first_portfolio_history.latent_p_l
       const cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
       const total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
       const latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
-      const current_balance = cash + total_investment
+      const current_balance = cash + total_investment + latent_p_l
       const performance_to_date = current_balance/initial_balance-1
       const num_of_days = (this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400).toFixed(1)
       const annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
