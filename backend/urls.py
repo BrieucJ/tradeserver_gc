@@ -42,6 +42,7 @@ urlpatterns = [
     path('api/update_portfolio/', views.UpdatePortfolio.as_view(), name='update_portfolio'),
     path('api/update_orders/', views.UpdateOrders.as_view(), name='update_orders'),
     path('api/transmit_orders/', views.TransmitOrders.as_view(), name='transmit_orders'),
-    re_path(r'^(?P<path>.*)/$', index),
-    path('', index),
+    re_path('.*', index)
+    # re_path(r'^(?P<path>.*)/$', index),
+    # path('', index),
 ]
