@@ -194,14 +194,37 @@ class Home extends React.Component {
         justify="center"
         style={{ minHeight: '100vh' }}> <CircularProgress color='primary' /></Grid>)
     } else {
-      const initial_balance = this.props.portfolio_type ? this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value + this.state.p_real.portfolio.first_portfolio_history.latent_p_l: this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value + this.state.p_demo.portfolio.first_portfolio_history.latent_p_l
-      const cash = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.cash : this.state.p_demo.portfolio.last_portfolio_history.cash
-      const total_investment = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.total_invested_value : this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
-      const latent_p_l = this.props.portfolio_type ? this.state.p_real.portfolio.last_portfolio_history.latent_p_l : this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
-      const current_balance = cash + total_investment + latent_p_l
-      const performance_to_date = current_balance/initial_balance-1
-      const num_of_days = (this.props.portfolio_type ? (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 : (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400).toFixed(1)
-      const annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
+      var initial_balance = null
+      var cash = null
+      var total_investment = null
+      var latent_p_l = null
+      var current_balance = null
+      var performance_to_date = null
+      var num_of_days = null
+      var annualized_performance = null 
+      if (this.props.portfolio_type){
+        if (this.state.p_real.p_history.length !== 0){
+          initial_balance = this.state.p_real.portfolio.first_portfolio_history.cash + this.state.p_real.portfolio.first_portfolio_history.total_invested_value + this.state.p_real.portfolio.first_portfolio_history.latent_p_l
+          cash = this.state.p_real.portfolio.last_portfolio_history.cash
+          total_investment = this.state.p_real.portfolio.last_portfolio_history.total_invested_value
+          latent_p_l = this.state.p_real.portfolio.last_portfolio_history.latent_p_l
+          current_balance = cash + total_investment + latent_p_l
+          performance_to_date = current_balance/initial_balance-1
+          num_of_days = (Math.abs(new Date(this.state.p_real.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_real.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 
+          annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
+        } 
+      } else {
+        if (this.state.p_demo.p_history.length !== 0){
+          initial_balance = this.state.p_demo.portfolio.first_portfolio_history.cash + this.state.p_demo.portfolio.first_portfolio_history.total_invested_value + this.state.p_demo.portfolio.first_portfolio_history.latent_p_l
+          cash = this.state.p_demo.portfolio.last_portfolio_history.cash
+          total_investment = this.state.p_demo.portfolio.last_portfolio_history.total_invested_value
+          latent_p_l = this.state.p_demo.portfolio.last_portfolio_history.latent_p_l
+          current_balance = cash + total_investment + latent_p_l
+          performance_to_date = current_balance/initial_balance-1
+          num_of_days = (Math.abs(new Date(this.state.p_demo.portfolio.first_portfolio_history.created_at) - new Date(this.state.p_demo.portfolio.last_portfolio_history.created_at)) / 1000) / 86400 
+          annualized_performance = (1+performance_to_date)**(365/num_of_days)-1
+        } 
+      }
 
       return (
         <Container>
