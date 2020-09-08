@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from pandas_datareader import data
 from pandas_datareader._utils import RemoteDataError
+import pandas_market_calendars as mcal
 from .serializers import BuyOrderCreateSerializer
 from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder, PortfolioHistory
 from re import sub
@@ -25,6 +26,9 @@ import pandas as pd
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import gc
 
+nyse = mcal.get_calendar('NYSE')
+LAST_TRADING_DATE = nyse.schedule(start_date=datetime.datetime.today() - timedelta(days=10), end_date=datetime.datetime.today() - timedelta(days=1)).max()['market_open'].date()
+print(f'LAST TRADING DATE: {LAST_TRADING_DATE}')
 
 @shared_task
 def create_portfolio(portfolio, user_id, positions, pending_orders, trade_history):
@@ -254,7 +258,6 @@ def update_sell_orders(portfolio_id):
     print('update_sell_orders')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     positions = portfolio.position.filter(close_date__isnull=True)
-    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
     for position in positions:
         bo = position.buy_order.first()
         pending_bo = portfolio.buy_order.filter(stock=position.stock, submited_at__isnull=True).first()
@@ -269,7 +272,7 @@ def update_sell_orders(portfolio_id):
             if sma_position == None:
                 print('SMA POS NONE')
                 last_sma_position_date = position.sma_position.price_date
-                if not position.sell_order.first() and (last_business_day.date() - last_sma_position_date) >= 2:
+                if not position.sell_order.first() and (LAST_TRADING_DATE - last_sma_position_date) >= 2:
                     print(f'CREATING SELL ORDER {position.stock}')
                     order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
                     order.save()
@@ -286,13 +289,12 @@ def update_buy_orders(portfolio_id):
     print('update_buy_orders')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
-    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
 
     for order in pending_buy_orders:
         print(order)
         if order.submited_at != None and order.executed_at == None and order.canceled_at == None:
-            print(f'Pending buy order {order.price_date} | {last_business_day.date()}')
-            if order.price_date == None or order.price_date < last_business_day.date() or order.sma_position == None:
+            print(f'Pending buy order {order.price_date} | {LAST_TRADING_DATE}')
+            if order.price_date == None or order.price_date < LAST_TRADING_DATE or order.sma_position == None:
                 print(f'CANCEL ORDER {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
@@ -300,7 +302,7 @@ def update_buy_orders(portfolio_id):
                 print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
-        if order.submited_at == None and order.price_date < last_business_day.date() or order.sma_position == None:
+        if order.submited_at == None and order.price_date < LAST_TRADING_DATE or order.sma_position == None:
             print(f'CANCEL {order.stock} - TOO OLD')
             order.canceled_at = datetime.datetime.now(tz=timezone.utc)
     gc.collect()
@@ -310,10 +312,9 @@ def update_investments(portfolio_id):
     print('update_investments')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     portfolio_history = portfolio.last_portfolio_history
-    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
     backtests = SMABacktest.objects.all()
-    print(last_business_day)
-    print(len(backtests))
+    print(LAST_TRADING_DATE)
+
     if portfolio_history.cash != None:
         min_score = SMABacktest.objects.aggregate(Min('score'))
         max_score = SMABacktest.objects.aggregate(Max('score'))
@@ -328,8 +329,10 @@ def update_investments(portfolio_id):
             max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
         
         for b in backtests:
-            sma_position = b.sma_position.filter(price_date=last_business_day.date()).first()
-            last_price = b.stock.price_history.filter(price_date=last_business_day.date()).first()
+            sma_position = b.sma_position.filter(price_date=LAST_TRADING_DATE).first()
+            print(sma_position)
+            last_price = b.stock.price_history.filter(price_date=LAST_TRADING_DATE).first()
+            print(last_price)
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
             if pending_buy_orders['total_investment__sum'] == None:
                 available_cash = cash
@@ -473,6 +476,7 @@ def update_price_history():
                 for index, row in df.iterrows():
                     if len(row) > 0:
                         try:
+                            print(df.index.size)
                             p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=end_date)
                             p.full_clean()
                             p.save()
@@ -506,8 +510,10 @@ def transmit_user_order(user_id, portfolio_id):
 def update_orders():
     print('update_orders')
     users = User.objects.all()
-    last_business_day = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-    if len(Stock.objects.filter(valid=True, price_history__price_date=last_business_day.date())) != len(Stock.objects.filter(valid=True)):
+    print(LAST_TRADING_DATE)
+    print(len(Stock.objects.filter(valid=True, price_history__price_date=LAST_TRADING_DATE)))
+    print(len(Stock.objects.filter(valid=True)))
+    if len(Stock.objects.filter(valid=True, price_history__price_date=LAST_TRADING_DATE)) != len(Stock.objects.filter(valid=True)):
         print('update stock prices')
         update_price_history.delay()
     for user in users:
