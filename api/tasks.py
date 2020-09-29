@@ -500,21 +500,22 @@ def stock_prediction(stock_id, nn_id):
     print(f'Last prediction  date: {prediction_date}')
     delta = stock.last_price.price_date - prediction_date
     print(f'DELTA: {delta}')
-    days = [timedelta(days=i) for i in range(delta.days)]
+    days = [prediction_date + timedelta(days=i) for i in range(delta.days)]
     print(f'DAYS {days}')
     print(f'# of days: {len(days)}')
     index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
-    engine = DeepEngine(stock=stock, neural_network=nn, prices=stock.price_history.all(), index_prices=stock.index.index_history.all())
-    for d in days:
-        prediction = engine.predict(date=d)
-        pred = Prediction(neural_network=nn, stock=stock, price_date=d, prediction=prediction)
-        try:
-            pred.save()
-        except IntegrityError as err:
-            print(err)
-            pass
-        else:
-            print(f'Saving {stock.symbol} prediction {prediction} for {d}')
+    if len(days) != 0:
+        engine = DeepEngine(stock=stock, neural_network=nn, prices=stock.price_history.all(), index_prices=stock.index.index_history.all())
+        for d in days:
+            prediction = engine.predict(date=d)
+            pred = Prediction(neural_network=nn, stock=stock, price_date=d, prediction=prediction)
+            try:
+                pred.save()
+            except IntegrityError as err:
+                print(err)
+                pass
+            else:
+                print(f'Saving {stock.symbol} prediction {prediction} for {d}')
     gc.collect()
 
 @shared_task
