@@ -34,7 +34,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import gc
 
 nyse = mcal.get_calendar('NYSE')
-LAST_TRADING_DATE = nyse.schedule(start_date=datetime.datetime.today() - timedelta(days=10), end_date=datetime.datetime.today()- timedelta(days=1)).max()['market_open']
+LAST_TRADING_DATE = nyse.schedule(start_date=datetime.datetime.today() - timedelta(days=10), end_date=datetime.datetime.now(tz=nyse.tz)).max()['market_close']
 print(f'LAST TRADING DATE: {LAST_TRADING_DATE}')
 
 @shared_task
