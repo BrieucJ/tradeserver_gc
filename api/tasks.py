@@ -486,7 +486,7 @@ def update_price_history():
     update_predictions.delay()
     gc.collect()
 
-@shared_task
+@shared_task(ignore_result=False)
 def stock_prediction(stock_id, nn_id):
     nn = NeuralNetwork.objects.get(id=nn_id)
     stock = Stock.objects.get(id=stock_id)
@@ -495,15 +495,12 @@ def stock_prediction(stock_id, nn_id):
         prediction_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
     else:
         prediction_date = prediction.price_date
-    print(f'LAST TRADING DATE: {LAST_TRADING_DATE.date()}')
-    print(f'Last stock price date: {stock.last_price.price_date}')
-    print(f'Last prediction  date: {prediction_date}')
+    # print(f'LAST TRADING DATE: {LAST_TRADING_DATE.date()}')
+    # print(f'Last stock price date: {stock.last_price.price_date}')
+    # print(f'Last prediction  date: {prediction_date}')
     delta = stock.last_price.price_date - prediction_date
-    print(f'DELTA: {delta}')
-    print(range(delta.days))
     days = [prediction_date + timedelta(days=i+1) for i in range(delta.days)]
-    print(f'DAYS {days}')
-    print(f'# of days: {len(days)}')
+    # print(f'DAYS {days}')
     index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
     if len(days) != 0:
         engine = DeepEngine(stock=stock, neural_network=nn, prices=stock.price_history.all(), index_prices=stock.index.index_history.all())
@@ -526,8 +523,13 @@ def update_predictions():
     stocks = Stock.objects.filter(valid=True)
     for nn in neural_networks:
         for s in stocks:
-            stock_prediction.delay(s.id, nn.id)
             print(s)
+            result = stock_prediction.delay(s.id, nn.id)
+            print(result)
+            while not result.ready():
+                time.sleep(0.5)
+            result_output = result.get()
+            print(result_output)
     gc.collect()
 
 @shared_task

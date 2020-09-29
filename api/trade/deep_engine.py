@@ -10,7 +10,7 @@ import json
 
 class DeepEngine():
     def __init__(self, stock, neural_network, prices, index_prices):
-        print(f'Backtest __init__ {neural_network}')
+        print(f'DeepEngine __init__ {neural_network}')
         self.index_prices = index_prices
         self.stock = stock
         self.prices = prices
@@ -73,6 +73,7 @@ class DeepEngine():
         index_close_prices = [item.close for item in self.index_prices]
         index_dates = [item.price_date for item in self.index_prices]
         index_df = pd.DataFrame({'Date': index_dates, 'Market_close': index_close_prices})
+        index_df = index_df.iloc[::-1] #old to new order
         index_df['Date'] = pd.to_datetime(index_df['Date'])
         index_df.set_index('Date', inplace=True)
         index_df.sort_index(inplace=True, ascending=True)
