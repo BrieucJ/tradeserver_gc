@@ -224,13 +224,27 @@ class API():
         self.browser.get('https://www.etoro.com/portfolio/history')
         self.wait.until(lambda driver: self.browser.current_url == 'https://www.etoro.com/portfolio/history')
 
-        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='dropdown-menu']")))
-        dropdown_btn = self.browser.find_element_by_css_selector("div[class='dropdown-menu']")
+        self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[class='icon date']")))
+        dropdown_btn = self.browser.find_element_by_css_selector("a[class='icon date']")
         dropdown_btn.click()
         time.sleep(1) #dirty fix
-        dropdown = self.browser.find_element_by_css_selector("div[class='drop-select-box']")
-        options = dropdown.find_elements_by_tag_name('a')
-        options[4].click()
+        dropdown_menu = dropdown_btn.find_element_by_xpath("./../div[@class='drop-select-box']")
+        options = dropdown_menu.find_elements_by_tag_name('a')
+        options[4].click() #1 year history
+
+        more_info_btn = self.browser.find_elements_by_css_selector("button[class^='more-info-button']")
+        if len(more_info_btn) !=0:
+            more_info_btn[0].location_once_scrolled_into_view
+            more_info_btn[0].click()
+
+        all_hist = len(more_info_btn) == 0
+        while all_hist == False:
+            more_hist = self.browser.find_elements_by_css_selector("button[class^='more-info-button']")
+            if len(more_hist) == 0:
+                all_hist=True
+            else:
+                more_hist[0].location_once_scrolled_into_view
+                more_hist[0].click()
 
         self.wait.until(EC.invisibility_of_element((By.CSS_SELECTOR, "div[class='ui-table-hat ng-scope loading']")))
         trade_history = []
@@ -313,35 +327,37 @@ class API():
                 share_input.send_keys(Keys.ENTER)
 
                 #STOP LOSS
-                stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
-                stop_loss_btn.click()
-                stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
-                if len(stop_loss_switch_btn) != 0:
-                    stop_loss_switch_btn[0].click()
-                
-                stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-                for _ in range(12):
-                    stop_loss_input.send_keys(Keys.ARROW_RIGHT)
-                    stop_loss_input.send_keys(Keys.BACK_SPACE)
-                time.sleep(1)
-                stop_loss_input.send_keys(str(order.stop_loss))
-                stop_loss_input.send_keys(Keys.ENTER)
+                if order.stop_loss != None:
+                    stop_loss_btn = self.browser.find_element_by_css_selector("tabtitle[name='stopLoss']")
+                    stop_loss_btn.click()
+                    stop_loss_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-stop-loss-amount-editing-switch-to-rate-button']")
+                    if len(stop_loss_switch_btn) != 0:
+                        stop_loss_switch_btn[0].click()
+                    
+                    stop_loss_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-stop-loss-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+                    for _ in range(12):
+                        stop_loss_input.send_keys(Keys.ARROW_RIGHT)
+                        stop_loss_input.send_keys(Keys.BACK_SPACE)
+                    time.sleep(1)
+                    stop_loss_input.send_keys(str(order.stop_loss))
+                    stop_loss_input.send_keys(Keys.ENTER)
 
                 #TAKE PROFIT
-                take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
-                take_profit_btn.click()
-                take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
-                if len(take_profit_switch_btn) != 0:
-                    print('switch-to-rate-button')
-                    take_profit_switch_btn[0].click()
+                if order.take_profit != None:
+                    take_profit_btn = self.browser.find_element_by_css_selector("tabtitle[name='takeProfit']")
+                    take_profit_btn.click()
+                    take_profit_switch_btn = self.browser.find_elements_by_css_selector("a[data-etoro-automation-id='execution-take-profit-amount-editing-switch-to-rate-button']")
+                    if len(take_profit_switch_btn) != 0:
+                        print('switch-to-rate-button')
+                        take_profit_switch_btn[0].click()
 
-                take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
-                for _ in range(12):
-                    take_profit_input.send_keys(Keys.ARROW_RIGHT)
-                    take_profit_input.send_keys(Keys.BACK_SPACE)
-                time.sleep(1)
-                take_profit_input.send_keys(str(order.take_profit))
-                take_profit_input.send_keys(Keys.ENTER)
+                    take_profit_input = self.browser.find_element_by_css_selector("div[data-etoro-automation-id='execution-take-profit-rate-input']").find_element_by_css_selector("input[data-etoro-automation-id='input']")
+                    for _ in range(12):
+                        take_profit_input.send_keys(Keys.ARROW_RIGHT)
+                        take_profit_input.send_keys(Keys.BACK_SPACE)
+                    time.sleep(1)
+                    take_profit_input.send_keys(str(order.take_profit))
+                    take_profit_input.send_keys(Keys.ENTER)
 
                 #PLACE ORDER
                 try:

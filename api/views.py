@@ -11,10 +11,10 @@ from django.db.models import Min, Max
 from django.contrib.auth.models import User
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from .permissions import IsAuthenticatedOrWriteOnly
-from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, SMABacktestSerializer, SMAPositionSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer, PriceHistorySerializer
+from .serializers import ProfileSerializer, UserSerializer, PortfolioSerializer, PositionSerializer, StockSerializer, BuyOrderReadSerializer, SellOrderSerializer, PortfolioHistorySerializer, PriceHistorySerializer, PredictionSerializer
 from .trade.etoro import API
-from .tasks  import update_portfolio, update_sma_positions, update_price_history, transmit_orders, update_orders
-from .models import Profile, Portfolio, Stock, SMABacktest, SMAPosition, PriceHistory, PortfolioHistory, Position, BuyOrder
+from .tasks  import update_portfolio, update_price_history, transmit_orders, update_orders, LAST_TRADING_DATE
+from .models import Profile, Portfolio, Stock, PriceHistory, PortfolioHistory, Position, BuyOrder, Prediction
 
 class Home(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -22,14 +22,15 @@ class Home(generics.RetrieveAPIView):
     queryset = Portfolio.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
+        print('RETRIEVE HOME')
         user = request.user
         #demo
         p_demo = user.portfolio.filter(portfolio_type=False).first()
         p_real = user.portfolio.filter(portfolio_type=True).first()
 
         if p_demo != None:
-            dates = [ph.created_at.date() for ph in p_demo.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
-            portfolio_history_demo = [p_demo.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
+            # dates = [ph.created_at.date() for ph in p_demo.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
+            # portfolio_history_demo = [p_demo.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
 
             current_pos_demo = PositionSerializer(p_demo.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data 
             pending_buy_orders_demo = BuyOrderReadSerializer(p_demo.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
@@ -41,8 +42,8 @@ class Home(generics.RetrieveAPIView):
             portfolio_history_demo= []
         
         if p_real != None:
-            dates = [ph.created_at.date() for ph in p_real.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
-            portfolio_history_real = [p_real.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
+            # dates = [ph.created_at.date() for ph in p_real.portfolio_history.order_by('created_at__date').distinct('created_at__date')]
+            # portfolio_history_real = [p_real.portfolio_history.filter(created_at__date=d).latest('created_at') for d in dates]
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True).order_by('-total_investment'), many=True).data
             pending_buy_orders_real = BuyOrderReadSerializer(p_real.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).order_by('-total_investment'), many=True).data 
             pending_sell_orders_real = PositionSerializer(p_real.position.filter(close_date__isnull=True, sell_order__isnull=False, sell_order__executed_at__isnull=True).order_by('-total_investment'), many=True).data 
@@ -51,18 +52,16 @@ class Home(generics.RetrieveAPIView):
             pending_sell_orders_real = []
             current_pos_real = []
             portfolio_history_real = []
-
+        print('RESPONSE')
         return Response({'p_demo': {
                             'portfolio': PortfolioSerializer(p_demo).data,
                             'current_positions': current_pos_demo,
-                            'p_history': PortfolioHistorySerializer(portfolio_history_demo, many=True).data,
                             'pending_buy_orders': pending_buy_orders_demo,
                             'pending_sell_orders': pending_sell_orders_demo,
                             },
                         'p_real': {
                             'portfolio': PortfolioSerializer(p_real).data, 
                             'current_positions': current_pos_real, 
-                            'p_history': PortfolioHistorySerializer(portfolio_history_real, many=True).data,
                             'pending_buy_orders': pending_buy_orders_real,
                             'pending_sell_orders': pending_sell_orders_real,
                             }
@@ -84,32 +83,32 @@ class PositionDetails(generics.RetrieveAPIView):
         else:
             start_date = (pos.open_date - datetime.timedelta(days=delta_days)).date()
 
-        #price_history
-        close_prices = [item.close for item in pos.stock.price_history.all()]
-        dates = [item.price_date for item in pos.stock.price_history.all()]        
-        df = pd.DataFrame({'date': dates, 'close': close_prices})
-        df = df.iloc[::-1] #old to new order
-        if pos.buy_order.first() == None:
-            df['low_sma'] = df['close']
-            df['high_sma'] = df['close']
-        else:
-            df['low_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.low_sma).mean()
-            df['high_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.high_sma).mean()
-        df.dropna(inplace=True)
-        df['date'] = pd.to_datetime(df['date'])
-        df.set_index('date', inplace=True)
+        # #price_history
+        # close_prices = [item.close for item in pos.stock.price_history.all()]
+        # dates = [item.price_date for item in pos.stock.price_history.all()]        
+        # df = pd.DataFrame({'date': dates, 'close': close_prices})
+        # df = df.iloc[::-1] #old to new order
+        # if pos.buy_order.first() == None:
+        #     df['low_sma'] = df['close']
+        #     df['high_sma'] = df['close']
+        # else:
+        #     df['low_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.low_sma).mean()
+        #     df['high_sma'] = df['close'].rolling(pos.buy_order.first().sma_position.model.high_sma).mean()
+        # df.dropna(inplace=True)
+        # df['date'] = pd.to_datetime(df['date'])
+        # df.set_index('date', inplace=True)
 
-        if pos.close_date == None:
-            df = df[start_date : datetime.datetime.today().date()]
-        else:
-            if (pos.close_date + datetime.timedelta(days=delta_days)).date() > datetime.datetime.today().date():
-                df = df[start_date : datetime.datetime.today().date()]
-            else:
-                df = df[start_date : (pos.close_date + datetime.timedelta(days=delta_days)).date()]
+        # if pos.close_date == None:
+        #     df = df[start_date : datetime.datetime.today().date()]
+        # else:
+        #     if (pos.close_date + datetime.timedelta(days=delta_days)).date() > datetime.datetime.today().date():
+        #         df = df[start_date : datetime.datetime.today().date()]
+        #     else:
+        #         df = df[start_date : (pos.close_date + datetime.timedelta(days=delta_days)).date()]
 
         df['date'] = df.index
 
-        return Response({'position': PositionSerializer(pos).data, 'price_df': df}, status=status.HTTP_200_OK)
+        return Response({'position': PositionSerializer(pos).data}, status=status.HTTP_200_OK)
 
 class BuyOrderDetails(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -125,19 +124,17 @@ class BuyOrderDetails(generics.RetrieveAPIView):
         start_date = (bo.created_at - datetime.timedelta(days=delta_days)).date()
 
         #price_history
-        close_prices = [item.close for item in bo.stock.price_history.all()]
-        dates = [item.price_date for item in bo.stock.price_history.all()]        
-        df = pd.DataFrame({'date': dates, 'close': close_prices})
-        df = df.iloc[::-1] #old to new order
-        df['low_sma'] = df['close'].rolling(bo.sma_position.model.low_sma).mean()
-        df['high_sma'] = df['close'].rolling(bo.sma_position.model.high_sma).mean()
-        df.dropna(inplace=True)
-        df['date'] = pd.to_datetime(df['date'])
-        df.set_index('date', inplace=True)
-        df = df[start_date : datetime.datetime.today().date()]
-        df['date'] = df.index
-
-        sma_positions = SMAPosition.objects.filter(price_date__range=[start_date, datetime.datetime.today().date()], stock=bo.stock, model=bo.sma_position.model)
+        # close_prices = [item.close for item in bo.stock.price_history.all()]
+        # dates = [item.price_date for item in bo.stock.price_history.all()]        
+        # df = pd.DataFrame({'date': dates, 'close': close_prices})
+        # df = df.iloc[::-1] #old to new order
+        # df['low_sma'] = df['close'].rolling(bo.sma_position.model.low_sma).mean()
+        # df['high_sma'] = df['close'].rolling(bo.sma_position.model.high_sma).mean()
+        # df.dropna(inplace=True)
+        # df['date'] = pd.to_datetime(df['date'])
+        # df.set_index('date', inplace=True)
+        # df = df[start_date : datetime.datetime.today().date()]
+        # df['date'] = df.index
 
         return Response({'buy_order': BuyOrderReadSerializer(bo).data, 'price_df': df, 'sma_positions': SMAPositionSerializer(sma_positions, many=True).data}, status=status.HTTP_200_OK)
 
@@ -172,7 +169,7 @@ class UserView(generics.CreateAPIView, generics.UpdateAPIView):
             print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class RetrievePortfolio(generics.RetrieveAPIView):
+class PortfolioView(generics.RetrieveAPIView, generics.UpdateAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = PortfolioSerializer
     queryset = Portfolio.objects.all()
@@ -194,6 +191,17 @@ class RetrievePortfolio(generics.RetrieveAPIView):
             current_pos_real = PositionSerializer(p_real.position.filter(close_date__isnull=True), many=True).data 
 
         return Response({'p_demo': {'portfolio': PortfolioSerializer(p_demo).data, 'current_positions': current_pos_demo}, 'p_real': {'portfolio': PortfolioSerializer(p_real).data, 'current_positions': current_pos_real}}, status=status.HTTP_200_OK)
+
+    def put(self, request, format=None):
+        print('PUT PORTFOLIO')
+        print(request.data)
+        serializer = self.serializer_class(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'portfolio': serializer.data}, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RetrieveOrder(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
@@ -263,60 +271,10 @@ class RetrieveHistory(generics.RetrieveAPIView):
 class RetrieveMarket(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = StockSerializer
-    queryset = Stock.objects.all()
+    queryset = Stock.objects.filter(valid=True)
 
     def retrieve(self, request, *args, **kwargs):
+        print('RetrieveMarket')
         queryset = self.get_queryset()
-        stocks = StockSerializer(queryset, many=True)
+        stocks = StockSerializer(queryset, many=True, context={'user_id': request.user.id})
         return Response({'stocks': stocks.data})
-
-class RetrieveModel(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = SMABacktestSerializer()
-    queryset = SMABacktest.objects.all()
-
-    def retrieve(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        sma_backtest = SMABacktestSerializer(queryset, many=True)
-        return Response({'sma_backtest': sma_backtest.data})
-
-
-class UpdatePriceHistory(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = SMABacktest.objects.all()
-    serializer_class = SMABacktestSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        update_price_history.delay()
-        return Response({'updating': True})
-
-class UpdatePortfolio(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        update_portfolio.delay(request.user.id)
-        return Response({'updating': True})
-
-class UpdateOrders(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        update_orders.delay()
-        return Response({'updating': True})
-
-class TransmitOrders(generics.RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Stock.objects.all()
-    serializer_class = StockSerializer()
-
-    def retrieve(self, request, *args, **kwargs):
-        print('Retrieve')
-        transmit_orders.delay()
-        return Response({'updating': True})

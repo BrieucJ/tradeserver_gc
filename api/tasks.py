@@ -1,6 +1,12 @@
+from io import StringIO
+import requests
+import os
+import tensorflow as tf
+import glob
 import datetime
 import sys
 import time
+import json
 from django.db.models import Sum, Q
 from itertools import chain
 from datetime import timedelta
@@ -12,14 +18,15 @@ from django.db.models import Sum, Max, Min
 from celery.decorators import periodic_task
 from celery import task, shared_task, current_task
 from .trade.etoro import API
-from .trade.sma_engine import SMAEngine
+#from .trade.sma_engine import SMAEngine
+from .trade.deep_engine import DeepEngine
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
-from pandas_datareader import data
-from pandas_datareader._utils import RemoteDataError
+# from pandas_datareader import data
+# from pandas_datareader._utils import RemoteDataError
 import pandas_market_calendars as mcal
 from .serializers import BuyOrderCreateSerializer
-from .models import Stock, Position, Portfolio, PriceHistory, SMAModel, SMABacktest, SMAPosition, SellOrder, BuyOrder, PortfolioHistory
+from .models import Stock, Position, Portfolio, PriceHistory, SellOrder, BuyOrder, PortfolioHistory, NeuralNetwork, Index, IndexHistory, Prediction
 from re import sub
 from decimal import Decimal
 import pandas as pd
@@ -27,7 +34,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import gc
 
 nyse = mcal.get_calendar('NYSE')
-LAST_TRADING_DATE = nyse.schedule(start_date=datetime.datetime.today() - timedelta(days=10), end_date=datetime.datetime.today() - timedelta(days=1)).max()['market_open'].date()
+LAST_TRADING_DATE = nyse.schedule(start_date=datetime.datetime.today() - timedelta(days=10), end_date=datetime.datetime.today()- timedelta(days=1)).max()['market_open']
 print(f'LAST TRADING DATE: {LAST_TRADING_DATE}')
 
 @shared_task
@@ -36,13 +43,17 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
     user = User.objects.get(id=user_id)
 
     tickers_list = [pos['ticker'] for pos in positions]
-    print(tickers_list)
-    print(set(tickers_list))
-    print( len(set(tickers_list)) == len(tickers_list) )
+
+    if float(portfolio['cash']) + float(portfolio['total_invested_value']) > 10000:
+        pos_size = 0.05
+    elif float(portfolio['cash']) + float(portfolio['total_invested_value']) > 100000:
+        pos_size = 0.01
+    else:
+        pos_size = 0.1
     
     #portfolio
     # print('creating portfolio')
-    user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], currency=portfolio['currency'], created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
+    user_portfolio = Portfolio(user=user, portfolio_type=portfolio['portfolio_type'], neural_network=NeuralNetwork.objects.first(), currency=portfolio['currency'], pos_size=pos_size, created_at=datetime.datetime.now(tz=timezone.utc), updated_at=datetime.datetime.now(tz=timezone.utc))
     user_portfolio.save()
     portfolio_history = PortfolioHistory(portfolio=user_portfolio, cash=portfolio['cash'], total_invested_value=portfolio['total_invested_value'], latent_p_l=portfolio['latent_p_l'], created_at=datetime.datetime.now(tz=timezone.utc))
     portfolio_history.save()
@@ -64,11 +75,8 @@ def create_portfolio(portfolio, user_id, positions, pending_orders, trade_histor
         print(th)
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
-        else:
-            stock = None
-        
-        pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
-        pos.save()
+            pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
+            pos.save()
 
     #orders
     print('creating orders')
@@ -104,16 +112,18 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     print(f'save_portfolio {portfolio["portfolio_type"]}')
     user = User.objects.get(id=user_id)
     user_portfolio = user.portfolio.get(portfolio_type=portfolio['portfolio_type'])
-    print(user_portfolio.portfolio_type)
 
-    tickers_list = [pos['ticker'] for pos in positions]
-
-    if (len(set(tickers_list)) != len(tickers_list)):
-        print(tickers_list)
-        print(set(tickers_list))
-        print('#### ERROR ####')
-        
     #portfolio
+    if float(portfolio['cash']) + float(portfolio['total_invested_value']) > 10000:
+        pos_size = 0.05
+    elif float(portfolio['cash']) + float(portfolio['total_invested_value']) > 100000:
+        pos_size = 0.01
+    else:
+        pos_size = 0.1
+
+    
+    if pos_size != user_portfolio.pos_size:
+        user_portfolio.pos_size = pos_size
     user_portfolio.updated_at = datetime.datetime.now(tz=timezone.utc)
     user_portfolio.save()
 
@@ -153,39 +163,36 @@ def save_portfolio(portfolio, user_id, positions, pending_orders, trade_history)
     for th in trade_history:
         if len(Stock.objects.filter(symbol=th['ticker'])) != 0:
             stock = Stock.objects.filter(symbol=th['ticker']).first()
-        else:
-            stock = None
 
-        old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
-        if old_positions.first() != None:
-            pass
-            # print(f'EXISTING OLD POSITION {th["ticker"]}')
-        else:
-            current_position = user_portfolio.position.filter(stock=stock, open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=True).first()
-            if current_position:
-                print(f'Closing {th["ticker"]}')
-                current_position.close_date = th['close_date']
-                current_position.close_rate = th['close_rate']
-                current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
-                current_position.save()
-                sell_order = current_position.sell_order.first()
-                if sell_order:
-                    print(f'Closing {th["ticker"]} sell order')
-                    if sell_order.executed_at == None:
-                        sell_order.submited_at = th['close_date']
-                        sell_order.executed_at = th['close_date']
-                        sell_order.save()
+            old_positions = user_portfolio.position.filter(stock=stock, open_date__date=datetime.datetime.strptime(th['open_date'],'%Y-%m-%dT%H:%M:%SZ').date(), open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__date=datetime.datetime.strptime(th['close_date'],'%Y-%m-%dT%H:%M:%SZ').date())
+            if old_positions.first() != None:
+                pass
+                # print(f'EXISTING OLD POSITION {th["ticker"]}')
             else:
-                print(f'UNKNOW OLD POSITION {th["ticker"]}')
-                pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
-                pos.save()
+                current_position = user_portfolio.position.filter(stock=stock, open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date__isnull=True).first()
+                if current_position:
+                    print(f'Closing {th["ticker"]}')
+                    current_position.close_date = th['close_date']
+                    current_position.close_rate = th['close_rate']
+                    current_position.updated_at = datetime.datetime.now(tz=timezone.utc)
+                    current_position.save()
+                    sell_order = current_position.sell_order.first()
+                    if sell_order:
+                        print(f'Closing {th["ticker"]} sell order')
+                        if sell_order.executed_at == None:
+                            sell_order.submited_at = th['close_date']
+                            sell_order.executed_at = th['close_date']
+                            sell_order.save()
+                else:
+                    print(f'UNKNOW OLD POSITION {th["ticker"]}')
+                    pos = Position(stock=stock, portfolio=user_portfolio, open_date=th['open_date'], open_rate=th['open_rate'], num_of_shares=th['num_of_shares'], total_investment=th['total_investment'], close_date=th['close_date'], close_rate=th['close_rate'])
+                    pos.save()
+        else:
+            print(f'Unknown stock: {th["ticker"]}')
 
     print('#### ORDERS ####')
     pending_order_stocks = [Stock.objects.filter(symbol=po['ticker']).first() for po in pending_orders]
     canceled_orders = user_portfolio.buy_order.filter(canceled_at__isnull=False, terminated_at__isnull=True)
-    print(len(pending_orders))
-    print(len(canceled_orders))
-    print('canceled orders')
     for co in canceled_orders:
         if co.stock not in pending_order_stocks:
             print(f'Buy Order has been canceled {co.stock}')
@@ -253,8 +260,10 @@ def update_disabled_portfolio(portfolio_id):
             order.save()
     gc.collect()
 
+
 @shared_task
 def update_sell_orders(portfolio_id):
+    sell_threshold = 0.5
     print('update_sell_orders')
     portfolio = Portfolio.objects.get(id=portfolio_id)
     positions = portfolio.position.filter(close_date__isnull=True)
@@ -267,20 +276,20 @@ def update_sell_orders(portfolio_id):
                 order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, position=position)
                 order.save()
         else:
-            sma_position = SMAPosition.objects.filter(stock=position.stock, model=bo.sma_position.model, price_date=last_business_day.date()).first()
-
-            if sma_position == None:
-                print('SMA POS NONE')
-                last_sma_position_date = position.sma_position.price_date
-                if not position.sell_order.first() and (LAST_TRADING_DATE - last_sma_position_date) >= 2:
+            prediction = Prediction.objects.filter(stock=position.stock, neural_network=bo.neural_network, price_date=last_business_day.date()).first()
+            print(prediction)
+            if prediction == None:
+                print('PREDICTION == NONE')
+                if not position.sell_order.first() and (LAST_TRADING_DATE.date() - last_sma_position_date) >= 2:
                     print(f'CREATING SELL ORDER {position.stock}')
-                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
+                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, prediction=prediction, position=position)
                     order.save()
             else:
-                if sma_position.buy == False and not position.sell_order.first():
-                    print('SMA POS SELL')
+                print('PREDICTION != NONE')
+                if float(prediction.prediction) <= sell_threshold and not position.sell_order.first():
+                    print(f'Prediction {prediction.prediction}')
                     print(f'CREATING SELL ORDER {position.stock}')
-                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, sma_position=sma_position, position=position)
+                    order = SellOrder(user=portfolio.user, stock=position.stock, portfolio=portfolio, prediction=prediction, position=position)
                     order.save()
     gc.collect()
 
@@ -291,10 +300,9 @@ def update_buy_orders(portfolio_id):
     pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True)
 
     for order in pending_buy_orders:
-        print(order)
         if order.submited_at != None and order.executed_at == None and order.canceled_at == None:
-            print(f'Pending buy order {order.price_date} | {LAST_TRADING_DATE}')
-            if order.price_date == None or order.price_date < LAST_TRADING_DATE or order.sma_position == None:
+            print(f'Pending buy order {order.price_date} | {LAST_TRADING_DATE.date()}')
+            if order.price_date == None or order.price_date < LAST_TRADING_DATE.date() or order.prediction == None:
                 print(f'CANCEL ORDER {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
@@ -302,7 +310,7 @@ def update_buy_orders(portfolio_id):
                 print(f'CANCEL CURRENT PRICE IS .5% LOWER THAN ORDER PRICE {order.stock}')
                 order.canceled_at = datetime.datetime.now(tz=timezone.utc)
                 order.save()
-        if order.submited_at == None and order.price_date < LAST_TRADING_DATE or order.sma_position == None:
+        if order.submited_at == None and order.price_date < LAST_TRADING_DATE.date() or order.prediction == None:
             print(f'CANCEL {order.stock} - TOO OLD')
             order.canceled_at = datetime.datetime.now(tz=timezone.utc)
     gc.collect()
@@ -310,50 +318,49 @@ def update_buy_orders(portfolio_id):
 @shared_task
 def update_investments(portfolio_id):
     print('update_investments')
+    buy_threshold = 0.75
     portfolio = Portfolio.objects.get(id=portfolio_id)
-    portfolio_history = portfolio.last_portfolio_history
-    backtests = SMABacktest.objects.all()
-    print(LAST_TRADING_DATE)
 
-    if portfolio_history.cash != None:
-        min_score = SMABacktest.objects.aggregate(Min('score'))
-        max_score = SMABacktest.objects.aggregate(Max('score'))
-        total_invested_value = portfolio_history.total_invested_value
-        cash = portfolio_history.cash
-        print(f'CASH {cash}')
-        if cash + portfolio_history.total_invested_value > 10000:
-            max_allocation = 0.05 * (cash + portfolio_history.total_invested_value)
-        elif cash + portfolio_history.total_invested_value > 100000:
-            max_allocation = 0.01 * (cash + portfolio_history.total_invested_value)
-        else:
-            max_allocation = 0.1 * (cash + portfolio_history.total_invested_value)
-        
-        for b in backtests:
-            sma_position = b.sma_position.filter(price_date=LAST_TRADING_DATE).first()
-            print(sma_position)
-            last_price = b.stock.price_history.filter(price_date=LAST_TRADING_DATE).first()
-            print(last_price)
+    if portfolio.last_portfolio_history.cash != None:
+        neural_network = portfolio.neural_network
+        total_asset = float(portfolio.last_portfolio_history.cash) + float(portfolio.last_portfolio_history.total_invested_value)
+        print(f'cash: {portfolio.last_portfolio_history.cash}')
+        print(f'investments: {portfolio.last_portfolio_history.total_invested_value}')
+        print(f'Total asset: {total_asset}')
+        max_default_pos = portfolio.pos_size * total_asset
+        print(f'max_default_pos: {max_default_pos}')
+
+        predictions = neural_network.prediction.filter(price_date=LAST_TRADING_DATE.date()).order_by('-prediction')
+        print(f'{len(predictions)} predictions')
+        for p in predictions:
+            print(f'Prediction: {p.stock.symbol} {p.prediction}')
             pending_buy_orders = portfolio.buy_order.filter(executed_at__isnull=True, terminated_at__isnull=True).aggregate(Sum('total_investment'))
             if pending_buy_orders['total_investment__sum'] == None:
-                available_cash = cash
+                available_cash = float(portfolio.last_portfolio_history.cash)
             else:
-                available_cash = cash - pending_buy_orders['total_investment__sum']
-
-            stock_allocation = max_allocation * (b.score/max_score['score__max'])
-            if sma_position and last_price and sma_position.buy and available_cash > stock_allocation:
-                num_of_shares = int(stock_allocation/last_price.close)
-                if num_of_shares > 0:
-                    stop_loss = last_price.close - b.model.stop_loss * last_price.close
-                    take_profit = last_price.close + b.model.take_profit * last_price.close
-                    total_investment = num_of_shares * last_price.close
-                    assert(total_investment < available_cash)
-                    serializer = BuyOrderCreateSerializer(data={'user':portfolio.user.id, 'stock': b.stock.id, 'sma_position':sma_position.id, 'portfolio':portfolio.id, 'price_date':sma_position.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
+                available_cash = float(portfolio.last_portfolio_history.cash) - pending_buy_orders['total_investment__sum']
+            
+            if float(p.prediction) > buy_threshold:
+                last_price = p.stock.price_history.filter(price_date=LAST_TRADING_DATE.date()).first()
+                num_of_shares = int(max_default_pos*float(p.prediction)/last_price.close)
+                total_investment = num_of_shares * last_price.close
+                if total_investment < available_cash:
+                    if portfolio.stop_loss != None:
+                        stop_loss = last_price.close - portfolio.stop_loss * last_price.close
+                    else:
+                        stop_loss = None
+                    if portfolio.take_profit != None:
+                        take_profit = last_price.close + portfolio.take_profit * last_price.close
+                    else:
+                        take_profit = None
+                    serializer = BuyOrderCreateSerializer(data={'user':portfolio.user.id, 'stock': p.stock.id, 'prediction':p.id, 'portfolio':portfolio.id, 'price_date':p.price_date, 'num_of_shares':num_of_shares, 'order_rate':last_price.close, 'current_rate':last_price.close, 'total_investment':total_investment, 'stop_loss':stop_loss, 'take_profit':take_profit, 'created_at':datetime.datetime.now(tz=timezone.utc)})
                     if serializer.is_valid():
                         serializer.save()
-                        print(f'BUYING STOCK: {b.stock} ({num_of_shares}) | stock_allocation: {stock_allocation} | available_cash: {available_cash}')
+                        print(f'BUYING STOCK: {p.stock.name} ({num_of_shares}) | total_investment: {total_investment} | available_cash: {available_cash}')
                     else:
-                        print(f'SERIALIZER ERROR {b.stock}')
+                        print(f'SERIALIZER ERROR {p.stock.name}')
                         print(serializer.errors)
+        
     gc.collect()
 
 @shared_task
@@ -367,10 +374,10 @@ def update_orders_task(user_id):
         positions = portfolio.position.filter(close_date__isnull=True)
         print(f'Portfolio type: {portfolio.portfolio_type}')
 
-        if (portfolio.portfolio_type and user.profile.real_live == False):
+        if (portfolio.portfolio_type and portfolio.active == False):
             update_disabled_portfolio.delay(portfolio.id)
             continue
-        if (portfolio.portfolio_type == False and user.profile.demo_live == False):
+        if (portfolio.portfolio_type == False and portfolio.active == False):
             update_disabled_portfolio.delay(portfolio.id)
             continue
         
@@ -381,30 +388,135 @@ def update_orders_task(user_id):
     gc.collect()
 
 @shared_task
-def update_sma_positions():
-    print('update_sma_positions')
-    backtests = SMABacktest.objects.all()
-    for b in backtests:
-        sma_position = b.sma_position.first()
-        if sma_position == None:
-            sma_position_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
-        else:
-            sma_position_date = sma_position.price_date
+def update_neural_networks():
+    print('update_deep_models')
+    dirname = os.path.dirname(__file__)
+    folder_path = os.path.join(dirname, 'neural_networks/*')
+    folder_list = glob.glob(folder_path)
+    for f in folder_list:
+        nn_name = f.split('/')[-1]
+        params_file = os.path.join(f, 'parameters.json')
+        with open(params_file) as json_file:
+            parameters = json.load(json_file)
+            dm = NeuralNetwork(nn_name=nn_name, nn_type=parameters['nn_type'], batch_size=parameters['batch_size'], 
+                    drop_val=parameters['drop_val'], dropout=str(parameters['dropout'])=='true', 
+                    features=parameters['features'], last_epoch=parameters['last_epoch'],
+                    loss=parameters['loss'], loss_fn=parameters['loss_fn'],
+                    n_epoch=parameters['n_epoch'], n_hidden_layers=parameters['n_hidden_layers'],
+                    optimizer=parameters['optimizer'], test_accuracy=parameters['test_accuracy'],
+                    test_loss=parameters['test_loss'], units=parameters['units'],
+                    val_accuracy=parameters['val_accuracy'], val_loss=parameters['val_loss'],
+                    future_target=parameters['future_target'], target_type=parameters['target_type'],
+                    prediction_type=parameters['prediction_type']
+                )
+            try:
+                dm.save()
+            except IntegrityError as err:
+                pass
+            else:
+                print(f'Creating {nn_name}')
 
-        last_price_date = b.stock.price_history.first().price_date
-        delta = last_price_date - sma_position_date
-        days = [sma_position_date + timedelta(days=i) for i in range(delta.days + 1)]
-        for d in days:
-            if SMAPosition.objects.filter(stock=b.stock, sma_backtest=b, model=b.model, price_date=d).first() == None:
-                sma_engine = SMAEngine(b.stock.price_history.all(), b.model, date=d, backtest=False)
-                if 'buy' in sma_engine.order.keys():
-                    print(f'BUY: {sma_engine.order["buy"]} - {sma_engine.order["low_sma"]} | {sma_engine.order["high_sma"]}')
-                    s = SMAPosition(stock=b.stock, sma_backtest=b, model=b.model, buy=sma_engine.order["buy"], high_sma=sma_engine.order["high_sma"], low_sma=sma_engine.order["low_sma"], close=sma_engine.order["close"], price_date=d)
-                    s.save()
-                else:
-                    print('SMA ENGINE ERROR')
-                    print(sma_engine.order["error"])
+@shared_task
+def update_indexes():
+    print('update_indexes')
+    indexes = Index.objects.all() 
+    for i in indexes:
+        if i.index_history.exists():
+            start_date = i.index_history.first().price_date
+        else:
+            start_date = datetime.datetime(2000, 1, 1)
+        
+        end_date = LAST_TRADING_DATE
+        print(f'Start_date: {start_date}')
+        print(f'End_date: {end_date}')
+        if start_date < end_date:
+            start_unix = int(time.mktime(start_date.timetuple()))
+            end_unix = int(time.mktime(end_date.timetuple()))
+            url = f'https://query1.finance.yahoo.com/v7/finance/download/{i.symbol}?period1={start_unix}&period2={end_unix}&interval=1d&events=history'
+            r = requests.get(url)
+            string=str(r.content,'utf-8')
+            data = StringIO(string) 
+            df = pd.read_csv(data)
+            df['Date'] = pd.to_datetime(df['Date'])
+            df.set_index('Date', inplace=True)
+            for index, row in df.iterrows():
+                if len(row) > 0:
+                    try:
+                        i_h = IndexHistory(index=i, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=datetime.datetime.now(tz=timezone.utc))
+                        i_h.full_clean()
+                        i_h.save()
+                    except ValidationError as err:
+                        print(err)
+                        continue
+    gc.collect()   
+
+@shared_task
+def update_price_history():
+    print('update_price_history')
+    stocks = Stock.objects.filter(valid=True)
+    update_indexes.delay()
+    for s in stocks:
+        if s.price_history.first():
+            start_date = s.price_history.first().price_date
+        else:
+            start_date = datetime.datetime(2000, 1, 1)
+        
+        end_date = LAST_TRADING_DATE
+
+        if start_date < end_date:
+            start_unix = int(time.mktime(start_date.timetuple()))
+            end_unix = int(time.mktime(end_date.timetuple()))
+            url = f'https://query1.finance.yahoo.com/v7/finance/download/{s.symbol}?period1={start_unix}&period2={end_unix}&interval=1d&events=history'
+            r = requests.get(url)
+            string =str(r.content,'utf-8')
+            data = StringIO(string) 
+            df = pd.read_csv(data)
+            df['Date'] = pd.to_datetime(df['Date'])
+            df.set_index('Date', inplace=True)
+
+            for index, row in df.iterrows():
+                if len(row) > 0:
+                    try:
+                        p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=datetime.datetime.now(tz=timezone.utc))
+                        p.full_clean()
+                        p.save()
+                    except ValidationError as err:
+                        print(err)
+                        continue
+    update_predictions.delay()
     gc.collect()
+
+@shared_task
+def update_predictions():
+    print('update_predictions')
+    neural_networks = NeuralNetwork.objects.all()
+    stocks = Stock.objects.filter(valid=True)
+    for nn in neural_networks:
+        nn_path = os.path.join(os.path.dirname(__file__), 'neural_networks/', str(nn.nn_name))
+        for s in stocks:
+            print(s)
+            prediction = s.prediction.first()
+            if prediction == None:
+                prediction_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
+            else:
+                prediction_date = prediction.price_date
+            
+            last_price_date = s.price_history.first().price_date
+            delta = last_price_date - prediction_date
+            days = [prediction_date + timedelta(days=i) for i in range(delta.days + 1)]
+            print(days)
+            index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
+            engine = DeepEngine(stock=s, neural_network=nn, prices=s.price_history.all(), index_prices=s.index.index_history.all())
+            for d in days:
+                prediction = engine.predict(date=d)
+                pred = Prediction(neural_network=nn, stock=s, price_date=d, prediction=prediction)
+                try:
+                    pred.save()
+                except IntegrityError as err:
+                    print(err)
+                    pass
+                else:
+                    print(f'Saving {s.symbol} prediction {prediction} for {d}')
 
 @shared_task
 def update_portfolio(user_id):
@@ -429,11 +541,10 @@ def update_portfolio(user_id):
                 pass
             else:
                 if real_portfolio == None:
-                    print('Creating real portfolio')
                     create_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
                 else:
-                    print('Saving real portfolio')
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
+        
         #demo portolio
         if demo_portfolio == None or demo_portfolio.updated_at < datetime.datetime.now(tz=timezone.utc):
             print(f'Updating demo portfolio')
@@ -453,40 +564,6 @@ def update_portfolio(user_id):
                     save_portfolio.delay(portfolio, user.id, positions, pending_orders, trade_history)
     gc.collect()
 
-
-@shared_task
-def update_price_history():
-    print('update_price_history')
-    stocks = Stock.objects.filter(valid=True) 
-    for s in stocks:
-        try:
-            if s.price_history.first():
-                start_date = s.price_history.first().price_date
-            else:
-                start_date = datetime.datetime(2000, 1, 1)
-            
-            end_date = datetime.datetime.today() - pd.tseries.offsets.BDay(1)
-            if start_date < end_date:
-                try:
-                    df = data.DataReader(s.symbol, start=start_date, end=end_date, data_source='yahoo')
-                except RemoteDataError as err:
-                    print(f'#### {s.symbol} - {err} ####')
-                    continue
-                
-                for index, row in df.iterrows():
-                    if len(row) > 0:
-                        try:
-                            print(df.index.size)
-                            p = PriceHistory(stock=s, price_date=index, open=row['Open'], high=row['High'], low=row['Low'], close=row['Close'], volume=row['Volume'], created_at=end_date)
-                            p.full_clean()
-                            p.save()
-                        except ValidationError as err:
-                            print(err)
-                            continue
-        except:
-            continue
-    update_sma_positions.delay()
-    gc.collect()
 
 @shared_task
 def transmit_user_order(user_id, portfolio_id):
@@ -510,12 +587,10 @@ def transmit_user_order(user_id, portfolio_id):
 def update_orders():
     print('update_orders')
     users = User.objects.all()
-    print(LAST_TRADING_DATE)
-    print(len(Stock.objects.filter(valid=True, price_history__price_date=LAST_TRADING_DATE)))
-    print(len(Stock.objects.filter(valid=True)))
-    if len(Stock.objects.filter(valid=True, price_history__price_date=LAST_TRADING_DATE)) != len(Stock.objects.filter(valid=True)):
+    if len(Stock.objects.filter(valid=True, price_history__price_date=LAST_TRADING_DATE.date())) != len(Stock.objects.filter(valid=True)):
         print('update stock prices')
         update_price_history.delay()
+        update_indexes.delay()
     for user in users:
         update_orders_task.delay(user.id)
     gc.collect()

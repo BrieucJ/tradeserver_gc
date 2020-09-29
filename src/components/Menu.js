@@ -69,6 +69,9 @@ class Menu extends React.Component {
                 <ListItem button component="a" key={'history'} href="/history">
                   <ListItemText primary={'History'} />
                 </ListItem>
+                <ListItem button component="a" key={'market'} href="/market">
+                  <ListItemText primary={'Market'} />
+                </ListItem>
               </List>
               </Hidden>
               <Box>
@@ -100,6 +103,9 @@ class Menu extends React.Component {
                 </ListItem>
                 <ListItem button component="a" key={'history'} href="/history">
                   <ListItemText primary={'History'} />
+                </ListItem>
+                <ListItem button component="a" key={'market'} href="/market">
+                  <ListItemText primary={'Market'} />
                 </ListItem>
               </List>
             </SwipeableDrawer>

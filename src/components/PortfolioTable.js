@@ -163,7 +163,7 @@ class PortfolioTable extends React.Component {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {portfolio.current_positions.map((po, index) => (
+                        {portfolio!=null && portfolio.current_positions.map((po, index) => (
                             <TableRow hover key={po.id} onClick={() => {this.props.history.push('/position/?id='+po.id)}}>
                                 <TableCell component="th" scope="row">{po.stock.symbol.substring(0,20)}  </TableCell>
                                 <Hidden smDown>

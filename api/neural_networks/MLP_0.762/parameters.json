@@ -1,0 +1,23 @@
+{
+    "accuracy": 0.7718411684036255,
+    "batch_size": 128,
+    "drop_val": 0.2,
+    "dropout": true,
+    "features": "['Symbol', 'Sector', 'Industry', 'mom_10', 'mom_21', 'mom_42', 'mom_63', 'mom_126', 'mom_252', 'mom_378', 'market_mom_10', 'market_mom_21', 'market_mom_42', 'market_mom_63', 'market_mom_126', 'market_mom_252', 'market_mom_378', 'SD_10', 'SD_21', 'SD_42', 'SD_63', 'SD_126', 'SD_252', 'SD_378', 'market_SD_10', 'market_SD_21', 'market_SD_42', 'market_SD_63', 'market_SD_126', 'market_SD_252', 'market_SD_378', 'beta_10', 'beta_21', 'beta_42', 'beta_63', 'beta_126', 'beta_252', 'beta_378', 'alpha_10', 'alpha_21', 'alpha_42', 'alpha_63', 'alpha_126', 'alpha_252', 'alpha_378', 'target']",
+    "future_target": 21,
+    "last_epoch": 32,
+    "loss": 0.4480011761188507,
+    "loss_fn": "BinaryCrossentropy",
+    "n_epoch": 100,
+    "n_hidden_layers": 2,
+    "nn_name": "MLP_0.762",
+    "nn_type": "MLP",
+    "optimizer": "adam",
+    "prediction_type": "binary",
+    "target_type": "beat_index",
+    "test_accuracy": 0.7619709968566895,
+    "test_loss": 0.45351728796958923,
+    "units": 256,
+    "val_accuracy": 0.7619709968566895,
+    "val_loss": 0.45351728796958923
+}
