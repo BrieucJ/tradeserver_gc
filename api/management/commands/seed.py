@@ -11,7 +11,7 @@ import itertools
 
 # python manage.py seed --mode=refresh
 
-START_DATE = '2000-01-01'
+START_DATE = '2010-01-01'
 END_DATE = str(datetime.date.today())
 print(START_DATE)
 print(END_DATE)

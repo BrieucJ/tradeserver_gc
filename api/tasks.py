@@ -500,7 +500,8 @@ def stock_prediction(stock_id, nn_id):
     print(f'Last prediction  date: {prediction_date}')
     delta = stock.last_price.price_date - prediction_date
     print(f'DELTA: {delta}')
-    days = [prediction_date + timedelta(days=i) for i in range(delta.days)]
+    print(range(delta.days))
+    days = [prediction_date + timedelta(days=i+1) for i in range(delta.days)]
     print(f'DAYS {days}')
     print(f'# of days: {len(days)}')
     index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
@@ -524,7 +525,6 @@ def update_predictions():
     neural_networks = NeuralNetwork.objects.all()
     stocks = Stock.objects.filter(valid=True)
     for nn in neural_networks:
-        nn_path = os.path.join(os.path.dirname(__file__), 'neural_networks/', str(nn.nn_name))
         for s in stocks:
             stock_prediction.delay(s.id, nn.id)
             print(s)
