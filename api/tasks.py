@@ -515,6 +515,7 @@ def stock_prediction(stock_id, nn_id):
             pass
         else:
             print(f'Saving {stock.symbol} prediction {prediction} for {d}')
+    gc.collect()
 
 @shared_task
 def update_predictions():
@@ -526,6 +527,7 @@ def update_predictions():
         for s in stocks:
             stock_prediction.delay(s.id, nn.id)
             print(s)
+    gc.collect()
 
 @shared_task
 def update_portfolio(user_id):
