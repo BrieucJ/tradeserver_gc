@@ -487,6 +487,36 @@ def update_price_history():
     gc.collect()
 
 @shared_task
+def stock_prediction(stock_id, nn_id):
+    nn = NeuralNetwork.objects.get(id=nn_id)
+    stock = Stock.objects.get(id=stock_id)
+    prediction = stock.prediction.first()
+    if prediction == None:
+        prediction_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
+    else:
+        prediction_date = prediction.price_date
+    print(f'LAST TRADING DATE: {LAST_TRADING_DATE.date()}')
+    print(f'Last stock price date: {stock.last_price.price_date}')
+    print(f'Last prediction  date: {prediction_date}')
+    delta = stock.last_price.price_date - prediction_date
+    print(f'DELTA: {delta}')
+    days = [timedelta(days=i) for i in range(delta.days)]
+    print(f'DAYS {days}')
+    print(f'# of days: {len(days)}')
+    index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
+    engine = DeepEngine(stock=stock, neural_network=nn, prices=stock.price_history.all(), index_prices=stock.index.index_history.all())
+    for d in days:
+        prediction = engine.predict(date=d)
+        pred = Prediction(neural_network=nn, stock=stock, price_date=d, prediction=prediction)
+        try:
+            pred.save()
+        except IntegrityError as err:
+            print(err)
+            pass
+        else:
+            print(f'Saving {stock.symbol} prediction {prediction} for {d}')
+
+@shared_task
 def update_predictions():
     print('update_predictions')
     neural_networks = NeuralNetwork.objects.all()
@@ -494,29 +524,8 @@ def update_predictions():
     for nn in neural_networks:
         nn_path = os.path.join(os.path.dirname(__file__), 'neural_networks/', str(nn.nn_name))
         for s in stocks:
+            stock_prediction.delay(s.id, nn.id)
             print(s)
-            prediction = s.prediction.first()
-            if prediction == None:
-                prediction_date = (datetime.datetime.today() - datetime.timedelta(days=20)).date()
-            else:
-                prediction_date = prediction.price_date
-            
-            last_price_date = s.price_history.first().price_date
-            delta = last_price_date - prediction_date
-            days = [prediction_date + timedelta(days=i) for i in range(delta.days + 1)]
-            print(days)
-            index_prices = Index.objects.get(symbol='^GSPC').index_history.all()
-            engine = DeepEngine(stock=s, neural_network=nn, prices=s.price_history.all(), index_prices=s.index.index_history.all())
-            for d in days:
-                prediction = engine.predict(date=d)
-                pred = Prediction(neural_network=nn, stock=s, price_date=d, prediction=prediction)
-                try:
-                    pred.save()
-                except IntegrityError as err:
-                    print(err)
-                    pass
-                else:
-                    print(f'Saving {s.symbol} prediction {prediction} for {d}')
 
 @shared_task
 def update_portfolio(user_id):
