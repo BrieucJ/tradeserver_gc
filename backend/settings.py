@@ -35,7 +35,7 @@ else:
 
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000', 'http://localhost:3000']
 
-ALLOWED_HOSTS = ['django-env.eba-9hepmtan.eu-west-3.elasticbeanstalk.com', '127.0.0.1']
+ALLOWED_HOSTS = ['tradeserver-env.eba-na2dgqe2.eu-west-3.elasticbeanstalk.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
