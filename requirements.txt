@@ -42,7 +42,7 @@ opt-einsum==3.3.0
 pandas==1.0.5
 pandas-market-calendars==1.5.0
 protobuf==3.13.0
-psycopg2==2.8.5
+psycopg2-binary==2.8.6
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
