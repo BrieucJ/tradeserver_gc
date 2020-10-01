@@ -35,7 +35,7 @@ else:
 
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000', 'http://localhost:3000']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['django-env.eba-mdybbjbd.eu-west-3.elasticbeanstalk.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -43,19 +43,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'api',
-    # 'django.contrib.sites',
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,20 +96,28 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'django',
-#         'USER': 'django',
-#         'PASSWORD': 'somepassword',
-#         'HOST': '127.0.0.1',
-#         'PORT': '5432',
-#     }
-# }
-
-
-DATABASES = {}
-DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+if 'RDS_DB_NAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'django',
+            'USER': 'django',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -148,9 +154,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build', 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
 # print(STATIC_ROOT)
 
 # print(f'STATIC_ROOT: {STATIC_ROOT}')
@@ -160,13 +166,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'build', 'static')
 # print(MEDIA_ROOT)
-
-# Configure app for Heroku deployment
-import django_heroku
-django_heroku.settings(locals())
-# override DATABASE_URL set by django_heroku because it forces SSL mode locally
-ssl_require = PRODUCTION
-locals()['DATABASES']['default'] = dj_database_url.config(conn_max_age=django_heroku.MAX_CONN_AGE, ssl_require=ssl_require)
 
 #CELERY
 CELERY_TASK_SERIALIZER='json'

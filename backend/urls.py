@@ -19,12 +19,8 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 from api import views
 from .views import index
+# from .views import FrontendAppView
 
-# router = routers.DefaultRouter()
-# router.register(r'user', views.UserViewSet, basename='user',)
-# router.register(r'stock', views.StockViewSet, basename='stock',)
-# router.register(r'pricehistory', views.PriceHistoryViewSet, basename='pricehistory')
-# router.register(r'tradingmodel', views.TradingModelViewSet, basename='tradingmodel')
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
@@ -37,7 +33,8 @@ urlpatterns = [
     path('api/retrieve_history/', views.RetrieveHistory.as_view(), name='retrieve_history'),
     path('api/position_details/', views.PositionDetails.as_view(), name='position_details'),
     path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
-    re_path('.*', index)
+    re_path('', index),
+    # re_path(r'^', FrontendAppView.as_view())
     # re_path(r'^(?P<path>.*)/$', index),
     # path('', index),
 ]
