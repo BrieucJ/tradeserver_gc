@@ -35,7 +35,7 @@ else:
 
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000', 'http://localhost:3000']
 
-ALLOWED_HOSTS = ['tradeserver-env.eba-na2dgqe2.eu-west-3.elasticbeanstalk.com', '127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -154,7 +154,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/staticfiles/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build', 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
