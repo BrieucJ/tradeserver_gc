@@ -96,35 +96,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-if 'RDS_DB_NAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'django',
-            'USER': 'django',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
 
 if os.getenv('GAE_APPLICATION', None):
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.mysql',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'HOST': '/cloudsql/traderserver-291306:europe-west1:tradeserver-db',
             'USER': 'Brieuc',
             'PASSWORD': 'Iforgot12$',
@@ -201,7 +179,7 @@ CELERY_TASK_SERIALIZER='json'
 CELERY_TIMEZONE = 'Europe/Paris'
 # BROKER_POOL_LIMIT = 3
 if PRODUCTION:
-    CELERY_BROKER_URL =  'sqs://'
+    CELERY_BROKER_URL =  'redis://'
     CELERY_RESULT_BACKEND = None
 else: 
     CELERY_BROKER_URL =  'redis://'
