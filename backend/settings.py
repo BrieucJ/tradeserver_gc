@@ -20,6 +20,7 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 print(BASE_DIR)
 PRODUCTION = os.environ['PRODUCTION'] == 'True'
+print(f'PRODUCTION == {PRODUCTION}')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -34,7 +35,6 @@ else:
     DEBUG = True
 
 CORS_ORIGIN_WHITELIST = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000', 'http://localhost:3000']
-
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -119,6 +119,31 @@ else:
         }
     }
 
+if os.getenv('GAE_APPLICATION', None):
+    # Running on production App Engine, so connect to Google Cloud SQL using
+    # the unix socket at /cloudsql/<your-cloudsql-connection string>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '/cloudsql/traderserver-291306:europe-west1:tradeserver-db',
+            'USER': 'Brieuc',
+            'PASSWORD': 'Iforgot12$',
+            'NAME': 'tradeserver-db',
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'django',
+            'USER': 'django',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -154,10 +179,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/staticfiles/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'build', 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # print(STATIC_ROOT)
 
 # print(f'STATIC_ROOT: {STATIC_ROOT}')
