@@ -19,8 +19,6 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 from api import views
 from .views import index
-# from .views import FrontendAppView
-
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
@@ -28,13 +26,9 @@ urlpatterns = [
     path('api/user/', views.UserView.as_view(), name='user'),
     path('api/portfolio/', views.PortfolioView.as_view(), name='portfolio'),
     path('api/home/', views.Home.as_view(), name='home'),
-    # path('api/retrieve_portfolio/', views.RetrievePortfolio.as_view(), name='retrieve_portfolio'),
     path('api/retrieve_order/', views.RetrieveOrder.as_view(), name='retrieve_order'),
     path('api/retrieve_history/', views.RetrieveHistory.as_view(), name='retrieve_history'),
     path('api/position_details/', views.PositionDetails.as_view(), name='position_details'),
     path('api/retrieve_market/', views.RetrieveMarket.as_view(), name='retrieve_market'),
     re_path('', index),
-    # re_path(r'^', FrontendAppView.as_view())
-    # re_path(r'^(?P<path>.*)/$', index),
-    # path('', index),
 ]
