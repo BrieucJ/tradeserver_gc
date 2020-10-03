@@ -18,9 +18,7 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(BASE_DIR)
 PRODUCTION = os.environ['PRODUCTION'] == 'True'
-print(f'PRODUCTION == {PRODUCTION}')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -97,16 +95,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 
-if os.getenv('GAE_APPLICATION', None):
+if PRODUCTION:
     # Running on production App Engine, so connect to Google Cloud SQL using
     # the unix socket at /cloudsql/<your-cloudsql-connection string>
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'HOST': '/cloudsql/traderserver-291306:europe-west1:tradeserver-db',
-            'USER': 'Brieuc',
-            'PASSWORD': 'Iforgot12$',
-            'NAME': 'tradeserver-db',
+            'NAME': os.environ['DB_NAME'],
+            'USER': os.environ['DB_USER'],
+            'PASSWORD': os.environ['DB_PASSWORD'],
+            'HOST': 'localhost',
+            'PORT': '5432',
         }
     }
 else:
